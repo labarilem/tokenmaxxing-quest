@@ -1,9 +1,9 @@
 import { formatNumber, formatRate } from "./resources.js";
 
-/** @typedef {import("./game.js").GameState} GameState */
+/** @typedef {import("./game.js").Game} Game */
 
 export class UI {
-  /** @param {GameState} game */
+  /** @param {Game} game */
   constructor(game) {
     this.game = game;
 

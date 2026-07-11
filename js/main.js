@@ -1,8 +1,13 @@
-import { GameState } from "./game.js";
+import { Game } from "./game.js";
+import { SystemClock } from "./clock.js";
+import { LocalStorageAdapter } from "./storage.js";
 import { TICK_MS } from "./resources.js";
 import { UI } from "./ui.js";
 
-const game = new GameState();
+const game = new Game({
+  clock: new SystemClock(),
+  storage: new LocalStorageAdapter(),
+});
 const ui = new UI(game);
 
 /** @type {ReturnType<typeof setInterval> | null} */

@@ -3,119 +3,156 @@ import {
   AUTOSAVE_TICKS,
   OFFLINE_CAP_MS,
   SAVE_KEY,
-  SAVE_VERSION,
   TOKENS_PER_TICK,
   getAgentCost,
 } from "./resources.js";
+import { GameState } from "./state.js";
+import { SystemClock } from "./clock.js";
 
-export class GameState {
-  /** @type {number} */
-  tokens = 0;
+/** @typedef {import("./clock.js").Clock} Clock */
+/** @typedef {import("./storage.js").KeyValueStore} KeyValueStore */
 
-  /** @type {number} */
-  agents = 0;
+/**
+ * Game engine — owns the rules, tick progression, and persistence coordination
+ * for a {@link GameState}.
+ *
+ * Collaborators (clock + storage) are injected as abstractions, so the exact
+ * same logic runs headlessly in tests: supply a `ManualClock` to advance time
+ * without waiting, and a `MemoryStorage` to exercise save/load without a
+ * browser. In the browser, `main.js` injects `SystemClock` + `LocalStorageAdapter`.
+ */
+export class Game {
+  /**
+   * @param {{
+   *   clock?: Clock,
+   *   storage?: KeyValueStore | null,
+   *   state?: GameState | null,
+   *   saveKey?: string,
+   * }} [deps]
+   */
+  constructor({ clock = new SystemClock(), storage = null, state = null, saveKey = SAVE_KEY } = {}) {
+    /** @type {Clock} */
+    this.clock = clock;
 
-  /** @type {number} */
-  lastTickAt = Date.now();
+    /** @type {KeyValueStore | null} */
+    this.storage = storage;
 
-  /** @type {number} */
-  ticksSinceSave = 0;
+    /** @type {string} */
+    this.saveKey = saveKey;
 
+    /** @type {GameState} */
+    this.state = state ?? new GameState({ lastTickAt: clock.now() });
+  }
+
+  /** @returns {number} */
+  get tokens() {
+    return this.state.tokens;
+  }
+
+  /** @returns {number} */
+  get agents() {
+    return this.state.agents;
+  }
+
+  /** @returns {number} passive tokens generated per second */
   get tokensPerSecond() {
-    return this.agents * AGENT.tokensPerSecond;
+    return this.state.agents * AGENT.tokensPerSecond;
   }
 
+  /** @returns {number} cost of the next agent */
   get agentCost() {
-    return getAgentCost(this.agents);
+    return getAgentCost(this.state.agents);
   }
 
+  /** @returns {boolean} */
   canBuyAgent() {
-    return this.tokens >= this.agentCost;
+    return this.state.tokens >= this.agentCost;
   }
 
+  /** Manual action: consume one token. */
   sendPrompt() {
-    this.tokens += 1;
+    this.state.tokens += 1;
   }
 
+  /**
+   * Buy one background agent if affordable.
+   * @returns {boolean} whether the purchase happened
+   */
   buyAgent() {
     if (!this.canBuyAgent()) {
       return false;
     }
-    this.tokens -= this.agentCost;
-    this.agents += 1;
+    this.state.tokens -= this.agentCost;
+    this.state.agents += 1;
     return true;
   }
 
+  /** Advance the simulation by one tick. */
   tick() {
     if (this.tokensPerSecond > 0) {
-      this.tokens += this.tokensPerSecond * TOKENS_PER_TICK;
+      this.state.tokens += this.tokensPerSecond * TOKENS_PER_TICK;
     }
-    this.lastTickAt = Date.now();
-    this.ticksSinceSave += 1;
+    this.state.lastTickAt = this.clock.now();
+    this.state.ticksSinceSave += 1;
   }
 
-  applyOfflineProgress(now = Date.now()) {
-    const elapsed = Math.min(now - this.lastTickAt, OFFLINE_CAP_MS);
+  /**
+   * Credit passive tokens for time elapsed since the last tick, capped at
+   * {@link OFFLINE_CAP_MS}.
+   * @param {number} [now] current time in epoch ms (defaults to the clock)
+   */
+  applyOfflineProgress(now = this.clock.now()) {
+    const elapsed = Math.min(now - this.state.lastTickAt, OFFLINE_CAP_MS);
     if (elapsed <= 0 || this.tokensPerSecond <= 0) {
-      this.lastTickAt = now;
+      this.state.lastTickAt = now;
       return;
     }
-    this.tokens += (elapsed / 1000) * this.tokensPerSecond;
-    this.lastTickAt = now;
+    this.state.tokens += (elapsed / 1000) * this.tokensPerSecond;
+    this.state.lastTickAt = now;
   }
 
   markSaved() {
-    this.ticksSinceSave = 0;
-  }
-
-  shouldAutosave() {
-    return this.ticksSinceSave >= AUTOSAVE_TICKS;
-  }
-
-  /** @returns {object} */
-  toSaveData() {
-    return {
-      version: SAVE_VERSION,
-      tokens: this.tokens,
-      agents: this.agents,
-      lastTickAt: this.lastTickAt,
-    };
-  }
-
-  /** @param {object} data */
-  loadFromSaveData(data) {
-    if (!data || typeof data !== "object") {
-      return;
-    }
-    if (typeof data.tokens === "number" && data.tokens >= 0) {
-      this.tokens = data.tokens;
-    }
-    if (typeof data.agents === "number" && data.agents >= 0) {
-      this.agents = Math.floor(data.agents);
-    }
-    if (typeof data.lastTickAt === "number" && data.lastTickAt > 0) {
-      this.lastTickAt = data.lastTickAt;
-    }
-  }
-
-  save() {
-    try {
-      localStorage.setItem(SAVE_KEY, JSON.stringify(this.toSaveData()));
-      this.markSaved();
-    } catch {
-      // Storage full or unavailable — gameplay continues without save.
-    }
+    this.state.ticksSinceSave = 0;
   }
 
   /** @returns {boolean} */
-  load() {
+  shouldAutosave() {
+    return this.state.ticksSinceSave >= AUTOSAVE_TICKS;
+  }
+
+  /**
+   * Persist the current state through the injected store.
+   * @returns {boolean} whether the save succeeded
+   */
+  save() {
+    if (!this.storage) {
+      return false;
+    }
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
+      this.storage.setItem(this.saveKey, JSON.stringify(this.state.toSaveData()));
+      this.markSaved();
+      return true;
+    } catch {
+      // Storage full or unavailable — gameplay continues without save.
+      return false;
+    }
+  }
+
+  /**
+   * Load state from the injected store and apply offline progress.
+   * @returns {boolean} whether a save was found and loaded
+   */
+  load() {
+    if (!this.storage) {
+      return false;
+    }
+    try {
+      const raw = this.storage.getItem(this.saveKey);
       if (!raw) {
         return false;
       }
       const data = JSON.parse(raw);
-      this.loadFromSaveData(data);
+      this.state = GameState.fromSaveData(data, { lastTickAt: this.clock.now() });
       this.applyOfflineProgress();
       return true;
     } catch {
