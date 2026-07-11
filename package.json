@@ -1,0 +1,11 @@
+{
+  "name": "tokenmaxxing-quest",
+  "version": "0.1.0",
+  "description": "Satirical incremental browser game about maximizing LLM token spending.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "serve": "python3 -m http.server 8080"
+  }
+}
