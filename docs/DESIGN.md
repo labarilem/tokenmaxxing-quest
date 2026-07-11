@@ -37,11 +37,33 @@ Inspired by [Kittens Game](https://kittensgame.com/web/) patterns, modernized wi
 index.html          → shell + module entry
 css/main.css        → mobile-first styles
 js/
-  main.js           → boot, tick loop, visibility handling
-  game.js           → GameState: model, save/load, offline progress
+  main.js           → boot, tick loop, visibility handling (composition root)
+  game.js           → Game engine: rules, tick, offline progress, save/load
+  state.js          → GameState: plain data model + save (de)serialization
+  clock.js          → Clock abstraction (SystemClock, ManualClock)
+  storage.js        → KeyValueStore abstraction (LocalStorageAdapter, MemoryStorage)
   resources.js      → constants, formatting, upgrade definitions
   ui.js             → DOM bindings, update-on-change only
+test/
+  game.test.js      → engine behavior (actions, ticks, offline, save/load)
+  state.test.js     → save (de)serialization + validation
 ```
+
+### Testability & SOLID
+
+The core logic is decoupled from the browser so it can be unit-tested headlessly:
+
+- **Single Responsibility:** state (`state.js`), rules/coordination (`game.js`), time
+  (`clock.js`), and persistence (`storage.js`) each live in their own module.
+- **Dependency Inversion:** `Game` receives a `Clock` and a `KeyValueStore` via its
+  constructor instead of calling `Date.now()` / `localStorage` directly.
+- **Liskov substitution:** `SystemClock`↔`ManualClock` and
+  `LocalStorageAdapter`↔`MemoryStorage` are drop-in interchangeable.
+- `main.js` is the composition root: it injects `SystemClock` + `LocalStorageAdapter`.
+
+Tests set up any starting `GameState`, apply actions, advance a `ManualClock` to run
+ticks/offline gaps deterministically (no real waiting), and assert on the resulting
+state. Run with `node --test` (Node's built-in runner — no dependencies, no build step).
 
 ### Tick loop
 
@@ -130,6 +152,14 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-11 — Core logic refactor for testability
+
+- Split `GameState` into a plain data model (`state.js`) and a `Game` engine (`game.js`)
+- Introduced `Clock` (`clock.js`) and `KeyValueStore` (`storage.js`) abstractions, injected into `Game`
+- `main.js` now injects `SystemClock` + `LocalStorageAdapter`; behavior unchanged
+- Added headless unit tests via Node's built-in runner (`node --test`) using `ManualClock` + `MemoryStorage`
+- No gameplay changes; still no build step and still deployable as static files
 
 ### 2026-07-11 — V0.1 MVP
 

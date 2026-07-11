@@ -22,6 +22,18 @@ npx serve .
 
 Open [http://localhost:8080](http://localhost:8080).
 
+## Tests
+
+Core game logic is decoupled from the DOM (injected clock + storage), so it runs headlessly with Node's built-in test runner — no dependencies, no build step:
+
+```bash
+node --test
+# or
+npm test
+```
+
+Tests set up a `GameState`, apply actions, advance a `ManualClock` to simulate ticks/offline time instantly, and assert on the result.
+
 ## Deploy to GitHub Pages
 
 1. Push this repo to GitHub

@@ -38,9 +38,19 @@ Always update the **Mechanics** table and **Changelog** section with a dated ent
 ```
 index.html       — page shell
 css/main.css     — styles
-js/main.js       — boot + tick loop
-js/game.js       — GameState model
+js/main.js       — boot + tick loop (composition root)
+js/game.js       — Game engine (rules, tick, save/load)
+js/state.js      — GameState data model + (de)serialization
+js/clock.js      — Clock abstraction (System/Manual)
+js/storage.js    — KeyValueStore abstraction (LocalStorage/Memory)
 js/resources.js  — constants + formatting
 js/ui.js         — DOM updates
+test/            — headless unit tests (node --test)
 docs/DESIGN.md   — source of truth (update this!)
 ```
+
+## Testing
+
+- Core logic must stay decoupled from the DOM so it is unit-testable headlessly.
+- Inject `Clock`/`KeyValueStore` into `Game`; never call `Date.now()`/`localStorage` in engine code.
+- Add/extend tests under `test/*.test.js` and run `node --test` (no build step, no deps).
