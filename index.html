@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tokenmaxxing Quest — an incremental game about maximizing LLM token spending at a big tech company.">
+  <title>Tokenmaxxing Quest</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <main class="game" id="game">
+    <header class="game__header">
+      <h1 class="game__title">Tokenmaxxing Quest</h1>
+      <p class="game__subtitle">Big Tech Corp — Software Engineer II</p>
+    </header>
+
+    <section class="panel panel--resource" aria-live="polite">
+      <h2 class="panel__label">Tokens Consumed</h2>
+      <p class="resource__value" id="tokens-display">0</p>
+      <p class="resource__rate" id="rate-display">+0.0 / sec</p>
+    </section>
+
+    <section class="panel panel--actions">
+      <button type="button" class="btn btn--primary" id="send-prompt-btn">
+        Send Prompt
+        <span class="btn__hint">+1 token</span>
+      </button>
+    </section>
+
+    <section class="panel panel--upgrade">
+      <h2 class="panel__label">Background Agent</h2>
+      <p class="upgrade__desc">Runs prompts while you attend standup.</p>
+      <div class="upgrade__row">
+        <button type="button" class="btn btn--secondary" id="buy-agent-btn">
+          Buy — <span id="agent-cost">25</span> tokens
+        </button>
+        <span class="upgrade__owned">Owned: <span id="agent-count">0</span></span>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
