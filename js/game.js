@@ -1,3 +1,4 @@
+import { evaluateAchievements } from "./achievements.js";
 import {
   AGENT,
   AUTOSAVE_TICKS,
@@ -69,22 +70,29 @@ export class Game {
     return this.state.tokens >= this.agentCost;
   }
 
-  /** Manual action: consume one token. */
+  /**
+   * Manual action: consume one token.
+   * @returns {import("./achievements.js").AchievementDef[]} newly unlocked achievements
+   */
   sendPrompt() {
     this.state.tokens += 1;
+    return evaluateAchievements(this.state, "sendPrompt");
   }
 
   /**
    * Buy one background agent if affordable.
-   * @returns {boolean} whether the purchase happened
+   * @returns {{ purchased: boolean, unlocked: import("./achievements.js").AchievementDef[] }}
    */
   buyAgent() {
     if (!this.canBuyAgent()) {
-      return false;
+      return { purchased: false, unlocked: [] };
     }
     this.state.tokens -= this.agentCost;
     this.state.agents += 1;
-    return true;
+    return {
+      purchased: true,
+      unlocked: evaluateAchievements(this.state, "buyAgent"),
+    };
   }
 
   /** Advance the simulation by one tick. */

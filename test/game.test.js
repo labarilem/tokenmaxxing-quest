@@ -23,18 +23,23 @@ function runSeconds(game, clock, seconds) {
   }
 }
 
-test("sendPrompt adds one token per call", () => {
+test("sendPrompt adds one token per call and unlocks first-prompt once", () => {
   const game = new Game({ clock: new ManualClock(0) });
-  game.sendPrompt();
-  game.sendPrompt();
-  game.sendPrompt();
+  const first = game.sendPrompt();
+  assert.equal(first.length, 1);
+  assert.equal(first[0].id, "first-prompt");
+  assert.deepEqual(game.sendPrompt(), []);
+  assert.deepEqual(game.sendPrompt(), []);
   assert.equal(game.tokens, 3);
+  assert.equal(game.state.hasAchievement("first-prompt"), true);
 });
 
 test("buyAgent fails when tokens are insufficient", () => {
   const game = new Game({ clock: new ManualClock(0) });
   assert.equal(game.canBuyAgent(), false);
-  assert.equal(game.buyAgent(), false);
+  const result = game.buyAgent();
+  assert.equal(result.purchased, false);
+  assert.deepEqual(result.unlocked, []);
   assert.equal(game.agents, 0);
   assert.equal(game.tokens, 0);
 });
@@ -46,7 +51,8 @@ test("buyAgent spends tokens, increments agents, and raises the rate", () => {
   });
 
   assert.equal(game.tokensPerSecond, 0);
-  assert.equal(game.buyAgent(), true);
+  const result = game.buyAgent();
+  assert.equal(result.purchased, true);
 
   assert.equal(game.agents, 1);
   assert.equal(game.tokens, 0);
@@ -120,7 +126,12 @@ test("save and load roundtrip through an injected key/value store", () => {
   const writer = new Game({
     clock: new ManualClock(1000),
     storage,
-    state: new GameState({ tokens: 42, agents: 3, lastTickAt: 1000 }),
+    state: new GameState({
+      tokens: 42,
+      agents: 3,
+      lastTickAt: 1000,
+      achievements: ["first-prompt"],
+    }),
   });
   assert.equal(writer.save(), true);
 
@@ -129,6 +140,7 @@ test("save and load roundtrip through an injected key/value store", () => {
   assert.equal(reader.load(), true);
   assert.equal(reader.tokens, 42);
   assert.equal(reader.agents, 3);
+  assert.equal(reader.state.hasAchievement("first-prompt"), true);
 });
 
 test("load applies offline progress based on the clock delta", () => {

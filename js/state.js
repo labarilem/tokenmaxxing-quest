@@ -7,9 +7,9 @@ import { SAVE_VERSION } from "./resources.js";
  */
 export class GameState {
   /**
-   * @param {{ tokens?: number, agents?: number, lastTickAt?: number }} [init]
+   * @param {{ tokens?: number, agents?: number, lastTickAt?: number, achievements?: string[] }} [init]
    */
-  constructor({ tokens = 0, agents = 0, lastTickAt = 0 } = {}) {
+  constructor({ tokens = 0, agents = 0, lastTickAt = 0, achievements = [] } = {}) {
     /** @type {number} total tokens consumed */
     this.tokens = tokens;
 
@@ -19,8 +19,21 @@ export class GameState {
     /** @type {number} epoch ms of the last processed tick */
     this.lastTickAt = lastTickAt;
 
+    /** @type {Set<string>} achievement ids the player has earned */
+    this.achievements = new Set(achievements);
+
     /** @type {number} ticks elapsed since the last save (not persisted) */
     this.ticksSinceSave = 0;
+  }
+
+  /** @param {string} id */
+  hasAchievement(id) {
+    return this.achievements.has(id);
+  }
+
+  /** @param {string} id */
+  unlockAchievement(id) {
+    this.achievements.add(id);
   }
 
   /**
@@ -33,6 +46,7 @@ export class GameState {
       tokens: this.tokens,
       agents: this.agents,
       lastTickAt: this.lastTickAt,
+      achievements: [...this.achievements],
     };
   }
 
@@ -58,6 +72,13 @@ export class GameState {
     }
     if (typeof record.lastTickAt === "number" && record.lastTickAt > 0) {
       state.lastTickAt = record.lastTickAt;
+    }
+    if (Array.isArray(record.achievements)) {
+      for (const id of record.achievements) {
+        if (typeof id === "string" && id.length > 0) {
+          state.achievements.add(id);
+        }
+      }
     }
     return state;
   }

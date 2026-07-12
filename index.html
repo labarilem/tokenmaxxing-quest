@@ -37,7 +37,25 @@
         <span class="upgrade__owned">Owned: <span id="agent-count">0</span></span>
       </div>
     </section>
+
+    <section class="panel panel--achievements">
+      <button
+        type="button"
+        class="achievements-toggle"
+        id="achievements-toggle"
+        aria-expanded="false"
+        aria-controls="achievements-panel"
+      >
+        Achievements
+        <span class="achievements-toggle__hint">View progress</span>
+      </button>
+      <div class="achievements-panel" id="achievements-panel" hidden>
+        <ul class="achievements-list" id="achievements-list"></ul>
+      </div>
+    </section>
   </main>
+
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
   <script type="module" src="js/main.js"></script>
 </body>
