@@ -38,7 +38,7 @@ index.html          → shell + module entry
 css/main.css        → mobile-first styles
 js/
   main.js           → boot, tick loop, visibility handling (composition root)
-  game.js           → Game engine: rules, tick, offline progress, save/load
+  game.js           → Game engine: rules, tick, save/load, reset
   state.js          → GameState: plain data model + save (de)serialization
   clock.js          → Clock abstraction (SystemClock, ManualClock)
   storage.js        → KeyValueStore abstraction (LocalStorageAdapter, MemoryStorage)
@@ -46,7 +46,7 @@ js/
   achievements.js   → achievement definitions + unlock evaluation
   ui.js             → DOM bindings, update-on-change only
 test/
-  game.test.js      → engine behavior (actions, ticks, offline, save/load)
+  game.test.js      → engine behavior (actions, ticks, save/load, reset)
   state.test.js     → save (de)serialization + validation
   achievements.test.js → achievement unlock rules
 ```
@@ -72,13 +72,13 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 - **5 ticks/sec** (200 ms interval) via `setInterval`
 - Model update (`game.tick()`) separated from view update (`ui.update()`)
 - UI writes to DOM only when displayed string values change
-- Tab hidden → stop tick loop, save state; tab visible → apply capped offline gain, resume
+- Tab hidden or window unfocused → stop tick loop, sync last tick time, save state; tab visible and focused → resume (no catch-up)
 
 ### Save strategy
 
 - **Storage:** `localStorage` key `tokenmaxxing-quest.save.v1`
-- **Autosave:** every 300 ticks (~60 s), on tab hide, on `beforeunload`
-- **Offline catch-up:** passive tokens/sec × elapsed time, capped at 8 hours
+- **Autosave:** every 300 ticks (~60 s), on tab hide/blur, on `beforeunload`
+- **No offline catch-up:** passive income only accrues while the tab is visible and focused
 - **Version field:** `version: 1` for future migrations
 
 ### Save format
@@ -104,6 +104,8 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Background Agent** | Upgrade costing 25 tokens; each owned agent adds +1 token/sec |
 | **Achievements** | Milestones that unlock from gameplay; persisted in save; toast on earn; full list via Achievements panel |
 | **First Prompt** | Achievement: send your first prompt (onboarding nudge) |
+| **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
+| **Reset progress** | New game (keep achievements) or full reset (clear achievements); inline confirmation required |
 
 ### Planned
 
@@ -158,6 +160,13 @@ Open `http://localhost:8080`.
 
 ## Changelog
 
+### 2026-07-12 — No offline progress + reset progress
+
+- Removed offline catch-up: passive tokens only accrue while the tab is visible and the window is focused
+- Tick loop pauses on `visibilitychange`, `blur`, and resumes on `focus` when active
+- Added **Reset progress** with inline confirmation: **New game** (keep achievements) or **Full reset** (clear achievements)
+- `Game.resetProgress()` and `Game.syncLastTickAt()` replace offline progress logic
+
 ### 2026-07-12 — Achievements (V0.1.1)
 
 - Added achievement system with definitions in `achievements.js` and persisted `achievements` array in save data
@@ -179,7 +188,6 @@ Open `http://localhost:8080`.
 - Initial deployable version
 - Tokens resource with manual “Send Prompt” action
 - Background Agent upgrade (+1 token/sec each, 25 token cost)
-- 5 Hz tick loop with visibility pause
-- localStorage save/load with 8-hour offline cap
+- 5 Hz tick loop with visibility/focus pause (no offline catch-up)
 - Mobile-first dark UI
 - GitHub Pages deploy workflow

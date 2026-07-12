@@ -2,7 +2,6 @@ import { evaluateAchievements } from "./achievements.js";
 import {
   AGENT,
   AUTOSAVE_TICKS,
-  OFFLINE_CAP_MS,
   SAVE_KEY,
   TOKENS_PER_TICK,
   getAgentCost,
@@ -105,18 +104,25 @@ export class Game {
   }
 
   /**
-   * Credit passive tokens for time elapsed since the last tick, capped at
-   * {@link OFFLINE_CAP_MS}.
+   * Advance the last-tick timestamp without crediting passive income.
+   * Used when the game is inactive so elapsed time does not accrue later.
    * @param {number} [now] current time in epoch ms (defaults to the clock)
    */
-  applyOfflineProgress(now = this.clock.now()) {
-    const elapsed = Math.min(now - this.state.lastTickAt, OFFLINE_CAP_MS);
-    if (elapsed <= 0 || this.tokensPerSecond <= 0) {
-      this.state.lastTickAt = now;
-      return;
-    }
-    this.state.tokens += (elapsed / 1000) * this.tokensPerSecond;
+  syncLastTickAt(now = this.clock.now()) {
     this.state.lastTickAt = now;
+  }
+
+  /**
+   * Reset tokens and agents. Optionally preserve earned achievements.
+   * @param {{ keepAchievements?: boolean }} [options]
+   */
+  resetProgress({ keepAchievements = false } = {}) {
+    const achievements = keepAchievements ? [...this.state.achievements] : [];
+    this.state = new GameState({
+      lastTickAt: this.clock.now(),
+      achievements,
+    });
+    this.save();
   }
 
   markSaved() {
@@ -147,7 +153,7 @@ export class Game {
   }
 
   /**
-   * Load state from the injected store and apply offline progress.
+   * Load state from the injected store. Elapsed time while away is not credited.
    * @returns {boolean} whether a save was found and loaded
    */
   load() {
@@ -161,7 +167,7 @@ export class Game {
       }
       const data = JSON.parse(raw);
       this.state = GameState.fromSaveData(data, { lastTickAt: this.clock.now() });
-      this.applyOfflineProgress();
+      this.syncLastTickAt();
       return true;
     } catch {
       return false;

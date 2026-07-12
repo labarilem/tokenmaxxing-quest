@@ -42,6 +42,21 @@ export class UI {
     /** @type {HTMLElement | null} */
     this.toastContainer = document.getElementById("toast-container");
 
+    /** @type {HTMLButtonElement | null} */
+    this.resetToggle = document.getElementById("reset-toggle");
+
+    /** @type {HTMLElement | null} */
+    this.resetConfirm = document.getElementById("reset-confirm");
+
+    /** @type {HTMLButtonElement | null} */
+    this.resetNewGameBtn = document.getElementById("reset-new-game-btn");
+
+    /** @type {HTMLButtonElement | null} */
+    this.resetFullBtn = document.getElementById("reset-full-btn");
+
+    /** @type {HTMLButtonElement | null} */
+    this.resetCancelBtn = document.getElementById("reset-cancel-btn");
+
     this.cachedTokens = "";
     this.cachedRate = "";
     this.cachedAgentCost = "";
@@ -70,6 +85,43 @@ export class UI {
     this.achievementsToggle?.addEventListener("click", () => {
       this.toggleAchievementsPanel();
     });
+
+    this.resetToggle?.addEventListener("click", () => {
+      this.toggleResetConfirm();
+    });
+
+    this.resetNewGameBtn?.addEventListener("click", () => {
+      this.game.resetProgress({ keepAchievements: true });
+      this.hideResetConfirm();
+      this.update();
+    });
+
+    this.resetFullBtn?.addEventListener("click", () => {
+      this.game.resetProgress({ keepAchievements: false });
+      this.hideResetConfirm();
+      this.update();
+    });
+
+    this.resetCancelBtn?.addEventListener("click", () => {
+      this.hideResetConfirm();
+    });
+  }
+
+  toggleResetConfirm() {
+    if (!this.resetConfirm || !this.resetToggle) {
+      return;
+    }
+    const isHidden = this.resetConfirm.hidden;
+    this.resetConfirm.hidden = !isHidden;
+    this.resetToggle.setAttribute("aria-expanded", String(isHidden));
+  }
+
+  hideResetConfirm() {
+    if (!this.resetConfirm || !this.resetToggle) {
+      return;
+    }
+    this.resetConfirm.hidden = true;
+    this.resetToggle.setAttribute("aria-expanded", "false");
   }
 
   toggleAchievementsPanel() {

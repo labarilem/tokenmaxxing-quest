@@ -7,7 +7,6 @@ export const TICKS_PER_SECOND = 5;
 export const TICK_MS = 1000 / TICKS_PER_SECOND;
 export const TOKENS_PER_TICK = 1 / TICKS_PER_SECOND;
 export const AUTOSAVE_TICKS = 300;
-export const OFFLINE_CAP_MS = 8 * 60 * 60 * 1000;
 
 export const AGENT = {
   id: "background-agent",

@@ -53,6 +53,33 @@
         <ul class="achievements-list" id="achievements-list"></ul>
       </div>
     </section>
+
+    <section class="panel panel--reset">
+      <button
+        type="button"
+        class="reset-toggle"
+        id="reset-toggle"
+        aria-expanded="false"
+        aria-controls="reset-confirm"
+      >
+        Reset progress
+        <span class="reset-toggle__hint">Start over</span>
+      </button>
+      <div class="reset-confirm" id="reset-confirm" hidden>
+        <p class="reset-confirm__warning">This cannot be undone. Choose a reset type:</p>
+        <div class="reset-confirm__actions">
+          <button type="button" class="btn btn--secondary" id="reset-new-game-btn">
+            New game
+            <span class="btn__hint">Keep achievements</span>
+          </button>
+          <button type="button" class="btn btn--danger" id="reset-full-btn">
+            Full reset
+            <span class="btn__hint">Clear achievements too</span>
+          </button>
+          <button type="button" class="btn btn--ghost" id="reset-cancel-btn">Cancel</button>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div class="toast-container" id="toast-container" aria-live="polite"></div>
