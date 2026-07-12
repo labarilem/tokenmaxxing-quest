@@ -177,4 +177,136 @@ body {
   .btn:active:not(:disabled) {
     transform: none;
   }
+
+  .toast {
+    transition: none;
+  }
+}
+
+.achievements-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.achievements-toggle:hover {
+  color: var(--accent-hover);
+}
+
+.achievements-toggle__hint {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.achievements-panel {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.achievements-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.achievement {
+  padding: 12px;
+  border-radius: calc(var(--radius) - 4px);
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.achievement--earned {
+  border-color: var(--success);
+}
+
+.achievement--locked {
+  opacity: 0.65;
+}
+
+.achievement__status {
+  display: inline-block;
+  margin-bottom: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.achievement--earned .achievement__status {
+  color: var(--success);
+}
+
+.achievement--locked .achievement__status {
+  color: var(--text-muted);
+}
+
+.achievement__title {
+  margin: 0 0 4px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.achievement__desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.toast-container {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 480px;
+  margin: 0 auto;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.toast {
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--success);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast--leaving {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.toast__title {
+  margin: 0 0 4px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--success);
+}
+
+.toast__body {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
 }

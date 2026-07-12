@@ -5,20 +5,27 @@ import { GameState } from "../js/state.js";
 import { SAVE_VERSION } from "../js/resources.js";
 
 test("toSaveData emits the versioned save shape", () => {
-  const state = new GameState({ tokens: 12, agents: 4, lastTickAt: 999 });
+  const state = new GameState({ tokens: 12, agents: 4, lastTickAt: 999, achievements: ["first-prompt"] });
   assert.deepEqual(state.toSaveData(), {
     version: SAVE_VERSION,
     tokens: 12,
     agents: 4,
     lastTickAt: 999,
+    achievements: ["first-prompt"],
   });
 });
 
 test("fromSaveData restores valid fields", () => {
-  const state = GameState.fromSaveData({ tokens: 7, agents: 2, lastTickAt: 123 });
+  const state = GameState.fromSaveData({
+    tokens: 7,
+    agents: 2,
+    lastTickAt: 123,
+    achievements: ["first-prompt"],
+  });
   assert.equal(state.tokens, 7);
   assert.equal(state.agents, 2);
   assert.equal(state.lastTickAt, 123);
+  assert.equal(state.hasAchievement("first-prompt"), true);
 });
 
 test("fromSaveData rejects invalid fields and uses fallbacks", () => {

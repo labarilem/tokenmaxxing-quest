@@ -43,10 +43,12 @@ js/
   clock.js          → Clock abstraction (SystemClock, ManualClock)
   storage.js        → KeyValueStore abstraction (LocalStorageAdapter, MemoryStorage)
   resources.js      → constants, formatting, upgrade definitions
+  achievements.js   → achievement definitions + unlock evaluation
   ui.js             → DOM bindings, update-on-change only
 test/
   game.test.js      → engine behavior (actions, ticks, offline, save/load)
   state.test.js     → save (de)serialization + validation
+  achievements.test.js → achievement unlock rules
 ```
 
 ### Testability & SOLID
@@ -86,7 +88,8 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
   "version": 1,
   "tokens": 123,
   "agents": 2,
-  "lastTickAt": 1710000000000
+  "lastTickAt": 1710000000000,
+  "achievements": ["first-prompt"]
 }
 ```
 
@@ -99,6 +102,8 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Tokens** | Primary resource — company AI tokens consumed |
 | **Send Prompt** | Manual click, +1 token per press |
 | **Background Agent** | Upgrade costing 25 tokens; each owned agent adds +1 token/sec |
+| **Achievements** | Milestones that unlock from gameplay; persisted in save; toast on earn; full list via Achievements panel |
+| **First Prompt** | Achievement: send your first prompt (onboarding nudge) |
 
 ### Planned
 
@@ -117,7 +122,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 - Dark theme by default
 - `prefers-reduced-motion: reduce` disables press animations
 - Satirical micro-copy; no modal dialogs in early versions
-- Use `aria-live="polite"` on resource panel for screen readers
+- Use `aria-live="polite"` on resource panel and toast container for screen readers
 
 ## Performance Checklist
 
@@ -152,6 +157,14 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-12 — Achievements (V0.1.1)
+
+- Added achievement system with definitions in `achievements.js` and persisted `achievements` array in save data
+- First achievement: **Prompt Initiated** — unlocks on the first Send Prompt
+- Achievements panel (toggle via link-style button) lists all achievements with locked/unlocked status
+- Auto-dismissing toast when an achievement is earned
+- Headless tests for achievement evaluation and save roundtrip
 
 ### 2026-07-11 — Core logic refactor for testability
 
