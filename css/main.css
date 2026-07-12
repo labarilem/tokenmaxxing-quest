@@ -310,3 +310,69 @@ body {
   font-size: 0.8125rem;
   color: var(--text-muted);
 }
+
+.reset-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reset-toggle:hover {
+  color: var(--text);
+}
+
+.reset-toggle__hint {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.reset-confirm {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.reset-confirm__warning {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.reset-confirm__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn--danger {
+  background: #5c2b2b;
+  color: #f8d7da;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: #7a3838;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: var(--border);
+  color: var(--text);
+}

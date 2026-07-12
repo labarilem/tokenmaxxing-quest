@@ -13,7 +13,15 @@ const ui = new UI(game);
 /** @type {ReturnType<typeof setInterval> | null} */
 let tickInterval = null;
 
+function isGameActive() {
+  return !document.hidden && document.hasFocus();
+}
+
 function tick() {
+  if (!isGameActive()) {
+    return;
+  }
+
   game.tick();
   ui.update();
 
@@ -37,24 +45,33 @@ function stopTickLoop() {
   tickInterval = null;
 }
 
-function onVisibilityChange() {
-  if (document.hidden) {
+function onGameActivityChange() {
+  if (!isGameActive()) {
+    game.syncLastTickAt();
     game.save();
     stopTickLoop();
     return;
   }
 
-  game.applyOfflineProgress();
+  game.syncLastTickAt();
   ui.update();
   startTickLoop();
 }
 
 game.load();
 ui.update();
-startTickLoop();
 
-document.addEventListener("visibilitychange", onVisibilityChange);
+if (isGameActive()) {
+  startTickLoop();
+} else {
+  game.syncLastTickAt();
+}
+
+document.addEventListener("visibilitychange", onGameActivityChange);
+window.addEventListener("focus", onGameActivityChange);
+window.addEventListener("blur", onGameActivityChange);
 
 window.addEventListener("beforeunload", () => {
+  game.syncLastTickAt();
   game.save();
 });

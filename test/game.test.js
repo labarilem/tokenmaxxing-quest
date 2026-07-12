@@ -5,7 +5,7 @@ import { Game } from "../js/game.js";
 import { GameState } from "../js/state.js";
 import { ManualClock } from "../js/clock.js";
 import { MemoryStorage } from "../js/storage.js";
-import { AGENT, AUTOSAVE_TICKS, OFFLINE_CAP_MS, TICKS_PER_SECOND } from "../js/resources.js";
+import { AGENT, AUTOSAVE_TICKS, TICKS_PER_SECOND } from "../js/resources.js";
 
 /**
  * Run a whole number of seconds of tick loop against a ManualClock, advancing
@@ -79,26 +79,31 @@ test("idle game does not accrue tokens from ticks", () => {
   assert.equal(game.tokens, 0);
 });
 
-test("applyOfflineProgress credits elapsed time via the clock", () => {
+test("syncLastTickAt updates lastTickAt without crediting tokens", () => {
   const clock = new ManualClock(0);
-  const game = new Game({ clock, state: new GameState({ agents: 1, lastTickAt: 0 }) });
+  const game = new Game({ clock, state: new GameState({ agents: 1, tokens: 0, lastTickAt: 0 }) });
 
-  clock.setTime(10_000); // 10 seconds elapsed
-  game.applyOfflineProgress();
+  clock.setTime(10_000);
+  game.syncLastTickAt();
 
-  assert.ok(Math.abs(game.tokens - 10) < 1e-9, `expected ~10, got ${game.tokens}`);
+  assert.equal(game.tokens, 0);
   assert.equal(game.state.lastTickAt, 10_000);
 });
 
-test("offline progress is capped at OFFLINE_CAP_MS", () => {
-  const clock = new ManualClock(0);
-  const game = new Game({ clock, state: new GameState({ agents: 1, lastTickAt: 0 }) });
+test("load does not credit elapsed time while away", () => {
+  const storage = new MemoryStorage();
 
-  clock.setTime(OFFLINE_CAP_MS + 5_000_000); // way past the cap
-  game.applyOfflineProgress();
+  const writer = new Game({
+    clock: new ManualClock(1_000),
+    storage,
+    state: new GameState({ tokens: 0, agents: 1, lastTickAt: 1_000 }),
+  });
+  assert.equal(writer.save(), true);
 
-  const expected = OFFLINE_CAP_MS / 1000; // 1 tok/s for the capped window
-  assert.ok(Math.abs(game.tokens - expected) < 1e-6, `expected ~${expected}, got ${game.tokens}`);
+  const reader = new Game({ clock: new ManualClock(31_000), storage });
+  assert.equal(reader.load(), true);
+  assert.equal(reader.tokens, 0);
+  assert.equal(reader.state.lastTickAt, 31_000);
 });
 
 test("shouldAutosave flips after AUTOSAVE_TICKS and resets on save", () => {
@@ -143,20 +148,38 @@ test("save and load roundtrip through an injected key/value store", () => {
   assert.equal(reader.state.hasAchievement("first-prompt"), true);
 });
 
-test("load applies offline progress based on the clock delta", () => {
+
+test("resetProgress clears resources and optionally keeps achievements", () => {
   const storage = new MemoryStorage();
-
-  const writer = new Game({
-    clock: new ManualClock(1_000),
+  const clock = new ManualClock(5000);
+  const game = new Game({
+    clock,
     storage,
-    state: new GameState({ tokens: 0, agents: 1, lastTickAt: 1_000 }),
+    state: new GameState({
+      tokens: 100,
+      agents: 3,
+      lastTickAt: 1000,
+      achievements: ["first-prompt"],
+    }),
   });
-  assert.equal(writer.save(), true);
 
-  // Reader boots 30s later: 1 agent * 30s = 30 offline tokens.
-  const reader = new Game({ clock: new ManualClock(31_000), storage });
-  assert.equal(reader.load(), true);
-  assert.ok(Math.abs(reader.tokens - 30) < 1e-9, `expected ~30, got ${reader.tokens}`);
+  game.resetProgress({ keepAchievements: true });
+  assert.equal(game.tokens, 0);
+  assert.equal(game.agents, 0);
+  assert.equal(game.state.hasAchievement("first-prompt"), true);
+  assert.equal(game.state.lastTickAt, 5000);
+
+  game.state.tokens = 50;
+  game.state.agents = 2;
+  game.resetProgress({ keepAchievements: false });
+  assert.equal(game.tokens, 0);
+  assert.equal(game.agents, 0);
+  assert.equal(game.state.hasAchievement("first-prompt"), false);
+
+  const reloaded = new Game({ clock, storage });
+  assert.equal(reloaded.load(), true);
+  assert.equal(reloaded.tokens, 0);
+  assert.equal(reloaded.state.hasAchievement("first-prompt"), false);
 });
 
 test("load returns false when there is no save", () => {

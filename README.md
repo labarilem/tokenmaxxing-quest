@@ -32,7 +32,7 @@ node --test
 npm test
 ```
 
-Tests set up a `GameState`, apply actions, advance a `ManualClock` to simulate ticks/offline time instantly, and assert on the result.
+Tests set up a `GameState`, apply actions, advance a `ManualClock` to simulate ticks instantly, and assert on the result.
 
 ## Deploy to GitHub Pages
 
