@@ -1,12 +1,10 @@
 import { ACHIEVEMENT_DEFS } from "./achievements.js";
 import {
-  AGENT,
-  RULE,
   formatAffordHint,
+  formatClickGain,
   formatNumber,
   formatRate,
-  getNextAgentMilestone,
-  getNextRuleMilestone,
+  formatRateGain,
 } from "./resources.js";
 
 /** @typedef {import("./achievements.js").AchievementDef} AchievementDef */
@@ -42,7 +40,7 @@ export class UI {
     this.ruleGoalDisplay = document.getElementById("rule-goal-display");
 
     /** @type {HTMLElement | null} */
-    this.ruleMilestoneDisplay = document.getElementById("rule-milestone-display");
+    this.ruleBenefitDisplay = document.getElementById("rule-benefit-display");
 
     /** @type {HTMLButtonElement | null} */
     this.buyAgentBtn = document.getElementById("buy-agent-btn");
@@ -57,7 +55,7 @@ export class UI {
     this.agentGoalDisplay = document.getElementById("agent-goal-display");
 
     /** @type {HTMLElement | null} */
-    this.agentMilestoneDisplay = document.getElementById("agent-milestone-display");
+    this.agentBenefitDisplay = document.getElementById("agent-benefit-display");
 
     /** @type {HTMLElement | null} */
     this.achievementsCountDisplay = document.getElementById("achievements-count");
@@ -99,12 +97,12 @@ export class UI {
     this.cachedRuleCount = "";
     this.cachedCanBuyRule = null;
     this.cachedRuleGoal = "";
-    this.cachedRuleMilestone = "";
+    this.cachedRuleBenefit = "";
     this.cachedAgentCost = "";
     this.cachedAgentCount = "";
     this.cachedCanBuyAgent = null;
     this.cachedAgentGoal = "";
-    this.cachedAgentMilestone = "";
+    this.cachedAgentBenefit = "";
     this.cachedAchievementsCount = "";
     this.cachedAchievementKey = "";
 
@@ -346,22 +344,6 @@ export class UI {
   }
 
   /**
-   * @param {import("./resources.js").UpgradeDef} upgrade
-   * @param {number} owned
-   * @param {"click" | "sec"} unit
-   * @returns {string}
-   */
-  formatMilestoneText(upgrade, owned, unit) {
-    const next = unit === "click" ? getNextRuleMilestone(owned) : getNextAgentMilestone(owned);
-    if (!next) {
-      return "All milestones unlocked.";
-    }
-    const remaining = next.at - owned;
-    const unitLabel = unit === "click" ? "per prompt" : "tokens/s";
-    return `${remaining} more for ${next.label} (×${next.multiplier} ${unitLabel}).`;
-  }
-
-  /**
    * @param {HTMLButtonElement | null} button
    * @param {boolean} canBuy
    */
@@ -381,13 +363,13 @@ export class UI {
     const ruleCostText = formatNumber(game.ruleCost);
     const ruleCountText = String(game.rules);
     const canBuyRule = game.canBuyRule();
+    const ruleBenefitText = formatClickGain(game.ruleClickGain);
     const ruleGoalText = this.formatUpgradeGoal(game.ruleCost, canBuyRule);
-    const ruleMilestoneText = this.formatMilestoneText(RULE, game.rules, "click");
     const agentCostText = formatNumber(game.agentCost);
     const agentCountText = String(game.agents);
     const canBuyAgent = game.canBuyAgent();
+    const agentBenefitText = formatRateGain(game.agentRateGain);
     const agentGoalText = this.formatUpgradeGoal(game.agentCost, canBuyAgent);
-    const agentMilestoneText = this.formatMilestoneText(AGENT, game.agents, "sec");
     const earnedCount = ACHIEVEMENT_DEFS.filter((def) => game.state.hasAchievement(def.id)).length;
     const achievementsCountText = `${earnedCount}/${ACHIEVEMENT_DEFS.length}`;
 
@@ -438,10 +420,10 @@ export class UI {
       }
     }
 
-    if (ruleMilestoneText !== this.cachedRuleMilestone) {
-      this.cachedRuleMilestone = ruleMilestoneText;
-      if (this.ruleMilestoneDisplay) {
-        this.ruleMilestoneDisplay.textContent = ruleMilestoneText;
+    if (ruleBenefitText !== this.cachedRuleBenefit) {
+      this.cachedRuleBenefit = ruleBenefitText;
+      if (this.ruleBenefitDisplay) {
+        this.ruleBenefitDisplay.textContent = ruleBenefitText;
       }
     }
 
@@ -471,10 +453,10 @@ export class UI {
       }
     }
 
-    if (agentMilestoneText !== this.cachedAgentMilestone) {
-      this.cachedAgentMilestone = agentMilestoneText;
-      if (this.agentMilestoneDisplay) {
-        this.agentMilestoneDisplay.textContent = agentMilestoneText;
+    if (agentBenefitText !== this.cachedAgentBenefit) {
+      this.cachedAgentBenefit = agentBenefitText;
+      if (this.agentBenefitDisplay) {
+        this.agentBenefitDisplay.textContent = agentBenefitText;
       }
     }
 

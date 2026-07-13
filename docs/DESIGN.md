@@ -113,7 +113,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Platform Team** | Achievement: reach 10,000 tokens |
 | **Cost Center of Excellence** | Achievement: reach 100,000 tokens |
 | **Small Fleet** | Achievement: own 25 Background Agents |
-| **Next goal UI** | Each upgrade shows afford hint (prompts and/or passive ETA) and next milestone |
+| **Next goal UI** | Each upgrade shows marginal benefit (`+N token/click` or `+N token/s`) and afford hint |
 | **Full token display** | Token counter always shows full digits with grouping (no K/M/B abbreviations) |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
 | **Reset progress** | New game (keep achievements) or full reset (clear achievements); modal confirmation required |
@@ -178,6 +178,11 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-13 — Upgrade benefit labels + compact copy
+
+- Each purchasable shows marginal gain: `+N token/click` (rules) or `+N token/s` (agents)
+- Flavor lines shortened to one line; removed separate milestone rows to save vertical space
 
 ### 2026-07-13 — Cursor Rules, pricier agents, full token display
 

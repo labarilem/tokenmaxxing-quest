@@ -6,6 +6,10 @@ import {
   RULE,
   formatAffordHint,
   formatNumber,
+  getMarginalTokensPerClick,
+  getMarginalTokensPerSecond,
+  formatClickGain,
+  formatRateGain,
   getAgentCost,
   getRuleCost,
   getTokensPerClick,
@@ -55,6 +59,23 @@ test("getTokensPerSecond applies agent milestone multipliers", () => {
   assert.equal(getTokensPerSecond(2), 2);
   assert.equal(getTokensPerSecond(25), 50);
   assert.equal(getTokensPerSecond(60), 240);
+});
+
+test("getMarginalTokensPerClick reflects the next purchase", () => {
+  assert.equal(getMarginalTokensPerClick(0), 1);
+  assert.equal(getMarginalTokensPerClick(2), 1);
+  assert.equal(getMarginalTokensPerClick(14), 16);
+});
+
+test("getMarginalTokensPerSecond reflects the next purchase", () => {
+  assert.equal(getMarginalTokensPerSecond(0), 1);
+  assert.equal(getMarginalTokensPerSecond(2), 1);
+  assert.equal(getMarginalTokensPerSecond(24), 26);
+});
+
+test("formatClickGain and formatRateGain use compact labels", () => {
+  assert.equal(formatClickGain(2), "+2 token/click");
+  assert.equal(formatRateGain(30), "+30 token/s");
 });
 
 test("getNextRuleMilestone and getNextAgentMilestone return upcoming thresholds", () => {

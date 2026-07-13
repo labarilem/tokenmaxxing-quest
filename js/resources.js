@@ -139,6 +139,42 @@ export function getTokensPerSecond(agents) {
 }
 
 /**
+ * Marginal tokens per click from buying one more rule.
+ * @param {number} rules
+ * @returns {number}
+ */
+export function getMarginalTokensPerClick(rules) {
+  return getTokensPerClick(rules + 1) - getTokensPerClick(rules);
+}
+
+/**
+ * Marginal tokens per second from buying one more agent.
+ * @param {number} agents
+ * @returns {number}
+ */
+export function getMarginalTokensPerSecond(agents) {
+  return getTokensPerSecond(agents + 1) - getTokensPerSecond(agents);
+}
+
+/**
+ * @param {number} gain
+ * @returns {string}
+ */
+export function formatClickGain(gain) {
+  const value = Number.isInteger(gain) ? formatNumber(gain) : gain.toFixed(1);
+  return `+${value} token/click`;
+}
+
+/**
+ * @param {number} gain
+ * @returns {string}
+ */
+export function formatRateGain(gain) {
+  const value = Number.isInteger(gain) ? formatNumber(gain) : gain.toFixed(1);
+  return `+${value} token/s`;
+}
+
+/**
  * @param {number} owned
  * @returns {UpgradeMilestone | null}
  */

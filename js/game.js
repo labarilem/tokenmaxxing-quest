@@ -4,6 +4,8 @@ import {
   SAVE_KEY,
   TOKENS_PER_TICK,
   getAgentCost,
+  getMarginalTokensPerClick,
+  getMarginalTokensPerSecond,
   getRuleCost,
   getTokensPerClick,
   getTokensPerSecond,
@@ -64,6 +66,16 @@ export class Game {
   /** @returns {number} passive tokens generated per second */
   get tokensPerSecond() {
     return getTokensPerSecond(this.state.agents);
+  }
+
+  /** @returns {number} extra tokens per click if one more rule is bought */
+  get ruleClickGain() {
+    return getMarginalTokensPerClick(this.state.rules);
+  }
+
+  /** @returns {number} extra tokens per second if one more agent is bought */
+  get agentRateGain() {
+    return getMarginalTokensPerSecond(this.state.agents);
   }
 
   /** @returns {number} cost of the next rule */
