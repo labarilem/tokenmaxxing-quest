@@ -31,10 +31,10 @@ export class UI {
     this.agentCountDisplay = document.getElementById("agent-count");
 
     /** @type {HTMLButtonElement | null} */
-    this.achievementsToggle = document.getElementById("achievements-toggle");
+    this.achievementsOpenBtn = document.getElementById("achievements-open-btn");
 
     /** @type {HTMLElement | null} */
-    this.achievementsPanel = document.getElementById("achievements-panel");
+    this.achievementsModal = document.getElementById("achievements-modal");
 
     /** @type {HTMLElement | null} */
     this.achievementsList = document.getElementById("achievements-list");
@@ -43,10 +43,10 @@ export class UI {
     this.achievementOverlay = document.getElementById("achievement-overlay");
 
     /** @type {HTMLButtonElement | null} */
-    this.resetToggle = document.getElementById("reset-toggle");
+    this.resetOpenBtn = document.getElementById("reset-open-btn");
 
     /** @type {HTMLElement | null} */
-    this.resetConfirm = document.getElementById("reset-confirm");
+    this.resetModal = document.getElementById("reset-modal");
 
     /** @type {HTMLButtonElement | null} */
     this.resetNewGameBtn = document.getElementById("reset-new-game-btn");
@@ -54,8 +54,11 @@ export class UI {
     /** @type {HTMLButtonElement | null} */
     this.resetFullBtn = document.getElementById("reset-full-btn");
 
-    /** @type {HTMLButtonElement | null} */
-    this.resetCancelBtn = document.getElementById("reset-cancel-btn");
+    /** @type {HTMLElement | null} */
+    this.activeModal = null;
+
+    /** @type {HTMLElement | null} */
+    this.modalTrigger = null;
 
     this.cachedTokens = "";
     this.cachedRate = "";
@@ -63,6 +66,8 @@ export class UI {
     this.cachedAgentCount = "";
     this.cachedCanBuy = null;
     this.cachedAchievementKey = "";
+
+    this.handleKeydown = this.handleKeydown.bind(this);
 
     this.bindEvents();
   }
@@ -82,55 +87,111 @@ export class UI {
       }
     });
 
-    this.achievementsToggle?.addEventListener("click", () => {
-      this.toggleAchievementsPanel();
+    this.achievementsOpenBtn?.addEventListener("click", () => {
+      this.openAchievementsModal();
     });
 
-    this.resetToggle?.addEventListener("click", () => {
-      this.toggleResetConfirm();
+    this.resetOpenBtn?.addEventListener("click", () => {
+      this.openResetModal();
     });
 
     this.resetNewGameBtn?.addEventListener("click", () => {
       this.game.resetProgress({ keepAchievements: true });
-      this.hideResetConfirm();
+      this.closeResetModal();
       this.update();
     });
 
     this.resetFullBtn?.addEventListener("click", () => {
       this.game.resetProgress({ keepAchievements: false });
-      this.hideResetConfirm();
+      this.closeResetModal();
       this.update();
     });
 
-    this.resetCancelBtn?.addEventListener("click", () => {
-      this.hideResetConfirm();
-    });
+    for (const modal of [this.achievementsModal, this.resetModal]) {
+      if (!modal) {
+        continue;
+      }
+      for (const closeEl of modal.querySelectorAll("[data-modal-close]")) {
+        closeEl.addEventListener("click", () => {
+          this.closeModal(modal);
+        });
+      }
+    }
   }
 
-  toggleResetConfirm() {
-    if (!this.resetConfirm || !this.resetToggle) {
+  handleKeydown(event) {
+    if (event.key !== "Escape" || !this.activeModal) {
       return;
     }
-    const isHidden = this.resetConfirm.hidden;
-    this.resetConfirm.hidden = !isHidden;
-    this.resetToggle.setAttribute("aria-expanded", String(isHidden));
+    event.preventDefault();
+    this.closeModal(this.activeModal);
   }
 
-  hideResetConfirm() {
-    if (!this.resetConfirm || !this.resetToggle) {
+  /**
+   * @param {HTMLElement} modal
+   * @param {HTMLElement | null} trigger
+   */
+  openModal(modal, trigger) {
+    if (!modal.hidden) {
       return;
     }
-    this.resetConfirm.hidden = true;
-    this.resetToggle.setAttribute("aria-expanded", "false");
+
+    this.updateAchievementsList();
+    modal.hidden = false;
+    this.activeModal = modal;
+    this.modalTrigger = trigger;
+    document.body.classList.add("modal-open");
+    document.addEventListener("keydown", this.handleKeydown);
+
+    const closeBtn = modal.querySelector(".modal__close");
+    if (closeBtn instanceof HTMLElement) {
+      closeBtn.focus();
+    }
   }
 
-  toggleAchievementsPanel() {
-    if (!this.achievementsPanel || !this.achievementsToggle) {
+  /** @param {HTMLElement} modal */
+  closeModal(modal) {
+    if (modal.hidden) {
       return;
     }
-    const isHidden = this.achievementsPanel.hidden;
-    this.achievementsPanel.hidden = !isHidden;
-    this.achievementsToggle.setAttribute("aria-expanded", String(isHidden));
+
+    modal.hidden = true;
+
+    if (this.activeModal === modal) {
+      this.activeModal = null;
+      document.body.classList.remove("modal-open");
+      document.removeEventListener("keydown", this.handleKeydown);
+      this.modalTrigger?.focus();
+      this.modalTrigger = null;
+    }
+  }
+
+  openAchievementsModal() {
+    if (!this.achievementsModal) {
+      return;
+    }
+    this.openModal(this.achievementsModal, this.achievementsOpenBtn);
+  }
+
+  closeAchievementsModal() {
+    if (!this.achievementsModal) {
+      return;
+    }
+    this.closeModal(this.achievementsModal);
+  }
+
+  openResetModal() {
+    if (!this.resetModal) {
+      return;
+    }
+    this.openModal(this.resetModal, this.resetOpenBtn);
+  }
+
+  closeResetModal() {
+    if (!this.resetModal) {
+      return;
+    }
+    this.closeModal(this.resetModal);
   }
 
   /**

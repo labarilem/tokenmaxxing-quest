@@ -102,10 +102,10 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Tokens** | Primary resource — company AI tokens consumed |
 | **Send Prompt** | Manual click, +1 token per press |
 | **Background Agent** | Upgrade costing 25 tokens; each owned agent adds +1 token/sec |
-| **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn (Google Play style); full list via Achievements panel |
+| **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn (Google Play style); full list via Achievements modal |
 | **First Prompt** | Achievement: send your first prompt (onboarding nudge) |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
-| **Reset progress** | New game (keep achievements) or full reset (clear achievements); inline confirmation required |
+| **Reset progress** | New game (keep achievements) or full reset (clear achievements); modal confirmation required |
 
 ### Planned
 
@@ -123,9 +123,10 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 - Base font 16px; tabular nums for counters
 - Dark theme by default
 - `prefers-reduced-motion: reduce` disables press animations
-- Satirical micro-copy; no modal dialogs in early versions
+- Satirical micro-copy
 - Use `aria-live="polite"` on resource panel and achievement overlay for screen readers
-- Buttons are single-line labels (no stacked hint text); optimize for vertical space
+- Achievements and Reset open centered modals (backdrop click, Escape, or close button to dismiss)
+- Toolbar chip buttons under the header for secondary actions
 
 ## Performance Checklist
 
@@ -160,6 +161,12 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-13 — Toolbar chips + modals
+
+- Achievements and Reset moved to compact chip buttons in a toolbar under the page header
+- Achievements list and reset options open in centered, scrollable modals (backdrop, Escape, or × to close)
+- Buy button uses structured spacing: `Buy · 25 tokens`
 
 ### 2026-07-13 — Achievement overlay + compact buttons
 
