@@ -5,8 +5,12 @@ import {
   AGENT,
   RULE,
   formatAffordHint,
+  formatClickBenefit,
   formatNumber,
+  formatPassiveBenefit,
   getAgentCost,
+  getMarginalClickGain,
+  getMarginalPassiveGain,
   getRuleCost,
   getTokensPerClick,
   getTokensPerSecond,
@@ -67,6 +71,20 @@ test("formatAffordHint suggests prompts and passive income", () => {
   assert.equal(formatAffordHint(0, 0, 1), "Ready to buy.");
   assert.match(formatAffordHint(8, 0, 1), /8 prompts/);
   assert.match(formatAffordHint(10, 2, 1), /passive/);
+});
+
+test("getMarginalClickGain and getMarginalPassiveGain reflect next purchase", () => {
+  assert.equal(getMarginalClickGain(0), 1);
+  assert.equal(getMarginalClickGain(14), 16);
+  assert.equal(getMarginalPassiveGain(0), 1);
+  assert.equal(getMarginalPassiveGain(24), 26);
+});
+
+test("formatClickBenefit and formatPassiveBenefit label upgrade gains", () => {
+  assert.equal(formatClickBenefit(1), "+1 token/click");
+  assert.equal(formatClickBenefit(16), "+16 token/click");
+  assert.equal(formatPassiveBenefit(1), "+1 token/s");
+  assert.equal(formatPassiveBenefit(26), "+26 token/s");
 });
 
 test("secondsUntilAffordable estimates passive wait time", () => {

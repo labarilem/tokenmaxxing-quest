@@ -3,8 +3,12 @@ import {
   AGENT,
   RULE,
   formatAffordHint,
+  formatClickBenefit,
   formatNumber,
+  formatPassiveBenefit,
   formatRate,
+  getMarginalClickGain,
+  getMarginalPassiveGain,
   getNextAgentMilestone,
   getNextRuleMilestone,
 } from "./resources.js";
@@ -33,6 +37,9 @@ export class UI {
     this.buyRuleBtn = document.getElementById("buy-rule-btn");
 
     /** @type {HTMLElement | null} */
+    this.ruleBenefitDisplay = document.getElementById("rule-benefit-display");
+
+    /** @type {HTMLElement | null} */
     this.ruleCostDisplay = document.getElementById("rule-cost");
 
     /** @type {HTMLElement | null} */
@@ -46,6 +53,9 @@ export class UI {
 
     /** @type {HTMLButtonElement | null} */
     this.buyAgentBtn = document.getElementById("buy-agent-btn");
+
+    /** @type {HTMLElement | null} */
+    this.agentBenefitDisplay = document.getElementById("agent-benefit-display");
 
     /** @type {HTMLElement | null} */
     this.agentCostDisplay = document.getElementById("agent-cost");
@@ -98,11 +108,13 @@ export class UI {
     this.cachedTokens = "";
     this.cachedRate = "";
     this.cachedPromptLabel = "";
+    this.cachedRuleBenefit = "";
     this.cachedRuleCost = "";
     this.cachedRuleCount = "";
     this.cachedCanBuyRule = null;
     this.cachedRuleGoal = "";
     this.cachedRuleMilestone = "";
+    this.cachedAgentBenefit = "";
     this.cachedAgentCost = "";
     this.cachedAgentCount = "";
     this.cachedCanBuyAgent = null;
@@ -382,11 +394,13 @@ export class UI {
     const tokensText = formatNumber(game.tokens);
     const rateText = formatRate(game.tokensPerSecond);
     const promptLabel = `Send Prompt (+${formatNumber(game.tokensPerClick)} tokens)`;
+    const ruleBenefitText = formatClickBenefit(getMarginalClickGain(game.rules));
     const ruleCostText = formatNumber(game.ruleCost);
     const ruleCountText = String(game.rules);
     const canBuyRule = game.canBuyRule();
     const ruleGoalText = this.formatUpgradeGoal(game.ruleCost, canBuyRule);
     const ruleMilestoneText = this.formatMilestoneText(RULE, game.rules, "click");
+    const agentBenefitText = formatPassiveBenefit(getMarginalPassiveGain(game.agents));
     const agentCostText = formatNumber(game.agentCost);
     const agentCountText = String(game.agents);
     const canBuyAgent = game.canBuyAgent();
@@ -424,6 +438,13 @@ export class UI {
       }
     }
 
+    if (ruleBenefitText !== this.cachedRuleBenefit) {
+      this.cachedRuleBenefit = ruleBenefitText;
+      if (this.ruleBenefitDisplay) {
+        this.ruleBenefitDisplay.textContent = ruleBenefitText;
+      }
+    }
+
     if (ruleCostText !== this.cachedRuleCost) {
       this.cachedRuleCost = ruleCostText;
       if (this.ruleCostDisplay) {
@@ -454,6 +475,13 @@ export class UI {
       this.cachedRuleMilestone = ruleMilestoneText;
       if (this.ruleMilestoneDisplay) {
         this.ruleMilestoneDisplay.textContent = ruleMilestoneText;
+      }
+    }
+
+    if (agentBenefitText !== this.cachedAgentBenefit) {
+      this.cachedAgentBenefit = agentBenefitText;
+      if (this.agentBenefitDisplay) {
+        this.agentBenefitDisplay.textContent = agentBenefitText;
       }
     }
 
