@@ -104,6 +104,14 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.upgrade__benefit {
+  margin: 2px 0 4px;
+  color: var(--success);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
 .upgrade__desc {
   margin: 0 0 8px;
   color: var(--text-muted);

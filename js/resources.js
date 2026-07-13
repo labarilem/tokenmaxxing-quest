@@ -139,6 +139,40 @@ export function getTokensPerSecond(agents) {
 }
 
 /**
+ * Tokens per click gained from buying one more Agent Rule.
+ * @param {number} owned
+ * @returns {number}
+ */
+export function getMarginalClickGain(owned) {
+  return getTokensPerClick(owned + 1) - getTokensPerClick(owned);
+}
+
+/**
+ * Tokens per second gained from buying one more Background Agent.
+ * @param {number} owned
+ * @returns {number}
+ */
+export function getMarginalPassiveGain(owned) {
+  return getTokensPerSecond(owned + 1) - getTokensPerSecond(owned);
+}
+
+/**
+ * @param {number} gain
+ * @returns {string}
+ */
+export function formatClickBenefit(gain) {
+  return `+${formatNumber(gain)} token/click`;
+}
+
+/**
+ * @param {number} gain
+ * @returns {string}
+ */
+export function formatPassiveBenefit(gain) {
+  return `+${formatNumber(gain)} token/s`;
+}
+
+/**
  * @param {number} owned
  * @returns {UpgradeMilestone | null}
  */

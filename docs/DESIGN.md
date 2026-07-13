@@ -113,6 +113,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Job title progression** | Header subtitle promotes on token milestones (100 → Senior, 1k → Staff, … 1B → CTO) |
 | **Small Fleet** | Achievement: own 25 Background Agents |
 | **Next goal UI** | Each upgrade shows afford hint (prompts and/or passive ETA) and next milestone |
+| **Upgrade benefit labels** | Each upgrade shows marginal gain for the next purchase (e.g. +1 token/click, +1 token/s; scales at milestones) |
 | **Full token display** | Token counter always shows full digits with grouping (no K/M/B abbreviations) |
 | **One-line flavor copy** | Satirical upgrade/achievement descriptions stay one line on mobile (hard rule) |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
@@ -178,6 +179,10 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-13 — Upgrade benefit labels
+
+- Each upgrade panel shows how much the next purchase improves output (e.g. +1 token/click, +26 token/s at milestones)
 
 ### 2026-07-13 — Agent Rule rename, token achievements to 1B, job titles
 
