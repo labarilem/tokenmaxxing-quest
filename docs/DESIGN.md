@@ -102,7 +102,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Tokens** | Primary resource — company AI tokens consumed |
 | **Send Prompt** | Manual click, +1 token per press |
 | **Background Agent** | Upgrade costing 25 tokens; each owned agent adds +1 token/sec |
-| **Achievements** | Milestones that unlock from gameplay; persisted in save; toast on earn; full list via Achievements panel |
+| **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn (Google Play style); full list via Achievements panel |
 | **First Prompt** | Achievement: send your first prompt (onboarding nudge) |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
 | **Reset progress** | New game (keep achievements) or full reset (clear achievements); inline confirmation required |
@@ -124,7 +124,8 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 - Dark theme by default
 - `prefers-reduced-motion: reduce` disables press animations
 - Satirical micro-copy; no modal dialogs in early versions
-- Use `aria-live="polite"` on resource panel and toast container for screen readers
+- Use `aria-live="polite"` on resource panel and achievement overlay for screen readers
+- Buttons are single-line labels (no stacked hint text); optimize for vertical space
 
 ## Performance Checklist
 
@@ -160,6 +161,12 @@ Open `http://localhost:8080`.
 
 ## Changelog
 
+### 2026-07-13 — Achievement overlay + compact buttons
+
+- Achievement unlock notifications now appear as a top-of-page overlay banner (Google Play style) with slide-in/out animation
+- All buttons use single-line labels; removed stacked hint text to save vertical space
+- Tighter panel spacing and padding across the layout
+
 ### 2026-07-12 — No offline progress + reset progress
 
 - Removed offline catch-up: passive tokens only accrue while the tab is visible and the window is focused
@@ -172,7 +179,7 @@ Open `http://localhost:8080`.
 - Added achievement system with definitions in `achievements.js` and persisted `achievements` array in save data
 - First achievement: **Prompt Initiated** — unlocks on the first Send Prompt
 - Achievements panel (toggle via link-style button) lists all achievements with locked/unlocked status
-- Auto-dismissing toast when an achievement is earned
+- Auto-dismissing top overlay banner when an achievement is earned
 - Headless tests for achievement evaluation and save roundtrip
 
 ### 2026-07-11 — Core logic refactor for testability
