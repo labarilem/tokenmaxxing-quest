@@ -22,8 +22,9 @@ function tick() {
     return;
   }
 
-  game.tick();
+  const unlocked = game.tick();
   ui.update();
+  ui.handleNewAchievements(unlocked);
 
   if (game.shouldAutosave()) {
     game.save();

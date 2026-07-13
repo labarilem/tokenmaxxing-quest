@@ -5,7 +5,7 @@ import { Game } from "../js/game.js";
 import { GameState } from "../js/state.js";
 import { ManualClock } from "../js/clock.js";
 import { MemoryStorage } from "../js/storage.js";
-import { AGENT, AUTOSAVE_TICKS, TICKS_PER_SECOND } from "../js/resources.js";
+import { AGENT, AUTOSAVE_TICKS, TICKS_PER_SECOND, getAgentCost } from "../js/resources.js";
 
 /**
  * Run a whole number of seconds of tick loop against a ManualClock, advancing
@@ -57,6 +57,26 @@ test("buyAgent spends tokens, increments agents, and raises the rate", () => {
   assert.equal(game.agents, 1);
   assert.equal(game.tokens, 0);
   assert.equal(game.tokensPerSecond, AGENT.tokensPerSecond);
+  assert.equal(game.agentCost, getAgentCost(1));
+});
+
+test("agent cost rises after each purchase", () => {
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({ tokens: 200, lastTickAt: 0 }),
+  });
+
+  const firstCost = game.agentCost;
+  game.buyAgent();
+  assert.ok(game.agentCost > firstCost);
+});
+
+test("milestone bonuses increase passive output at thresholds", () => {
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({ agents: 5, lastTickAt: 0 }),
+  });
+  assert.equal(game.tokensPerSecond, 10);
 });
 
 test("ticks accrue passive tokens using a mocked clock (no real waiting)", () => {

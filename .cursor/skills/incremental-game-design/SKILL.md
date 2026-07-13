@@ -253,7 +253,7 @@ Before any gameplay change, answer:
 - After buying, income should jump enough to **feel** the purchase (×1.1+ effective)
 - First automation (Background Agent): should pay for itself in **tens of seconds to a few minutes**, not hours
 
-Current V0.1: agent costs 25 tokens, +1/sec → ~25s payback at constant click rate 0 — ensure early clicking gets player there in first session.
+Current V0.1: first agent costs 25 tokens (+1/sec); costs scale ×1.12 per owned; milestones at 5/10 agents stack ×2 output. First agent payback ~25s passive-only — early clicking should reach it in the first session.
 
 ---
 

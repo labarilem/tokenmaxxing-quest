@@ -1,10 +1,10 @@
 import { evaluateAchievements } from "./achievements.js";
 import {
-  AGENT,
   AUTOSAVE_TICKS,
   SAVE_KEY,
   TOKENS_PER_TICK,
   getAgentCost,
+  getTokensPerSecond,
 } from "./resources.js";
 import { GameState } from "./state.js";
 import { SystemClock } from "./clock.js";
@@ -56,7 +56,7 @@ export class Game {
 
   /** @returns {number} passive tokens generated per second */
   get tokensPerSecond() {
-    return this.state.agents * AGENT.tokensPerSecond;
+    return getTokensPerSecond(this.state.agents);
   }
 
   /** @returns {number} cost of the next agent */
@@ -94,13 +94,17 @@ export class Game {
     };
   }
 
-  /** Advance the simulation by one tick. */
+  /**
+   * Advance the simulation by one tick.
+   * @returns {import("./achievements.js").AchievementDef[]} newly unlocked achievements
+   */
   tick() {
     if (this.tokensPerSecond > 0) {
       this.state.tokens += this.tokensPerSecond * TOKENS_PER_TICK;
     }
     this.state.lastTickAt = this.clock.now();
     this.state.ticksSinceSave += 1;
+    return evaluateAchievements(this.state, "tick");
   }
 
   /**

@@ -101,9 +101,13 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 |----------|----------|
 | **Tokens** | Primary resource — company AI tokens consumed |
 | **Send Prompt** | Manual click, +1 token per press |
-| **Background Agent** | Upgrade costing 25 tokens; each owned agent adds +1 token/sec |
-| **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn (Google Play style); full list via Achievements modal |
+| **Background Agent** | Upgrade costing 25 tokens (base); **exponential cost** `ceil(25 × 1.12^owned)`; each owned agent adds +1 token/sec; **milestones** at 5 and 10 owned stack ×2 output (Pod sync, Fleet multiplier) |
+| **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn (Google Play style); full list via Achievements modal; toolbar shows earned count |
 | **First Prompt** | Achievement: send your first prompt (onboarding nudge) |
+| **Headcount Approved** | Achievement: buy first Background Agent |
+| **Quarterly Target** | Achievement: reach 100 tokens consumed |
+| **Small Pod** | Achievement: own 5 Background Agents (milestone teaser) |
+| **Next goal UI** | Upgrade panel shows tokens/time to next agent and next output milestone |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
 | **Reset progress** | New game (keep achievements) or full reset (clear achievements); modal confirmation required |
 
@@ -167,6 +171,14 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-13 — Incremental design pass on V0.1 mechanics
+
+- Background Agent costs now scale exponentially (`base 25 × 1.12^owned`) to create earn→spend→wall pacing
+- Output milestones at 5 and 10 agents (stacking ×2) add visible production spikes between walls
+- Added hook-phase achievements: Headcount Approved, Quarterly Target (100 tokens), Small Pod (5 agents)
+- Upgrade panel shows next-goal ETA and upcoming milestone; buy button highlights when affordable; achievements chip shows earned count
+- Applied incremental-game-design skill checklist to existing V0.1 loop (active Send Prompt + passive agents)
 
 ### 2026-07-13 — Incremental game design skill
 
