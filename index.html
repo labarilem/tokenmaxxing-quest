@@ -16,6 +16,7 @@
         <button type="button" class="btn btn--chip btn--chip-accent" id="achievements-open-btn">
           <span class="btn__icon" aria-hidden="true">🏆</span>
           <span>Achievements</span>
+          <span class="btn__badge" id="achievements-count" aria-label="Achievements earned">0/4</span>
         </button>
         <button type="button" class="btn btn--chip btn--chip-muted" id="reset-open-btn">
           <span class="btn__icon" aria-hidden="true">↺</span>
@@ -36,7 +37,9 @@
 
     <section class="panel panel--upgrade">
       <h2 class="panel__label">Background Agent</h2>
-      <p class="upgrade__desc">Runs prompts while you attend standup.</p>
+      <p class="upgrade__desc">Runs prompts while you attend standup. +1 token/sec each; costs scale exponentially.</p>
+      <p class="upgrade__goal" id="goal-display">25 tokens to first agent — send prompts to start.</p>
+      <p class="upgrade__milestone" id="milestone-display">5 more for Pod sync (×2 output).</p>
       <div class="upgrade__row">
         <button type="button" class="btn btn--secondary btn--buy" id="buy-agent-btn">
           <span>Buy</span>

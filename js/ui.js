@@ -1,5 +1,10 @@
 import { ACHIEVEMENT_DEFS } from "./achievements.js";
-import { formatNumber, formatRate } from "./resources.js";
+import {
+  formatNumber,
+  formatRate,
+  getNextAgentMilestone,
+  secondsUntilAffordable,
+} from "./resources.js";
 
 /** @typedef {import("./achievements.js").AchievementDef} AchievementDef */
 /** @typedef {import("./game.js").Game} Game */
@@ -29,6 +34,15 @@ export class UI {
 
     /** @type {HTMLElement | null} */
     this.agentCountDisplay = document.getElementById("agent-count");
+
+    /** @type {HTMLElement | null} */
+    this.goalDisplay = document.getElementById("goal-display");
+
+    /** @type {HTMLElement | null} */
+    this.milestoneDisplay = document.getElementById("milestone-display");
+
+    /** @type {HTMLElement | null} */
+    this.achievementsCountDisplay = document.getElementById("achievements-count");
 
     /** @type {HTMLButtonElement | null} */
     this.achievementsOpenBtn = document.getElementById("achievements-open-btn");
@@ -65,6 +79,9 @@ export class UI {
     this.cachedAgentCost = "";
     this.cachedAgentCount = "";
     this.cachedCanBuy = null;
+    this.cachedGoal = "";
+    this.cachedMilestone = "";
+    this.cachedAchievementsCount = "";
     this.cachedAchievementKey = "";
 
     this.handleKeydown = this.handleKeydown.bind(this);
@@ -282,13 +299,60 @@ export class UI {
     }
   }
 
+  /**
+   * @returns {string}
+   */
+  formatGoalText() {
+    const { game } = this;
+    const cost = game.agentCost;
+
+    if (game.canBuyAgent()) {
+      return "Next agent ready — buy to accelerate output.";
+    }
+
+    const shortfall = cost - game.tokens;
+    const rate = game.tokensPerSecond;
+
+    if (rate <= 0) {
+      return `${formatNumber(shortfall)} tokens to first agent — send prompts to start.`;
+    }
+
+    const seconds = secondsUntilAffordable(game.tokens, cost, rate);
+    if (!Number.isFinite(seconds)) {
+      return `${formatNumber(shortfall)} tokens to next agent.`;
+    }
+
+    if (seconds < 60) {
+      return `${formatNumber(shortfall)} tokens to next agent (~${Math.ceil(seconds)}s).`;
+    }
+
+    const minutes = Math.ceil(seconds / 60);
+    return `${formatNumber(shortfall)} tokens to next agent (~${minutes} min).`;
+  }
+
+  /**
+   * @returns {string}
+   */
+  formatMilestoneText() {
+    const next = getNextAgentMilestone(this.game.agents);
+    if (!next) {
+      return "All output milestones reached for this tier.";
+    }
+    const remaining = next.at - this.game.agents;
+    return `${remaining} more for ${next.label} (×${next.multiplier} output).`;
+  }
+
   update() {
     const { game } = this;
     const tokensText = formatNumber(game.tokens);
     const rateText = formatRate(game.tokensPerSecond);
-    const costText = String(game.agentCost);
+    const costText = formatNumber(game.agentCost);
     const countText = String(game.agents);
     const canBuy = game.canBuyAgent();
+    const goalText = this.formatGoalText();
+    const milestoneText = this.formatMilestoneText();
+    const earnedCount = ACHIEVEMENT_DEFS.filter((def) => game.state.hasAchievement(def.id)).length;
+    const achievementsCountText = `${earnedCount}/${ACHIEVEMENT_DEFS.length}`;
 
     if (tokensText !== this.cachedTokens) {
       this.cachedTokens = tokensText;
@@ -322,6 +386,28 @@ export class UI {
       this.cachedCanBuy = canBuy;
       if (this.buyAgentBtn) {
         this.buyAgentBtn.disabled = !canBuy;
+        this.buyAgentBtn.classList.toggle("btn--ready", canBuy);
+      }
+    }
+
+    if (goalText !== this.cachedGoal) {
+      this.cachedGoal = goalText;
+      if (this.goalDisplay) {
+        this.goalDisplay.textContent = goalText;
+      }
+    }
+
+    if (milestoneText !== this.cachedMilestone) {
+      this.cachedMilestone = milestoneText;
+      if (this.milestoneDisplay) {
+        this.milestoneDisplay.textContent = milestoneText;
+      }
+    }
+
+    if (achievementsCountText !== this.cachedAchievementsCount) {
+      this.cachedAchievementsCount = achievementsCountText;
+      if (this.achievementsCountDisplay) {
+        this.achievementsCountDisplay.textContent = achievementsCountText;
       }
     }
 

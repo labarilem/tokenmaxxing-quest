@@ -104,9 +104,23 @@ body {
 }
 
 .upgrade__desc {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   color: var(--text-muted);
   font-size: 0.875rem;
+}
+
+.upgrade__goal {
+  margin: 0 0 4px;
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.upgrade__milestone {
+  margin: 0 0 10px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .upgrade__row {
@@ -163,6 +177,16 @@ body {
   background: #3a4050;
 }
 
+.btn--secondary.btn--ready:not(:disabled) {
+  background: rgba(129, 201, 149, 0.18);
+  border: 1px solid var(--success);
+  color: var(--success);
+}
+
+.btn--secondary.btn--ready:hover:not(:disabled) {
+  background: rgba(129, 201, 149, 0.28);
+}
+
 .btn:disabled {
   background: var(--disabled);
   color: var(--text-muted);
@@ -199,6 +223,15 @@ body {
 .btn__icon {
   font-size: 1rem;
   line-height: 1;
+}
+
+.btn__badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(138, 180, 248, 0.15);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .btn--buy {
