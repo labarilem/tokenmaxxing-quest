@@ -96,7 +96,7 @@ export class Game {
   }
 
   /**
-   * Buy one cursor rule if affordable.
+   * Buy one agent rule if affordable.
    * @returns {{ purchased: boolean, unlocked: import("./achievements.js").AchievementDef[] }}
    */
   buyRule() {

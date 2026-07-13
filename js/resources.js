@@ -22,8 +22,8 @@ export const AUTOSAVE_TICKS = 300;
 export const BASE_PROMPT_TOKENS = 1;
 
 export const RULE = {
-  id: "cursor-rule",
-  name: "Cursor Rule",
+  id: "agent-rule",
+  name: "Agent Rule",
   baseCost: 8,
   costGrowthRate: 1.1,
   tokensPerClick: 1,
