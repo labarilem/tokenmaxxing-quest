@@ -40,7 +40,7 @@ export class UI {
     this.achievementsList = document.getElementById("achievements-list");
 
     /** @type {HTMLElement | null} */
-    this.toastContainer = document.getElementById("toast-container");
+    this.achievementOverlay = document.getElementById("achievement-overlay");
 
     /** @type {HTMLButtonElement | null} */
     this.resetToggle = document.getElementById("reset-toggle");
@@ -149,29 +149,38 @@ export class UI {
    * @param {AchievementDef} achievement
    */
   showAchievementToast(achievement) {
-    if (!this.toastContainer) {
+    if (!this.achievementOverlay) {
       return;
     }
 
-    const toast = document.createElement("div");
-    toast.className = "toast toast--achievement";
-    toast.setAttribute("role", "status");
+    const banner = document.createElement("div");
+    banner.className = "achievement-banner";
+    banner.setAttribute("role", "status");
+
+    const icon = document.createElement("div");
+    icon.className = "achievement-banner__icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = "🏆";
+
+    const content = document.createElement("div");
+    content.className = "achievement-banner__content";
+
+    const label = document.createElement("p");
+    label.className = "achievement-banner__label";
+    label.textContent = "Achievement unlocked";
 
     const title = document.createElement("p");
-    title.className = "toast__title";
-    title.textContent = `Achievement unlocked: ${achievement.title}`;
+    title.className = "achievement-banner__title";
+    title.textContent = achievement.title;
 
-    const description = document.createElement("p");
-    description.className = "toast__body";
-    description.textContent = achievement.description;
-
-    toast.append(title, description);
-    this.toastContainer.appendChild(toast);
+    content.append(label, title);
+    banner.append(icon, content);
+    this.achievementOverlay.appendChild(banner);
 
     window.setTimeout(() => {
-      toast.classList.add("toast--leaving");
+      banner.classList.add("achievement-banner--leaving");
       window.setTimeout(() => {
-        toast.remove();
+        banner.remove();
       }, TOAST_EXIT_MS);
     }, TOAST_VISIBLE_MS);
   }
