@@ -7,11 +7,14 @@ import { SAVE_VERSION } from "./resources.js";
  */
 export class GameState {
   /**
-   * @param {{ tokens?: number, agents?: number, lastTickAt?: number, achievements?: string[] }} [init]
+   * @param {{ tokens?: number, rules?: number, agents?: number, lastTickAt?: number, achievements?: string[] }} [init]
    */
-  constructor({ tokens = 0, agents = 0, lastTickAt = 0, achievements = [] } = {}) {
+  constructor({ tokens = 0, rules = 0, agents = 0, lastTickAt = 0, achievements = [] } = {}) {
     /** @type {number} total tokens consumed */
     this.tokens = tokens;
+
+    /** @type {number} cursor rules owned */
+    this.rules = rules;
 
     /** @type {number} background agents owned */
     this.agents = agents;
@@ -38,12 +41,13 @@ export class GameState {
 
   /**
    * Serialize to the versioned save shape.
-   * @returns {{ version: number, tokens: number, agents: number, lastTickAt: number }}
+   * @returns {{ version: number, tokens: number, rules: number, agents: number, lastTickAt: number, achievements: string[] }}
    */
   toSaveData() {
     return {
       version: SAVE_VERSION,
       tokens: this.tokens,
+      rules: this.rules,
       agents: this.agents,
       lastTickAt: this.lastTickAt,
       achievements: [...this.achievements],
@@ -55,7 +59,7 @@ export class GameState {
    * falling back to provided defaults for anything missing.
    *
    * @param {unknown} data parsed save payload
-   * @param {{ tokens?: number, agents?: number, lastTickAt?: number }} [fallback]
+   * @param {{ tokens?: number, rules?: number, agents?: number, lastTickAt?: number }} [fallback]
    * @returns {GameState}
    */
   static fromSaveData(data, fallback = {}) {
@@ -66,6 +70,9 @@ export class GameState {
     const record = /** @type {Record<string, unknown>} */ (data);
     if (typeof record.tokens === "number" && record.tokens >= 0) {
       state.tokens = record.tokens;
+    }
+    if (typeof record.rules === "number" && record.rules >= 0) {
+      state.rules = Math.floor(record.rules);
     }
     if (typeof record.agents === "number" && record.agents >= 0) {
       state.agents = Math.floor(record.agents);

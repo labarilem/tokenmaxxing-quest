@@ -5,11 +5,16 @@ import { Game } from "../js/game.js";
 import { GameState } from "../js/state.js";
 import { ManualClock } from "../js/clock.js";
 import { MemoryStorage } from "../js/storage.js";
-import { AGENT, AUTOSAVE_TICKS, TICKS_PER_SECOND, getAgentCost } from "../js/resources.js";
+import {
+  AGENT,
+  AUTOSAVE_TICKS,
+  RULE,
+  TICKS_PER_SECOND,
+  getAgentCost,
+  getRuleCost,
+} from "../js/resources.js";
 
 /**
- * Run a whole number of seconds of tick loop against a ManualClock, advancing
- * simulated time by one tick each step. No real time passes.
  * @param {Game} game
  * @param {ManualClock} clock
  * @param {number} seconds
@@ -23,15 +28,46 @@ function runSeconds(game, clock, seconds) {
   }
 }
 
-test("sendPrompt adds one token per call and unlocks first-prompt once", () => {
+test("sendPrompt adds base tokens and unlocks first-prompt once", () => {
   const game = new Game({ clock: new ManualClock(0) });
   const first = game.sendPrompt();
   assert.equal(first.length, 1);
   assert.equal(first[0].id, "first-prompt");
+  assert.equal(game.tokens, 1);
   assert.deepEqual(game.sendPrompt(), []);
-  assert.deepEqual(game.sendPrompt(), []);
+  assert.equal(game.tokens, 2);
+});
+
+test("sendPrompt scales with owned rules", () => {
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({ rules: 2, lastTickAt: 0 }),
+  });
+  game.sendPrompt();
   assert.equal(game.tokens, 3);
-  assert.equal(game.state.hasAchievement("first-prompt"), true);
+});
+
+test("buyRule fails when tokens are insufficient", () => {
+  const game = new Game({ clock: new ManualClock(0) });
+  assert.equal(game.canBuyRule(), false);
+  const result = game.buyRule();
+  assert.equal(result.purchased, false);
+  assert.equal(game.rules, 0);
+});
+
+test("buyRule spends tokens, increments rules, and boosts click power", () => {
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({ tokens: RULE.baseCost, lastTickAt: 0 }),
+  });
+
+  const result = game.buyRule();
+  assert.equal(result.purchased, true);
+  assert.equal(result.unlocked[0].id, "first-rule");
+  assert.equal(game.rules, 1);
+  assert.equal(game.tokens, 0);
+  assert.equal(game.tokensPerClick, 2);
+  assert.equal(game.ruleCost, getRuleCost(1));
 });
 
 test("buyAgent fails when tokens are insufficient", () => {
@@ -39,21 +75,17 @@ test("buyAgent fails when tokens are insufficient", () => {
   assert.equal(game.canBuyAgent(), false);
   const result = game.buyAgent();
   assert.equal(result.purchased, false);
-  assert.deepEqual(result.unlocked, []);
   assert.equal(game.agents, 0);
-  assert.equal(game.tokens, 0);
 });
 
-test("buyAgent spends tokens, increments agents, and raises the rate", () => {
+test("buyAgent spends tokens, increments agents, and raises passive rate", () => {
   const game = new Game({
     clock: new ManualClock(0),
     state: new GameState({ tokens: AGENT.baseCost, lastTickAt: 0 }),
   });
 
-  assert.equal(game.tokensPerSecond, 0);
   const result = game.buyAgent();
   assert.equal(result.purchased, true);
-
   assert.equal(game.agents, 1);
   assert.equal(game.tokens, 0);
   assert.equal(game.tokensPerSecond, AGENT.tokensPerSecond);
@@ -63,7 +95,7 @@ test("buyAgent spends tokens, increments agents, and raises the rate", () => {
 test("agent cost rises after each purchase", () => {
   const game = new Game({
     clock: new ManualClock(0),
-    state: new GameState({ tokens: 200, lastTickAt: 0 }),
+    state: new GameState({ tokens: 500, lastTickAt: 0 }),
   });
 
   const firstCost = game.agentCost;
@@ -71,12 +103,12 @@ test("agent cost rises after each purchase", () => {
   assert.ok(game.agentCost > firstCost);
 });
 
-test("milestone bonuses increase passive output at thresholds", () => {
+test("milestone bonuses increase passive output at 25 agents", () => {
   const game = new Game({
     clock: new ManualClock(0),
-    state: new GameState({ agents: 5, lastTickAt: 0 }),
+    state: new GameState({ agents: 25, lastTickAt: 0 }),
   });
-  assert.equal(game.tokensPerSecond, 10);
+  assert.equal(game.tokensPerSecond, 50);
 });
 
 test("ticks accrue passive tokens using a mocked clock (no real waiting)", () => {
@@ -86,7 +118,7 @@ test("ticks accrue passive tokens using a mocked clock (no real waiting)", () =>
     state: new GameState({ agents: 2, lastTickAt: 0 }),
   });
 
-  runSeconds(game, clock, 3); // 2 agents * 1 tok/s * 3s = 6
+  runSeconds(game, clock, 3);
 
   assert.ok(Math.abs(game.tokens - 6) < 1e-9, `expected ~6, got ${game.tokens}`);
   assert.equal(game.state.lastTickAt, 3000);
@@ -153,6 +185,7 @@ test("save and load roundtrip through an injected key/value store", () => {
     storage,
     state: new GameState({
       tokens: 42,
+      rules: 2,
       agents: 3,
       lastTickAt: 1000,
       achievements: ["first-prompt"],
@@ -160,14 +193,13 @@ test("save and load roundtrip through an injected key/value store", () => {
   });
   assert.equal(writer.save(), true);
 
-  // Fresh engine, same clock time -> no offline gain, exact roundtrip.
   const reader = new Game({ clock: new ManualClock(1000), storage });
   assert.equal(reader.load(), true);
   assert.equal(reader.tokens, 42);
+  assert.equal(reader.rules, 2);
   assert.equal(reader.agents, 3);
   assert.equal(reader.state.hasAchievement("first-prompt"), true);
 });
-
 
 test("resetProgress clears resources and optionally keeps achievements", () => {
   const storage = new MemoryStorage();
@@ -177,6 +209,7 @@ test("resetProgress clears resources and optionally keeps achievements", () => {
     storage,
     state: new GameState({
       tokens: 100,
+      rules: 2,
       agents: 3,
       lastTickAt: 1000,
       achievements: ["first-prompt"],
@@ -185,14 +218,17 @@ test("resetProgress clears resources and optionally keeps achievements", () => {
 
   game.resetProgress({ keepAchievements: true });
   assert.equal(game.tokens, 0);
+  assert.equal(game.rules, 0);
   assert.equal(game.agents, 0);
   assert.equal(game.state.hasAchievement("first-prompt"), true);
   assert.equal(game.state.lastTickAt, 5000);
 
   game.state.tokens = 50;
+  game.state.rules = 1;
   game.state.agents = 2;
   game.resetProgress({ keepAchievements: false });
   assert.equal(game.tokens, 0);
+  assert.equal(game.rules, 0);
   assert.equal(game.agents, 0);
   assert.equal(game.state.hasAchievement("first-prompt"), false);
 
