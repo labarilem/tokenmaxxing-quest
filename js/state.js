@@ -13,7 +13,7 @@ export class GameState {
     /** @type {number} total tokens consumed */
     this.tokens = tokens;
 
-    /** @type {number} cursor rules owned */
+    /** @type {number} agent rules owned */
     this.rules = rules;
 
     /** @type {number} background agents owned */

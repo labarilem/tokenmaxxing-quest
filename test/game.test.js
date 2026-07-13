@@ -31,8 +31,11 @@ function runSeconds(game, clock, seconds) {
 test("sendPrompt adds base tokens and unlocks first-prompt once", () => {
   const game = new Game({ clock: new ManualClock(0) });
   const first = game.sendPrompt();
-  assert.equal(first.length, 1);
-  assert.equal(first[0].id, "first-prompt");
+  assert.equal(first.length, 2);
+  assert.deepEqual(
+    first.map((def) => def.id),
+    ["first-prompt", "tokens-1"],
+  );
   assert.equal(game.tokens, 1);
   assert.deepEqual(game.sendPrompt(), []);
   assert.equal(game.tokens, 2);

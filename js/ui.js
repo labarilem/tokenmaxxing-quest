@@ -1,4 +1,4 @@
-import { ACHIEVEMENT_DEFS } from "./achievements.js";
+import { ACHIEVEMENT_DEFS, getJobSubtitle } from "./achievements.js";
 import {
   AGENT,
   RULE,
@@ -60,6 +60,9 @@ export class UI {
     this.agentMilestoneDisplay = document.getElementById("agent-milestone-display");
 
     /** @type {HTMLElement | null} */
+    this.jobSubtitleDisplay = document.getElementById("job-subtitle");
+
+    /** @type {HTMLElement | null} */
     this.achievementsCountDisplay = document.getElementById("achievements-count");
 
     /** @type {HTMLButtonElement | null} */
@@ -107,6 +110,7 @@ export class UI {
     this.cachedAgentMilestone = "";
     this.cachedAchievementsCount = "";
     this.cachedAchievementKey = "";
+    this.cachedJobSubtitle = "";
 
     this.handleKeydown = this.handleKeydown.bind(this);
 
@@ -390,6 +394,14 @@ export class UI {
     const agentMilestoneText = this.formatMilestoneText(AGENT, game.agents, "sec");
     const earnedCount = ACHIEVEMENT_DEFS.filter((def) => game.state.hasAchievement(def.id)).length;
     const achievementsCountText = `${earnedCount}/${ACHIEVEMENT_DEFS.length}`;
+    const jobSubtitleText = getJobSubtitle(game.state);
+
+    if (jobSubtitleText !== this.cachedJobSubtitle) {
+      this.cachedJobSubtitle = jobSubtitleText;
+      if (this.jobSubtitleDisplay) {
+        this.jobSubtitleDisplay.textContent = jobSubtitleText;
+      }
+    }
 
     if (tokensText !== this.cachedTokens) {
       this.cachedTokens = tokensText;

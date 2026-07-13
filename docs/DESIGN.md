@@ -101,20 +101,20 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | Mechanic | Behavior |
 |----------|----------|
 | **Tokens** | Primary resource — company AI tokens consumed |
-| **Send Prompt** | Manual click; base +1 token, plus +1 per owned Cursor Rule (with milestone multipliers) |
-| **Cursor Rule** | First upgrade; base 8 tokens, ×1.10 cost growth; +1 token per prompt per rule; milestones at **15** and **40** owned (×2 each) |
+| **Send Prompt** | Manual click; base +1 token, plus +1 per owned Agent Rule (with milestone multipliers) |
+| **Agent Rule** | First upgrade; base 8 tokens, ×1.10 cost growth; +1 token per prompt per rule; milestones at **15** and **40** owned (×2 each) |
 | **Background Agent** | Pricier passive upgrade; base **75** tokens, ×1.14 cost growth; +1 token/s each; milestones at **25** and **60** owned (×2 each) |
 | **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn; toolbar shows earned count |
 | **First Prompt** | Achievement: send your first prompt |
-| **Rules of Engagement** | Achievement: buy first Cursor Rule |
+| **Rules of Engagement** | Achievement: buy first Agent Rule |
 | **Headcount Approved** | Achievement: buy first Background Agent |
 | **Quarterly Target** | Achievement: reach 100 tokens |
-| **Four Nines of Uptime** | Achievement: reach 1,000 tokens |
-| **Platform Team** | Achievement: reach 10,000 tokens |
-| **Cost Center of Excellence** | Achievement: reach 100,000 tokens |
+| **Token powers of ten** | Achievements at 1, 10, 100 … 1B tokens (10 milestones) |
+| **Job title progression** | Header subtitle promotes on token milestones (100 → Senior, 1k → Staff, … 1B → CTO) |
 | **Small Fleet** | Achievement: own 25 Background Agents |
 | **Next goal UI** | Each upgrade shows afford hint (prompts and/or passive ETA) and next milestone |
 | **Full token display** | Token counter always shows full digits with grouping (no K/M/B abbreviations) |
+| **One-line flavor copy** | Satirical upgrade/achievement descriptions stay one line on mobile (hard rule) |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
 | **Reset progress** | New game (keep achievements) or full reset (clear achievements); modal confirmation required |
 
@@ -140,7 +140,7 @@ Agents: apply that skill's pre-implementation checklist before any mechanic chan
 - Base font 16px; tabular nums for counters
 - Dark theme by default
 - `prefers-reduced-motion: reduce` disables press animations
-- Satirical micro-copy
+- Satirical micro-copy — **one line max** on upgrade panels; achievement descriptions ≤2 lines on mobile
 - Use `aria-live="polite"` on resource panel and achievement overlay for screen readers
 - Achievements and Reset open centered modals (backdrop click, Escape, or close button to dismiss)
 - Toolbar chip buttons under the header for secondary actions
@@ -178,6 +178,13 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-13 — Agent Rule rename, token achievements to 1B, job titles
+
+- Renamed **Cursor Rule** → **Agent Rule**; shortened upgrade flavor copy to one line
+- Token achievements for every power of ten through **1 billion** (10 milestones)
+- Header job title advances on token milestone achievements (Senior → Staff → … → Chief Token Officer)
+- Achievement descriptions shortened; upgrade desc uses single-line ellipsis in CSS
 
 ### 2026-07-13 — Cursor Rules, pricier agents, full token display
 
