@@ -3,36 +3,70 @@ import assert from "node:assert/strict";
 
 import {
   AGENT,
+  RULE,
+  formatAffordHint,
+  formatNumber,
   getAgentCost,
-  getAgentProductionMultiplier,
-  getNextAgentMilestone,
+  getRuleCost,
+  getTokensPerClick,
   getTokensPerSecond,
+  getUpgradeMultiplier,
+  getNextAgentMilestone,
+  getNextRuleMilestone,
   secondsUntilAffordable,
 } from "../js/resources.js";
 
-test("getAgentCost grows exponentially from base cost", () => {
-  assert.equal(getAgentCost(0), AGENT.baseCost);
-  assert.equal(getAgentCost(1), Math.ceil(AGENT.baseCost * AGENT.costGrowthRate));
-  assert.ok(getAgentCost(5) > getAgentCost(1));
+test("formatNumber always shows full digits with grouping", () => {
+  assert.equal(formatNumber(999), "999");
+  assert.equal(formatNumber(1000), "1,000");
+  assert.equal(formatNumber(1_234_567), "1,234,567");
 });
 
-test("getAgentProductionMultiplier stacks milestone bonuses", () => {
-  assert.equal(getAgentProductionMultiplier(0), 1);
-  assert.equal(getAgentProductionMultiplier(4), 1);
-  assert.equal(getAgentProductionMultiplier(5), 2);
-  assert.equal(getAgentProductionMultiplier(10), 4);
+test("getRuleCost grows exponentially and stays cheaper than agents early", () => {
+  assert.equal(getRuleCost(0), RULE.baseCost);
+  assert.ok(getRuleCost(0) < getAgentCost(0));
+  assert.equal(getRuleCost(1), Math.ceil(RULE.baseCost * RULE.costGrowthRate));
 });
 
-test("getTokensPerSecond applies milestone multipliers", () => {
+test("getAgentCost is pricier than before", () => {
+  assert.equal(getAgentCost(0), 75);
+  assert.ok(getAgentCost(0) > getRuleCost(0) * 5);
+});
+
+test("rule milestones require a larger fleet than the old agent thresholds", () => {
+  assert.equal(getUpgradeMultiplier(RULE, 14), 1);
+  assert.equal(getUpgradeMultiplier(RULE, 15), 2);
+  assert.equal(getUpgradeMultiplier(RULE, 40), 4);
+});
+
+test("agent milestones require a larger fleet", () => {
+  assert.equal(getUpgradeMultiplier(AGENT, 24), 1);
+  assert.equal(getUpgradeMultiplier(AGENT, 25), 2);
+  assert.equal(getUpgradeMultiplier(AGENT, 60), 4);
+});
+
+test("getTokensPerClick scales with rules and milestones", () => {
+  assert.equal(getTokensPerClick(0), 1);
+  assert.equal(getTokensPerClick(3), 4);
+  assert.equal(getTokensPerClick(15), 31);
+});
+
+test("getTokensPerSecond applies agent milestone multipliers", () => {
   assert.equal(getTokensPerSecond(2), 2);
-  assert.equal(getTokensPerSecond(5), 10);
-  assert.equal(getTokensPerSecond(10), 40);
+  assert.equal(getTokensPerSecond(25), 50);
+  assert.equal(getTokensPerSecond(60), 240);
 });
 
-test("getNextAgentMilestone returns the next threshold", () => {
-  assert.equal(getNextAgentMilestone(0)?.at, 5);
-  assert.equal(getNextAgentMilestone(7)?.at, 10);
-  assert.equal(getNextAgentMilestone(10), null);
+test("getNextRuleMilestone and getNextAgentMilestone return upcoming thresholds", () => {
+  assert.equal(getNextRuleMilestone(0)?.at, 15);
+  assert.equal(getNextAgentMilestone(0)?.at, 25);
+  assert.equal(getNextAgentMilestone(60), null);
+});
+
+test("formatAffordHint suggests prompts and passive income", () => {
+  assert.equal(formatAffordHint(0, 0, 1), "Ready to buy.");
+  assert.match(formatAffordHint(8, 0, 1), /8 prompts/);
+  assert.match(formatAffordHint(10, 2, 1), /passive/);
 });
 
 test("secondsUntilAffordable estimates passive wait time", () => {

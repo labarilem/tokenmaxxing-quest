@@ -5,10 +5,11 @@ import { GameState } from "../js/state.js";
 import { SAVE_VERSION } from "../js/resources.js";
 
 test("toSaveData emits the versioned save shape", () => {
-  const state = new GameState({ tokens: 12, agents: 4, lastTickAt: 999, achievements: ["first-prompt"] });
+  const state = new GameState({ tokens: 12, rules: 3, agents: 4, lastTickAt: 999, achievements: ["first-prompt"] });
   assert.deepEqual(state.toSaveData(), {
     version: SAVE_VERSION,
     tokens: 12,
+    rules: 3,
     agents: 4,
     lastTickAt: 999,
     achievements: ["first-prompt"],
@@ -18,11 +19,13 @@ test("toSaveData emits the versioned save shape", () => {
 test("fromSaveData restores valid fields", () => {
   const state = GameState.fromSaveData({
     tokens: 7,
+    rules: 1,
     agents: 2,
     lastTickAt: 123,
     achievements: ["first-prompt"],
   });
   assert.equal(state.tokens, 7);
+  assert.equal(state.rules, 1);
   assert.equal(state.agents, 2);
   assert.equal(state.lastTickAt, 123);
   assert.equal(state.hasAchievement("first-prompt"), true);

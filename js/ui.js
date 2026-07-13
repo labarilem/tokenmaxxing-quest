@@ -1,9 +1,12 @@
 import { ACHIEVEMENT_DEFS } from "./achievements.js";
 import {
+  AGENT,
+  RULE,
+  formatAffordHint,
   formatNumber,
   formatRate,
   getNextAgentMilestone,
-  secondsUntilAffordable,
+  getNextRuleMilestone,
 } from "./resources.js";
 
 /** @typedef {import("./achievements.js").AchievementDef} AchievementDef */
@@ -27,6 +30,21 @@ export class UI {
     this.sendPromptBtn = document.getElementById("send-prompt-btn");
 
     /** @type {HTMLButtonElement | null} */
+    this.buyRuleBtn = document.getElementById("buy-rule-btn");
+
+    /** @type {HTMLElement | null} */
+    this.ruleCostDisplay = document.getElementById("rule-cost");
+
+    /** @type {HTMLElement | null} */
+    this.ruleCountDisplay = document.getElementById("rule-count");
+
+    /** @type {HTMLElement | null} */
+    this.ruleGoalDisplay = document.getElementById("rule-goal-display");
+
+    /** @type {HTMLElement | null} */
+    this.ruleMilestoneDisplay = document.getElementById("rule-milestone-display");
+
+    /** @type {HTMLButtonElement | null} */
     this.buyAgentBtn = document.getElementById("buy-agent-btn");
 
     /** @type {HTMLElement | null} */
@@ -36,10 +54,10 @@ export class UI {
     this.agentCountDisplay = document.getElementById("agent-count");
 
     /** @type {HTMLElement | null} */
-    this.goalDisplay = document.getElementById("goal-display");
+    this.agentGoalDisplay = document.getElementById("agent-goal-display");
 
     /** @type {HTMLElement | null} */
-    this.milestoneDisplay = document.getElementById("milestone-display");
+    this.agentMilestoneDisplay = document.getElementById("agent-milestone-display");
 
     /** @type {HTMLElement | null} */
     this.achievementsCountDisplay = document.getElementById("achievements-count");
@@ -76,11 +94,17 @@ export class UI {
 
     this.cachedTokens = "";
     this.cachedRate = "";
+    this.cachedPromptLabel = "";
+    this.cachedRuleCost = "";
+    this.cachedRuleCount = "";
+    this.cachedCanBuyRule = null;
+    this.cachedRuleGoal = "";
+    this.cachedRuleMilestone = "";
     this.cachedAgentCost = "";
     this.cachedAgentCount = "";
-    this.cachedCanBuy = null;
-    this.cachedGoal = "";
-    this.cachedMilestone = "";
+    this.cachedCanBuyAgent = null;
+    this.cachedAgentGoal = "";
+    this.cachedAgentMilestone = "";
     this.cachedAchievementsCount = "";
     this.cachedAchievementKey = "";
 
@@ -94,6 +118,14 @@ export class UI {
       const unlocked = this.game.sendPrompt();
       this.update();
       this.handleNewAchievements(unlocked);
+    });
+
+    this.buyRuleBtn?.addEventListener("click", () => {
+      const { purchased, unlocked } = this.game.buyRule();
+      if (purchased) {
+        this.update();
+        this.handleNewAchievements(unlocked);
+      }
     });
 
     this.buyAgentBtn?.addEventListener("click", () => {
@@ -300,57 +332,62 @@ export class UI {
   }
 
   /**
+   * @param {number} cost
+   * @param {boolean} canBuy
    * @returns {string}
    */
-  formatGoalText() {
+  formatUpgradeGoal(cost, canBuy) {
     const { game } = this;
-    const cost = game.agentCost;
-
-    if (game.canBuyAgent()) {
-      return "Next agent ready — buy to accelerate output.";
+    if (canBuy) {
+      return "Ready to buy.";
     }
-
     const shortfall = cost - game.tokens;
-    const rate = game.tokensPerSecond;
-
-    if (rate <= 0) {
-      return `${formatNumber(shortfall)} tokens to first agent — send prompts to start.`;
-    }
-
-    const seconds = secondsUntilAffordable(game.tokens, cost, rate);
-    if (!Number.isFinite(seconds)) {
-      return `${formatNumber(shortfall)} tokens to next agent.`;
-    }
-
-    if (seconds < 60) {
-      return `${formatNumber(shortfall)} tokens to next agent (~${Math.ceil(seconds)}s).`;
-    }
-
-    const minutes = Math.ceil(seconds / 60);
-    return `${formatNumber(shortfall)} tokens to next agent (~${minutes} min).`;
+    return formatAffordHint(shortfall, game.tokensPerSecond, game.tokensPerClick);
   }
 
   /**
+   * @param {import("./resources.js").UpgradeDef} upgrade
+   * @param {number} owned
+   * @param {"click" | "sec"} unit
    * @returns {string}
    */
-  formatMilestoneText() {
-    const next = getNextAgentMilestone(this.game.agents);
+  formatMilestoneText(upgrade, owned, unit) {
+    const next = unit === "click" ? getNextRuleMilestone(owned) : getNextAgentMilestone(owned);
     if (!next) {
-      return "All output milestones reached for this tier.";
+      return "All milestones unlocked.";
     }
-    const remaining = next.at - this.game.agents;
-    return `${remaining} more for ${next.label} (×${next.multiplier} output).`;
+    const remaining = next.at - owned;
+    const unitLabel = unit === "click" ? "per prompt" : "tokens/s";
+    return `${remaining} more for ${next.label} (×${next.multiplier} ${unitLabel}).`;
+  }
+
+  /**
+   * @param {HTMLButtonElement | null} button
+   * @param {boolean} canBuy
+   */
+  setBuyButtonState(button, canBuy) {
+    if (!button) {
+      return;
+    }
+    button.disabled = !canBuy;
+    button.classList.toggle("btn--ready", canBuy);
   }
 
   update() {
     const { game } = this;
     const tokensText = formatNumber(game.tokens);
     const rateText = formatRate(game.tokensPerSecond);
-    const costText = formatNumber(game.agentCost);
-    const countText = String(game.agents);
-    const canBuy = game.canBuyAgent();
-    const goalText = this.formatGoalText();
-    const milestoneText = this.formatMilestoneText();
+    const promptLabel = `Send Prompt (+${formatNumber(game.tokensPerClick)} tokens)`;
+    const ruleCostText = formatNumber(game.ruleCost);
+    const ruleCountText = String(game.rules);
+    const canBuyRule = game.canBuyRule();
+    const ruleGoalText = this.formatUpgradeGoal(game.ruleCost, canBuyRule);
+    const ruleMilestoneText = this.formatMilestoneText(RULE, game.rules, "click");
+    const agentCostText = formatNumber(game.agentCost);
+    const agentCountText = String(game.agents);
+    const canBuyAgent = game.canBuyAgent();
+    const agentGoalText = this.formatUpgradeGoal(game.agentCost, canBuyAgent);
+    const agentMilestoneText = this.formatMilestoneText(AGENT, game.agents, "sec");
     const earnedCount = ACHIEVEMENT_DEFS.filter((def) => game.state.hasAchievement(def.id)).length;
     const achievementsCountText = `${earnedCount}/${ACHIEVEMENT_DEFS.length}`;
 
@@ -368,39 +405,76 @@ export class UI {
       }
     }
 
-    if (costText !== this.cachedAgentCost) {
-      this.cachedAgentCost = costText;
+    if (promptLabel !== this.cachedPromptLabel) {
+      this.cachedPromptLabel = promptLabel;
+      if (this.sendPromptBtn) {
+        this.sendPromptBtn.textContent = promptLabel;
+      }
+    }
+
+    if (ruleCostText !== this.cachedRuleCost) {
+      this.cachedRuleCost = ruleCostText;
+      if (this.ruleCostDisplay) {
+        this.ruleCostDisplay.textContent = ruleCostText;
+      }
+    }
+
+    if (ruleCountText !== this.cachedRuleCount) {
+      this.cachedRuleCount = ruleCountText;
+      if (this.ruleCountDisplay) {
+        this.ruleCountDisplay.textContent = ruleCountText;
+      }
+    }
+
+    if (canBuyRule !== this.cachedCanBuyRule) {
+      this.cachedCanBuyRule = canBuyRule;
+      this.setBuyButtonState(this.buyRuleBtn, canBuyRule);
+    }
+
+    if (ruleGoalText !== this.cachedRuleGoal) {
+      this.cachedRuleGoal = ruleGoalText;
+      if (this.ruleGoalDisplay) {
+        this.ruleGoalDisplay.textContent = ruleGoalText;
+      }
+    }
+
+    if (ruleMilestoneText !== this.cachedRuleMilestone) {
+      this.cachedRuleMilestone = ruleMilestoneText;
+      if (this.ruleMilestoneDisplay) {
+        this.ruleMilestoneDisplay.textContent = ruleMilestoneText;
+      }
+    }
+
+    if (agentCostText !== this.cachedAgentCost) {
+      this.cachedAgentCost = agentCostText;
       if (this.agentCostDisplay) {
-        this.agentCostDisplay.textContent = costText;
+        this.agentCostDisplay.textContent = agentCostText;
       }
     }
 
-    if (countText !== this.cachedAgentCount) {
-      this.cachedAgentCount = countText;
+    if (agentCountText !== this.cachedAgentCount) {
+      this.cachedAgentCount = agentCountText;
       if (this.agentCountDisplay) {
-        this.agentCountDisplay.textContent = countText;
+        this.agentCountDisplay.textContent = agentCountText;
       }
     }
 
-    if (canBuy !== this.cachedCanBuy) {
-      this.cachedCanBuy = canBuy;
-      if (this.buyAgentBtn) {
-        this.buyAgentBtn.disabled = !canBuy;
-        this.buyAgentBtn.classList.toggle("btn--ready", canBuy);
+    if (canBuyAgent !== this.cachedCanBuyAgent) {
+      this.cachedCanBuyAgent = canBuyAgent;
+      this.setBuyButtonState(this.buyAgentBtn, canBuyAgent);
+    }
+
+    if (agentGoalText !== this.cachedAgentGoal) {
+      this.cachedAgentGoal = agentGoalText;
+      if (this.agentGoalDisplay) {
+        this.agentGoalDisplay.textContent = agentGoalText;
       }
     }
 
-    if (goalText !== this.cachedGoal) {
-      this.cachedGoal = goalText;
-      if (this.goalDisplay) {
-        this.goalDisplay.textContent = goalText;
-      }
-    }
-
-    if (milestoneText !== this.cachedMilestone) {
-      this.cachedMilestone = milestoneText;
-      if (this.milestoneDisplay) {
-        this.milestoneDisplay.textContent = milestoneText;
+    if (agentMilestoneText !== this.cachedAgentMilestone) {
+      this.cachedAgentMilestone = agentMilestoneText;
+      if (this.agentMilestoneDisplay) {
+        this.agentMilestoneDisplay.textContent = agentMilestoneText;
       }
     }
 

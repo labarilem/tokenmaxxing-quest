@@ -4,6 +4,8 @@ import {
   SAVE_KEY,
   TOKENS_PER_TICK,
   getAgentCost,
+  getRuleCost,
+  getTokensPerClick,
   getTokensPerSecond,
 } from "./resources.js";
 import { GameState } from "./state.js";
@@ -15,11 +17,6 @@ import { SystemClock } from "./clock.js";
 /**
  * Game engine — owns the rules, tick progression, and persistence coordination
  * for a {@link GameState}.
- *
- * Collaborators (clock + storage) are injected as abstractions, so the exact
- * same logic runs headlessly in tests: supply a `ManualClock` to advance time
- * without waiting, and a `MemoryStorage` to exercise save/load without a
- * browser. In the browser, `main.js` injects `SystemClock` + `LocalStorageAdapter`.
  */
 export class Game {
   /**
@@ -50,13 +47,28 @@ export class Game {
   }
 
   /** @returns {number} */
+  get rules() {
+    return this.state.rules;
+  }
+
+  /** @returns {number} */
   get agents() {
     return this.state.agents;
+  }
+
+  /** @returns {number} tokens earned per manual prompt */
+  get tokensPerClick() {
+    return getTokensPerClick(this.state.rules);
   }
 
   /** @returns {number} passive tokens generated per second */
   get tokensPerSecond() {
     return getTokensPerSecond(this.state.agents);
+  }
+
+  /** @returns {number} cost of the next rule */
+  get ruleCost() {
+    return getRuleCost(this.state.rules);
   }
 
   /** @returns {number} cost of the next agent */
@@ -65,17 +77,38 @@ export class Game {
   }
 
   /** @returns {boolean} */
+  canBuyRule() {
+    return this.state.tokens >= this.ruleCost;
+  }
+
+  /** @returns {boolean} */
   canBuyAgent() {
     return this.state.tokens >= this.agentCost;
   }
 
   /**
-   * Manual action: consume one token.
+   * Manual action: send a prompt.
    * @returns {import("./achievements.js").AchievementDef[]} newly unlocked achievements
    */
   sendPrompt() {
-    this.state.tokens += 1;
+    this.state.tokens += this.tokensPerClick;
     return evaluateAchievements(this.state, "sendPrompt");
+  }
+
+  /**
+   * Buy one cursor rule if affordable.
+   * @returns {{ purchased: boolean, unlocked: import("./achievements.js").AchievementDef[] }}
+   */
+  buyRule() {
+    if (!this.canBuyRule()) {
+      return { purchased: false, unlocked: [] };
+    }
+    this.state.tokens -= this.ruleCost;
+    this.state.rules += 1;
+    return {
+      purchased: true,
+      unlocked: evaluateAchievements(this.state, "buyRule"),
+    };
   }
 
   /**
@@ -109,7 +142,6 @@ export class Game {
 
   /**
    * Advance the last-tick timestamp without crediting passive income.
-   * Used when the game is inactive so elapsed time does not accrue later.
    * @param {number} [now] current time in epoch ms (defaults to the clock)
    */
   syncLastTickAt(now = this.clock.now()) {
@@ -117,7 +149,7 @@ export class Game {
   }
 
   /**
-   * Reset tokens and agents. Optionally preserve earned achievements.
+   * Reset tokens, rules, and agents. Optionally preserve earned achievements.
    * @param {{ keepAchievements?: boolean }} [options]
    */
   resetProgress({ keepAchievements = false } = {}) {
@@ -151,7 +183,6 @@ export class Game {
       this.markSaved();
       return true;
     } catch {
-      // Storage full or unavailable — gameplay continues without save.
       return false;
     }
   }

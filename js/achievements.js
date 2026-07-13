@@ -2,7 +2,7 @@
 
 /** @typedef {{ id: string, title: string, description: string }} AchievementDef */
 
-/** @typedef {'sendPrompt' | 'buyAgent' | 'tick'} AchievementTrigger */
+/** @typedef {'sendPrompt' | 'buyRule' | 'buyAgent' | 'tick'} AchievementTrigger */
 
 /** @type {AchievementDef[]} */
 export const ACHIEVEMENT_DEFS = [
@@ -10,6 +10,11 @@ export const ACHIEVEMENT_DEFS = [
     id: "first-prompt",
     title: "Prompt Initiated",
     description: "Send your first prompt. Productivity telemetry begins.",
+  },
+  {
+    id: "first-rule",
+    title: "Rules of Engagement",
+    description: "Install your first Cursor Rule. The model now has opinions.",
   },
   {
     id: "first-agent",
@@ -22,9 +27,24 @@ export const ACHIEVEMENT_DEFS = [
     description: "Consume 100 tokens. Finance will ask questions later.",
   },
   {
-    id: "agent-pod",
-    title: "Small Pod",
-    description: "Own 5 Background Agents. Pod sync milestone triggers ×2 output.",
+    id: "tokens-1k",
+    title: "Four Nines of Uptime",
+    description: "Hit 1,000 tokens. Leadership adds you to the dashboard.",
+  },
+  {
+    id: "tokens-10k",
+    title: "Platform Team",
+    description: "Hit 10,000 tokens. You are now infrastructure.",
+  },
+  {
+    id: "tokens-100k",
+    title: "Cost Center of Excellence",
+    description: "Hit 100,000 tokens. Procurement sends flowers.",
+  },
+  {
+    id: "agent-fleet",
+    title: "Small Fleet",
+    description: "Own 25 Background Agents. Pod sync goes live.",
   },
 ];
 
@@ -56,6 +76,25 @@ function tryUnlock(state, id, newlyUnlocked) {
 }
 
 /**
+ * @param {GameState} state
+ * @param {AchievementDef[]} newlyUnlocked
+ */
+function checkTokenMilestones(state, newlyUnlocked) {
+  if (state.tokens >= 100) {
+    tryUnlock(state, "tokens-100", newlyUnlocked);
+  }
+  if (state.tokens >= 1_000) {
+    tryUnlock(state, "tokens-1k", newlyUnlocked);
+  }
+  if (state.tokens >= 10_000) {
+    tryUnlock(state, "tokens-10k", newlyUnlocked);
+  }
+  if (state.tokens >= 100_000) {
+    tryUnlock(state, "tokens-100k", newlyUnlocked);
+  }
+}
+
+/**
  * Evaluate whether any achievements should unlock for the given trigger.
  * Mutates `state.achievements` when a new one is earned.
  *
@@ -71,16 +110,21 @@ export function evaluateAchievements(state, trigger) {
     tryUnlock(state, "first-prompt", newlyUnlocked);
   }
 
+  if (trigger === "buyRule" && state.rules >= 1) {
+    tryUnlock(state, "first-rule", newlyUnlocked);
+  }
+
   if (trigger === "buyAgent" && state.agents >= 1) {
     tryUnlock(state, "first-agent", newlyUnlocked);
   }
 
-  if (trigger === "sendPrompt" || trigger === "buyAgent" || trigger === "tick") {
-    if (state.tokens >= 100) {
-      tryUnlock(state, "tokens-100", newlyUnlocked);
-    }
-    if (state.agents >= 5) {
-      tryUnlock(state, "agent-pod", newlyUnlocked);
+  if (trigger === "sendPrompt" || trigger === "buyRule" || trigger === "buyAgent" || trigger === "tick") {
+    checkTokenMilestones(state, newlyUnlocked);
+  }
+
+  if (trigger === "buyAgent" || trigger === "tick") {
+    if (state.agents >= 25) {
+      tryUnlock(state, "agent-fleet", newlyUnlocked);
     }
   }
 

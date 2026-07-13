@@ -87,6 +87,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 {
   "version": 1,
   "tokens": 123,
+  "rules": 4,
   "agents": 2,
   "lastTickAt": 1710000000000,
   "achievements": ["first-prompt"]
@@ -100,14 +101,20 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | Mechanic | Behavior |
 |----------|----------|
 | **Tokens** | Primary resource — company AI tokens consumed |
-| **Send Prompt** | Manual click, +1 token per press |
-| **Background Agent** | Upgrade costing 25 tokens (base); **exponential cost** `ceil(25 × 1.12^owned)`; each owned agent adds +1 token/sec; **milestones** at 5 and 10 owned stack ×2 output (Pod sync, Fleet multiplier) |
-| **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn (Google Play style); full list via Achievements modal; toolbar shows earned count |
-| **First Prompt** | Achievement: send your first prompt (onboarding nudge) |
+| **Send Prompt** | Manual click; base +1 token, plus +1 per owned Cursor Rule (with milestone multipliers) |
+| **Cursor Rule** | First upgrade; base 8 tokens, ×1.10 cost growth; +1 token per prompt per rule; milestones at **15** and **40** owned (×2 each) |
+| **Background Agent** | Pricier passive upgrade; base **75** tokens, ×1.14 cost growth; +1 token/s each; milestones at **25** and **60** owned (×2 each) |
+| **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn; toolbar shows earned count |
+| **First Prompt** | Achievement: send your first prompt |
+| **Rules of Engagement** | Achievement: buy first Cursor Rule |
 | **Headcount Approved** | Achievement: buy first Background Agent |
-| **Quarterly Target** | Achievement: reach 100 tokens consumed |
-| **Small Pod** | Achievement: own 5 Background Agents (milestone teaser) |
-| **Next goal UI** | Upgrade panel shows tokens/time to next agent and next output milestone |
+| **Quarterly Target** | Achievement: reach 100 tokens |
+| **Four Nines of Uptime** | Achievement: reach 1,000 tokens |
+| **Platform Team** | Achievement: reach 10,000 tokens |
+| **Cost Center of Excellence** | Achievement: reach 100,000 tokens |
+| **Small Fleet** | Achievement: own 25 Background Agents |
+| **Next goal UI** | Each upgrade shows afford hint (prompts and/or passive ETA) and next milestone |
+| **Full token display** | Token counter always shows full digits with grouping (no K/M/B abbreviations) |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
 | **Reset progress** | New game (keep achievements) or full reset (clear achievements); modal confirmation required |
 
@@ -171,6 +178,15 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-13 — Cursor Rules, pricier agents, full token display
+
+- Added **Cursor Rule** upgrade (first purchase): boosts manual prompt tokens; cheaper than agents (base 8 vs 75)
+- Agents repriced (base 75, ×1.14 growth); milestone thresholds raised to 25 and 60 agents
+- Rule milestones at 15 and 40 owned (×2 per-prompt output each)
+- Achievements for 1k, 10k, and 100k tokens; agent fleet achievement at 25 agents
+- Token counter always shows full grouped digits (no K/M/B); rate label uses `tokens/s`
+- Short satirical copy on upgrade panels; dynamic Send Prompt label
 
 ### 2026-07-13 — Incremental design pass on V0.1 mechanics
 
