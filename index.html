@@ -12,6 +12,16 @@
     <header class="game__header">
       <h1 class="game__title">Tokenmaxxing Quest</h1>
       <p class="game__subtitle">Big Tech Corp — Software Engineer II</p>
+      <div class="toolbar">
+        <button type="button" class="btn btn--chip btn--chip-accent" id="achievements-open-btn">
+          <span class="btn__icon" aria-hidden="true">🏆</span>
+          <span>Achievements</span>
+        </button>
+        <button type="button" class="btn btn--chip btn--chip-muted" id="reset-open-btn">
+          <span class="btn__icon" aria-hidden="true">↺</span>
+          <span>Reset</span>
+        </button>
+      </div>
     </header>
 
     <section class="panel panel--resource" aria-live="polite">
@@ -28,46 +38,58 @@
       <h2 class="panel__label">Background Agent</h2>
       <p class="upgrade__desc">Runs prompts while you attend standup.</p>
       <div class="upgrade__row">
-        <button type="button" class="btn btn--secondary" id="buy-agent-btn">
-          Buy — <span id="agent-cost">25</span> tokens
+        <button type="button" class="btn btn--secondary btn--buy" id="buy-agent-btn">
+          <span>Buy</span>
+          <span class="btn__sep" aria-hidden="true">·</span>
+          <span><span id="agent-cost">25</span> tokens</span>
         </button>
         <span class="upgrade__owned">Owned: <span id="agent-count">0</span></span>
-      </div>
-    </section>
-
-    <section class="panel panel--achievements">
-      <button
-        type="button"
-        class="achievements-toggle"
-        id="achievements-toggle"
-        aria-expanded="false"
-        aria-controls="achievements-panel"
-      >Achievements</button>
-      <div class="achievements-panel" id="achievements-panel" hidden>
-        <ul class="achievements-list" id="achievements-list"></ul>
-      </div>
-    </section>
-
-    <section class="panel panel--reset">
-      <button
-        type="button"
-        class="reset-toggle"
-        id="reset-toggle"
-        aria-expanded="false"
-        aria-controls="reset-confirm"
-      >Reset progress</button>
-      <div class="reset-confirm" id="reset-confirm" hidden>
-        <p class="reset-confirm__warning">This cannot be undone. Choose a reset type:</p>
-        <div class="reset-confirm__actions">
-          <button type="button" class="btn btn--secondary" id="reset-new-game-btn">New game (keep achievements)</button>
-          <button type="button" class="btn btn--danger" id="reset-full-btn">Full reset (clear achievements)</button>
-          <button type="button" class="btn btn--ghost" id="reset-cancel-btn">Cancel</button>
-        </div>
       </div>
     </section>
   </main>
 
   <div class="achievement-overlay" id="achievement-overlay" aria-live="polite"></div>
+
+  <div class="modal" id="achievements-modal" hidden>
+    <div class="modal__backdrop" data-modal-close tabindex="-1"></div>
+    <div
+      class="modal__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="achievements-modal-title"
+    >
+      <header class="modal__header">
+        <h2 class="modal__title" id="achievements-modal-title">Achievements</h2>
+        <button type="button" class="modal__close" data-modal-close aria-label="Close achievements">×</button>
+      </header>
+      <div class="modal__body">
+        <ul class="achievements-list" id="achievements-list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="reset-modal" hidden>
+    <div class="modal__backdrop" data-modal-close tabindex="-1"></div>
+    <div
+      class="modal__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reset-modal-title"
+    >
+      <header class="modal__header">
+        <h2 class="modal__title" id="reset-modal-title">Reset progress</h2>
+        <button type="button" class="modal__close" data-modal-close aria-label="Close reset dialog">×</button>
+      </header>
+      <div class="modal__body">
+        <p class="reset-modal__warning">This cannot be undone. Choose a reset type:</p>
+        <div class="reset-modal__actions">
+          <button type="button" class="btn btn--secondary" id="reset-new-game-btn">New game (keep achievements)</button>
+          <button type="button" class="btn btn--danger" id="reset-full-btn">Full reset (clear achievements)</button>
+          <button type="button" class="btn btn--ghost" data-modal-close id="reset-cancel-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="js/main.js"></script>
 </body>
