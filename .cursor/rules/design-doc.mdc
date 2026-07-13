@@ -9,6 +9,8 @@ alwaysApply: true
 
 Read [`docs/DESIGN.md`](../docs/DESIGN.md) before adding or changing gameplay mechanics, UI, architecture, or deployment.
 
+For **gameplay, economy, pacing, upgrades, prestige, achievements, or progression copy**, also apply the **incremental-game-design** skill (`.cursor/skills/incremental-game-design/SKILL.md`). Run through its pre-implementation checklist before proposing or coding mechanic changes.
+
 ## After making changes
 
 Update `docs/DESIGN.md` when you:

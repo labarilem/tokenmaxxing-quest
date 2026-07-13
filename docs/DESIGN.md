@@ -116,6 +116,12 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | V0.4 | Manager Review events | Random events; burnout debuff if over-tokenmaxxing |
 | V0.5 | Prestige: Promotion | Reset progress for permanent multiplier |
 
+## Incremental design guidance
+
+Gameplay and economy changes should follow the project skill **incremental-game-design** (`.cursor/skills/incremental-game-design/SKILL.md`). It condenses idle/incremental design literature (Pecorella, Eric Guan, Bugnet, Machinations, and others) into actionable checklists: core loop, cost/production math, sink/source balance, pacing phases, prestige timing, and UI patterns.
+
+Agents: apply that skill's pre-implementation checklist before any mechanic change; update this doc after shipping.
+
 ## UI/UX Guidelines
 
 - Single-column card layout, max-width 480px
@@ -161,6 +167,12 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-13 — Incremental game design skill
+
+- Added `.cursor/skills/incremental-game-design/SKILL.md` — condensed idle/incremental design principles from industry articles, GDC talks, and economy frameworks
+- Design-doc rule now requires applying the skill before gameplay/economy changes
+- Skill auto-scopes to `docs/DESIGN.md`, `js/resources.js`, `js/game.js`, `js/achievements.js`, `js/ui.js`, `index.html`, `css/main.css`
 
 ### 2026-07-13 — Toolbar chips + modals
 
