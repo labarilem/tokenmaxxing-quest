@@ -10,8 +10,7 @@
  *   tokensPerClick?: number,
  * }} UpgradeDef */
 
-export const SAVE_KEY = "tokenmaxxing-quest.save.v1";
-export const SAVE_VERSION = 1;
+export const SAVE_KEY = "tokenmaxxing-quest.save";
 
 export const TICKS_PER_SECOND = 5;
 export const TICK_MS = 1000 / TICKS_PER_SECOND;
@@ -44,6 +43,61 @@ export const AGENT = {
     { at: 60, multiplier: 2, label: "fleet multiplier" },
   ],
 };
+
+/** Permanent token multiplier gained per certified model tier (Option A prestige). */
+export const MODEL_BONUS_PER_TIER = 0.15;
+
+/** @typedef {{ id: string, name: string, version: string, description: string, cost?: number, agentGate?: number }} ModelDef */
+
+/** LLM model ladder — index matches `modelTier` in save data. Tier 0 is the default runtime. */
+export const MODELS = [
+  {
+    id: "clair-3.5",
+    name: "Clair",
+    version: "3.5",
+    description: "Baseline eval. Perfectly adequate on slides.",
+  },
+  {
+    id: "vif-4.0",
+    name: "Vif",
+    version: "4.0",
+    cost: 2_500,
+    agentGate: 12,
+    description: "Snappier excuses, same hallucinations.",
+  },
+  {
+    id: "sage-4.2",
+    name: "Sage",
+    version: "4.2",
+    cost: 20_000,
+    agentGate: 25,
+    description: "Wise enough to sound confident.",
+  },
+  {
+    id: "grand-4.5",
+    name: "Grand",
+    version: "4.5",
+    cost: 35_000,
+    agentGate: 38,
+    description: "General availability, general token bill.",
+  },
+  {
+    id: "noir-4.8",
+    name: "Noir",
+    version: "4.8",
+    cost: 150_000,
+    agentGate: 52,
+    description: "Deep thinking mode. Deep invoice.",
+  },
+  {
+    id: "fort-5.0",
+    name: "Fort",
+    version: "5.0",
+    cost: 600_000,
+    agentGate: 65,
+    description: "Strong opinions. Stronger burn rate.",
+  },
+];
 
 /**
  * @param {number} n
@@ -239,4 +293,69 @@ export function formatAffordHint(shortfall, ratePerSecond, tokensPerClick) {
   }
 
   return `${formatNumber(shortfall)} tokens · ${parts.join(" or ")}`;
+}
+
+/**
+ * @param {number} modelTier
+ * @returns {number}
+ */
+export function getModelMultiplier(modelTier) {
+  return 1 + MODEL_BONUS_PER_TIER * modelTier;
+}
+
+/**
+ * @param {number} modelTier
+ * @returns {ModelDef}
+ */
+export function getCurrentModel(modelTier) {
+  const tier = Math.max(0, Math.min(modelTier, MODELS.length - 1));
+  return MODELS[tier];
+}
+
+/**
+ * @param {number} modelTier
+ * @returns {ModelDef | null}
+ */
+export function getNextModel(modelTier) {
+  if (modelTier >= MODELS.length - 1) {
+    return null;
+  }
+  return MODELS[modelTier + 1];
+}
+
+/**
+ * @param {ModelDef} model
+ * @returns {string}
+ */
+export function formatModelName(model) {
+  return `${model.name} ${model.version}`;
+}
+
+/**
+ * @param {number} modelTier
+ * @returns {string}
+ */
+export function formatModelBenefit(modelTier) {
+  const next = getNextModel(modelTier);
+  if (!next) {
+    return `×${getModelMultiplier(modelTier).toFixed(2)} all tokens`;
+  }
+  return `×${getModelMultiplier(modelTier + 1).toFixed(2)} all tokens`;
+}
+
+/**
+ * @param {number} modelTier
+ * @param {number} agents
+ * @returns {string}
+ */
+export function formatModelGateHint(modelTier, agents) {
+  const next = getNextModel(modelTier);
+  if (!next?.agentGate) {
+    return "Maximum model tier.";
+  }
+  if (agents >= next.agentGate) {
+    return "Agents reset; rules kept.";
+  }
+  const short = next.agentGate - agents;
+  return `Needs ${next.agentGate} agents (${short} more).`;
 }

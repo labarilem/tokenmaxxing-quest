@@ -87,13 +87,13 @@ test("getJobTitle advances only on token milestone achievements", () => {
   assert.equal(getJobTitle(cto), "Chief Token Officer");
 });
 
-test("getJobSubtitle formats company and title", () => {
-  const state = new GameState({ achievements: ["tokens-1k"] });
-  assert.equal(getJobSubtitle(state), "Big Tech Corp — Staff Engineer");
+test("getJobSubtitle formats company, title, and model", () => {
+  const state = new GameState({ achievements: ["tokens-1k"], modelTier: 1 });
+  assert.equal(getJobSubtitle(state), "Big Tech Corp — Staff Engineer · Vif 4.0");
 });
 
-test("achievement catalog has fourteen milestones", () => {
-  assert.equal(ACHIEVEMENT_DEFS.length, 14);
+test("achievement catalog has fifteen milestones", () => {
+  assert.equal(ACHIEVEMENT_DEFS.length, 15);
 });
 
 test("token milestones cover every power of ten through one billion", () => {

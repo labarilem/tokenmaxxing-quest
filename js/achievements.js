@@ -1,8 +1,10 @@
+import { getCurrentModel, formatModelName } from "./resources.js";
+
 /** @typedef {import("./state.js").GameState} GameState */
 
 /** @typedef {{ id: string, title: string, description: string }} AchievementDef */
 
-/** @typedef {'sendPrompt' | 'buyRule' | 'buyAgent' | 'tick'} AchievementTrigger */
+/** @typedef {'sendPrompt' | 'buyRule' | 'buyAgent' | 'buyModel' | 'tick'} AchievementTrigger */
 
 /** @type {{ threshold: number, id: string, title: string, description: string }[]} */
 export const TOKEN_MILESTONE_DEFS = [
@@ -34,6 +36,11 @@ export const ACHIEVEMENT_DEFS = [
     id: "first-agent",
     title: "Headcount Approved",
     description: "First Background Agent deployed. Go passive.",
+  },
+  {
+    id: "first-model",
+    title: "Model Citizen",
+    description: "First model certified. Fleet deprecated.",
   },
   ...TOKEN_MILESTONE_DEFS.map(({ id, title, description }) => ({ id, title, description })),
   {
@@ -88,7 +95,8 @@ export function getJobTitle(state) {
  * @returns {string}
  */
 export function getJobSubtitle(state) {
-  return `Big Tech Corp — ${getJobTitle(state)}`;
+  const model = formatModelName(getCurrentModel(state.modelTier));
+  return `Big Tech Corp — ${getJobTitle(state)} · ${model}`;
 }
 
 /**
@@ -143,7 +151,11 @@ export function evaluateAchievements(state, trigger) {
     tryUnlock(state, "first-agent", newlyUnlocked);
   }
 
-  if (trigger === "sendPrompt" || trigger === "buyRule" || trigger === "buyAgent" || trigger === "tick") {
+  if (trigger === "buyModel" && state.modelTier >= 1) {
+    tryUnlock(state, "first-model", newlyUnlocked);
+  }
+
+  if (trigger === "sendPrompt" || trigger === "buyRule" || trigger === "buyAgent" || trigger === "buyModel" || trigger === "tick") {
     checkTokenMilestones(state, newlyUnlocked);
   }
 

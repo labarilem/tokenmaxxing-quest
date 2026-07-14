@@ -9,8 +9,11 @@ import {
   formatNumber,
   formatPassiveBenefit,
   getAgentCost,
+  getCurrentModel,
   getMarginalClickGain,
   getMarginalPassiveGain,
+  getModelMultiplier,
+  getNextModel,
   getRuleCost,
   getTokensPerClick,
   getTokensPerSecond,
@@ -91,4 +94,20 @@ test("secondsUntilAffordable estimates passive wait time", () => {
   assert.equal(secondsUntilAffordable(20, 25, 1), 5);
   assert.equal(secondsUntilAffordable(30, 25, 1), 0);
   assert.equal(secondsUntilAffordable(0, 25, 0), Infinity);
+});
+
+test("model ladder uses short French names and gates aligned to fleet milestones", () => {
+  assert.equal(getCurrentModel(0).name, "Clair");
+  assert.equal(getCurrentModel(0).version, "3.5");
+  assert.equal(getNextModel(0)?.name, "Vif");
+  assert.equal(getNextModel(0)?.agentGate, 12);
+  assert.equal(getNextModel(1)?.agentGate, 25);
+  assert.equal(getNextModel(4)?.name, "Fort");
+  assert.equal(getNextModel(5), null);
+});
+
+test("getModelMultiplier stacks +15% per certified tier", () => {
+  assert.equal(getModelMultiplier(0), 1);
+  assert.equal(getModelMultiplier(1), 1.15);
+  assert.equal(getModelMultiplier(5), 1.75);
 });

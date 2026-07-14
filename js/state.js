@@ -1,4 +1,4 @@
-import { SAVE_VERSION } from "./resources.js";
+import { MODELS } from "./resources.js";
 
 /**
  * Plain data model for the game — no rules, time, or persistence behavior.
@@ -7,9 +7,9 @@ import { SAVE_VERSION } from "./resources.js";
  */
 export class GameState {
   /**
-   * @param {{ tokens?: number, rules?: number, agents?: number, lastTickAt?: number, achievements?: string[] }} [init]
+   * @param {{ tokens?: number, rules?: number, agents?: number, modelTier?: number, lastTickAt?: number, achievements?: string[] }} [init]
    */
-  constructor({ tokens = 0, rules = 0, agents = 0, lastTickAt = 0, achievements = [] } = {}) {
+  constructor({ tokens = 0, rules = 0, agents = 0, modelTier = 0, lastTickAt = 0, achievements = [] } = {}) {
     /** @type {number} total tokens consumed */
     this.tokens = tokens;
 
@@ -18,6 +18,9 @@ export class GameState {
 
     /** @type {number} background agents owned */
     this.agents = agents;
+
+    /** @type {number} certified LLM model tier (0 = Clair 3.5) */
+    this.modelTier = modelTier;
 
     /** @type {number} epoch ms of the last processed tick */
     this.lastTickAt = lastTickAt;
@@ -41,14 +44,14 @@ export class GameState {
 
   /**
    * Serialize to the versioned save shape.
-   * @returns {{ version: number, tokens: number, rules: number, agents: number, lastTickAt: number, achievements: string[] }}
+   * @returns {{ tokens: number, rules: number, agents: number, modelTier: number, lastTickAt: number, achievements: string[] }}
    */
   toSaveData() {
     return {
-      version: SAVE_VERSION,
       tokens: this.tokens,
       rules: this.rules,
       agents: this.agents,
+      modelTier: this.modelTier,
       lastTickAt: this.lastTickAt,
       achievements: [...this.achievements],
     };
@@ -76,6 +79,9 @@ export class GameState {
     }
     if (typeof record.agents === "number" && record.agents >= 0) {
       state.agents = Math.floor(record.agents);
+    }
+    if (typeof record.modelTier === "number" && record.modelTier >= 0) {
+      state.modelTier = Math.min(Math.floor(record.modelTier), MODELS.length - 1);
     }
     if (typeof record.lastTickAt === "number" && record.lastTickAt > 0) {
       state.lastTickAt = record.lastTickAt;

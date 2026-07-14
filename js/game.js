@@ -4,6 +4,8 @@ import {
   SAVE_KEY,
   TOKENS_PER_TICK,
   getAgentCost,
+  getModelMultiplier,
+  getNextModel,
   getRuleCost,
   getTokensPerClick,
   getTokensPerSecond,
@@ -56,14 +58,24 @@ export class Game {
     return this.state.agents;
   }
 
+  /** @returns {number} */
+  get modelTier() {
+    return this.state.modelTier;
+  }
+
+  /** @returns {number} permanent multiplier from certified LLM models */
+  get modelMultiplier() {
+    return getModelMultiplier(this.state.modelTier);
+  }
+
   /** @returns {number} tokens earned per manual prompt */
   get tokensPerClick() {
-    return getTokensPerClick(this.state.rules);
+    return getTokensPerClick(this.state.rules) * this.modelMultiplier;
   }
 
   /** @returns {number} passive tokens generated per second */
   get tokensPerSecond() {
-    return getTokensPerSecond(this.state.agents);
+    return getTokensPerSecond(this.state.agents) * this.modelMultiplier;
   }
 
   /** @returns {number} cost of the next rule */
@@ -76,6 +88,11 @@ export class Game {
     return getAgentCost(this.state.agents);
   }
 
+  /** @returns {number | null} token cost of the next model, if any */
+  get modelCost() {
+    return getNextModel(this.state.modelTier)?.cost ?? null;
+  }
+
   /** @returns {boolean} */
   canBuyRule() {
     return this.state.tokens >= this.ruleCost;
@@ -84,6 +101,18 @@ export class Game {
   /** @returns {boolean} */
   canBuyAgent() {
     return this.state.tokens >= this.agentCost;
+  }
+
+  /** @returns {boolean} */
+  canBuyModel() {
+    const next = getNextModel(this.state.modelTier);
+    if (!next?.cost || next.agentGate === undefined) {
+      return false;
+    }
+    return (
+      this.state.agents >= next.agentGate &&
+      this.state.tokens >= next.cost
+    );
   }
 
   /**
@@ -128,6 +157,25 @@ export class Game {
   }
 
   /**
+   * Certify the next LLM model if affordable and the agent gate is met.
+   * Resets background agents to zero; rules and tokens are kept.
+   * @returns {{ purchased: boolean, unlocked: import("./achievements.js").AchievementDef[] }}
+   */
+  buyModel() {
+    const next = getNextModel(this.state.modelTier);
+    if (!next?.cost || next.agentGate === undefined || !this.canBuyModel()) {
+      return { purchased: false, unlocked: [] };
+    }
+    this.state.tokens -= next.cost;
+    this.state.modelTier += 1;
+    this.state.agents = 0;
+    return {
+      purchased: true,
+      unlocked: evaluateAchievements(this.state, "buyModel"),
+    };
+  }
+
+  /**
    * Advance the simulation by one tick.
    * @returns {import("./achievements.js").AchievementDef[]} newly unlocked achievements
    */
@@ -154,9 +202,11 @@ export class Game {
    */
   resetProgress({ keepAchievements = false } = {}) {
     const achievements = keepAchievements ? [...this.state.achievements] : [];
+    const modelTier = keepAchievements ? this.state.modelTier : 0;
     this.state = new GameState({
       lastTickAt: this.clock.now(),
       achievements,
+      modelTier,
     });
     this.save();
   }

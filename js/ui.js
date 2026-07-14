@@ -4,12 +4,17 @@ import {
   RULE,
   formatAffordHint,
   formatClickBenefit,
+  formatModelBenefit,
+  formatModelGateHint,
+  formatModelName,
   formatNumber,
   formatPassiveBenefit,
   formatRate,
+  getCurrentModel,
   getMarginalClickGain,
   getMarginalPassiveGain,
   getNextAgentMilestone,
+  getNextModel,
   getNextRuleMilestone,
 } from "./resources.js";
 
@@ -70,6 +75,33 @@ export class UI {
     this.agentMilestoneDisplay = document.getElementById("agent-milestone-display");
 
     /** @type {HTMLElement | null} */
+    this.modelPanel = document.getElementById("model-panel");
+
+    /** @type {HTMLElement | null} */
+    this.modelLabel = document.getElementById("model-label");
+
+    /** @type {HTMLElement | null} */
+    this.modelBenefitDisplay = document.getElementById("model-benefit-display");
+
+    /** @type {HTMLElement | null} */
+    this.modelDescDisplay = document.getElementById("model-desc-display");
+
+    /** @type {HTMLElement | null} */
+    this.modelGoalDisplay = document.getElementById("model-goal-display");
+
+    /** @type {HTMLElement | null} */
+    this.modelGateDisplay = document.getElementById("model-gate-display");
+
+    /** @type {HTMLButtonElement | null} */
+    this.buyModelBtn = document.getElementById("buy-model-btn");
+
+    /** @type {HTMLElement | null} */
+    this.modelCostDisplay = document.getElementById("model-cost");
+
+    /** @type {HTMLElement | null} */
+    this.modelRunningDisplay = document.getElementById("model-running");
+
+    /** @type {HTMLElement | null} */
     this.jobSubtitleDisplay = document.getElementById("job-subtitle");
 
     /** @type {HTMLElement | null} */
@@ -120,6 +152,14 @@ export class UI {
     this.cachedCanBuyAgent = null;
     this.cachedAgentGoal = "";
     this.cachedAgentMilestone = "";
+    this.cachedModelLabel = "";
+    this.cachedModelBenefit = "";
+    this.cachedModelDesc = "";
+    this.cachedModelGoal = "";
+    this.cachedModelGate = "";
+    this.cachedModelCost = "";
+    this.cachedModelRunning = "";
+    this.cachedCanBuyModel = null;
     this.cachedAchievementsCount = "";
     this.cachedAchievementKey = "";
     this.cachedJobSubtitle = "";
@@ -146,6 +186,14 @@ export class UI {
 
     this.buyAgentBtn?.addEventListener("click", () => {
       const { purchased, unlocked } = this.game.buyAgent();
+      if (purchased) {
+        this.update();
+        this.handleNewAchievements(unlocked);
+      }
+    });
+
+    this.buyModelBtn?.addEventListener("click", () => {
+      const { purchased, unlocked } = this.game.buyModel();
       if (purchased) {
         this.update();
         this.handleNewAchievements(unlocked);
@@ -362,6 +410,25 @@ export class UI {
   }
 
   /**
+   * @param {number} cost
+   * @param {boolean} canBuy
+   * @param {number} agentGate
+   * @returns {string}
+   */
+  formatModelGoal(cost, canBuy, agentGate) {
+    const { game } = this;
+    if (game.agents < agentGate) {
+      const short = agentGate - game.agents;
+      return `Needs ${agentGate} agents (${short} more).`;
+    }
+    if (canBuy) {
+      return "Ready to certify.";
+    }
+    const shortfall = cost - game.tokens;
+    return formatAffordHint(shortfall, game.tokensPerSecond, game.tokensPerClick);
+  }
+
+  /**
    * @param {import("./resources.js").UpgradeDef} upgrade
    * @param {number} owned
    * @param {"click" | "sec"} unit
@@ -406,6 +473,18 @@ export class UI {
     const canBuyAgent = game.canBuyAgent();
     const agentGoalText = this.formatUpgradeGoal(game.agentCost, canBuyAgent);
     const agentMilestoneText = this.formatMilestoneText(AGENT, game.agents, "sec");
+    const nextModel = getNextModel(game.modelTier);
+    const currentModel = getCurrentModel(game.modelTier);
+    const modelLabelText = nextModel ? formatModelName(nextModel) : formatModelName(currentModel);
+    const modelBenefitText = formatModelBenefit(game.modelTier);
+    const modelDescText = nextModel?.description ?? currentModel.description;
+    const modelCostText = nextModel?.cost ? formatNumber(nextModel.cost) : "";
+    const canBuyModel = game.canBuyModel();
+    const modelGoalText = nextModel?.cost && nextModel.agentGate !== undefined
+      ? this.formatModelGoal(nextModel.cost, canBuyModel, nextModel.agentGate)
+      : "Maximum model tier.";
+    const modelGateText = formatModelGateHint(game.modelTier, game.agents);
+    const modelRunningText = formatModelName(currentModel);
     const earnedCount = ACHIEVEMENT_DEFS.filter((def) => game.state.hasAchievement(def.id)).length;
     const achievementsCountText = `${earnedCount}/${ACHIEVEMENT_DEFS.length}`;
     const jobSubtitleText = getJobSubtitle(game.state);
@@ -516,6 +595,64 @@ export class UI {
       if (this.agentMilestoneDisplay) {
         this.agentMilestoneDisplay.textContent = agentMilestoneText;
       }
+    }
+
+    if (this.modelPanel) {
+      this.modelPanel.hidden = !nextModel;
+    }
+
+    if (modelLabelText !== this.cachedModelLabel) {
+      this.cachedModelLabel = modelLabelText;
+      if (this.modelLabel) {
+        this.modelLabel.textContent = modelLabelText;
+      }
+    }
+
+    if (modelBenefitText !== this.cachedModelBenefit) {
+      this.cachedModelBenefit = modelBenefitText;
+      if (this.modelBenefitDisplay) {
+        this.modelBenefitDisplay.textContent = modelBenefitText;
+      }
+    }
+
+    if (modelDescText !== this.cachedModelDesc) {
+      this.cachedModelDesc = modelDescText;
+      if (this.modelDescDisplay) {
+        this.modelDescDisplay.textContent = modelDescText;
+      }
+    }
+
+    if (modelGoalText !== this.cachedModelGoal) {
+      this.cachedModelGoal = modelGoalText;
+      if (this.modelGoalDisplay) {
+        this.modelGoalDisplay.textContent = modelGoalText;
+      }
+    }
+
+    if (modelGateText !== this.cachedModelGate) {
+      this.cachedModelGate = modelGateText;
+      if (this.modelGateDisplay) {
+        this.modelGateDisplay.textContent = modelGateText;
+      }
+    }
+
+    if (modelCostText !== this.cachedModelCost) {
+      this.cachedModelCost = modelCostText;
+      if (this.modelCostDisplay) {
+        this.modelCostDisplay.textContent = modelCostText;
+      }
+    }
+
+    if (modelRunningText !== this.cachedModelRunning) {
+      this.cachedModelRunning = modelRunningText;
+      if (this.modelRunningDisplay) {
+        this.modelRunningDisplay.textContent = modelRunningText;
+      }
+    }
+
+    if (canBuyModel !== this.cachedCanBuyModel) {
+      this.cachedCanBuyModel = canBuyModel;
+      this.setBuyButtonState(this.buyModelBtn, canBuyModel);
     }
 
     if (achievementsCountText !== this.cachedAchievementsCount) {

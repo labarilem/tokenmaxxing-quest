@@ -58,6 +58,20 @@ body {
   letter-spacing: -0.02em;
 }
 
+.game__alpha {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
 .game__subtitle {
   margin: 0;
   color: var(--text-muted);
