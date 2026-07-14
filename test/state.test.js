@@ -11,9 +11,20 @@ test("toSaveData emits the versioned save shape", () => {
     tokens: 12,
     rules: 3,
     agents: 4,
+    modelTier: 0,
     lastTickAt: 999,
     achievements: ["first-prompt"],
   });
+});
+
+test("fromSaveData restores modelTier", () => {
+  const state = GameState.fromSaveData({ modelTier: 2 });
+  assert.equal(state.modelTier, 2);
+});
+
+test("fromSaveData clamps modelTier to the model ladder", () => {
+  const state = GameState.fromSaveData({ modelTier: 99 });
+  assert.equal(state.modelTier, 5);
 });
 
 test("fromSaveData restores valid fields", () => {

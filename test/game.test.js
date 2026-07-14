@@ -11,6 +11,8 @@ import {
   RULE,
   TICKS_PER_SECOND,
   getAgentCost,
+  getModelMultiplier,
+  getNextModel,
   getRuleCost,
 } from "../js/resources.js";
 
@@ -71,6 +73,58 @@ test("buyRule spends tokens, increments rules, and boosts click power", () => {
   assert.equal(game.tokens, 0);
   assert.equal(game.tokensPerClick, 2);
   assert.equal(game.ruleCost, getRuleCost(1));
+});
+
+test("model multiplier boosts click and passive income", () => {
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({ rules: 2, agents: 2, modelTier: 2, lastTickAt: 0 }),
+  });
+  assert.equal(game.modelMultiplier, getModelMultiplier(2));
+  assert.equal(game.tokensPerClick, 3 * getModelMultiplier(2));
+  assert.equal(game.tokensPerSecond, 2 * getModelMultiplier(2));
+});
+
+test("buyModel requires agent gate and tokens, then resets agents", () => {
+  const next = getNextModel(0);
+  assert.ok(next);
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({
+      tokens: next.cost - 1,
+      agents: next.agentGate,
+      lastTickAt: 0,
+    }),
+  });
+  assert.equal(game.canBuyModel(), false);
+
+  game.state.tokens = next.cost;
+  assert.equal(game.canBuyModel(), true);
+
+  const result = game.buyModel();
+  assert.equal(result.purchased, true);
+  assert.equal(result.unlocked[0].id, "first-model");
+  assert.equal(game.modelTier, 1);
+  assert.equal(game.agents, 0);
+  assert.equal(game.tokens, 0);
+  assert.equal(game.modelMultiplier, getModelMultiplier(1));
+});
+
+test("buyModel fails when agent gate is not met", () => {
+  const next = getNextModel(0);
+  assert.ok(next);
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({
+      tokens: next.cost,
+      agents: next.agentGate - 1,
+      lastTickAt: 0,
+    }),
+  });
+  assert.equal(game.canBuyModel(), false);
+  const result = game.buyModel();
+  assert.equal(result.purchased, false);
+  assert.equal(game.modelTier, 0);
 });
 
 test("buyAgent fails when tokens are insufficient", () => {
@@ -201,6 +255,7 @@ test("save and load roundtrip through an injected key/value store", () => {
   assert.equal(reader.tokens, 42);
   assert.equal(reader.rules, 2);
   assert.equal(reader.agents, 3);
+  assert.equal(reader.state.modelTier, 0);
   assert.equal(reader.state.hasAchievement("first-prompt"), true);
 });
 
@@ -223,8 +278,16 @@ test("resetProgress clears resources and optionally keeps achievements", () => {
   assert.equal(game.tokens, 0);
   assert.equal(game.rules, 0);
   assert.equal(game.agents, 0);
+  assert.equal(game.modelTier, 0);
   assert.equal(game.state.hasAchievement("first-prompt"), true);
   assert.equal(game.state.lastTickAt, 5000);
+
+  game.state.tokens = 50;
+  game.state.rules = 1;
+  game.state.agents = 2;
+  game.state.modelTier = 2;
+  game.resetProgress({ keepAchievements: true });
+  assert.equal(game.modelTier, 2);
 
   game.state.tokens = 50;
   game.state.rules = 1;
@@ -233,6 +296,7 @@ test("resetProgress clears resources and optionally keeps achievements", () => {
   assert.equal(game.tokens, 0);
   assert.equal(game.rules, 0);
   assert.equal(game.agents, 0);
+  assert.equal(game.modelTier, 0);
   assert.equal(game.state.hasAchievement("first-prompt"), false);
 
   const reloaded = new Game({ clock, storage });
