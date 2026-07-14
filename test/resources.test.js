@@ -6,6 +6,7 @@ import {
   RULE,
   formatAffordHint,
   formatClickBenefit,
+  formatModelPanelLabel,
   formatNumber,
   formatPassiveBenefit,
   getAgentCost,
@@ -110,4 +111,13 @@ test("getModelMultiplier stacks +15% per certified tier", () => {
   assert.equal(getModelMultiplier(0), 1);
   assert.equal(getModelMultiplier(1), 1.15);
   assert.equal(getModelMultiplier(5), 1.75);
+});
+
+test("formatModelPanelLabel distinguishes first upgrade from later research", () => {
+  const vif = getNextModel(0);
+  const sage = getNextModel(1);
+  assert.ok(vif);
+  assert.ok(sage);
+  assert.equal(formatModelPanelLabel(0, vif), "Upgrade model: Vif 4.0");
+  assert.equal(formatModelPanelLabel(1, sage), "Research model: Sage 4.2");
 });

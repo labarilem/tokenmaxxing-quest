@@ -7,6 +7,7 @@ import {
   formatModelBenefit,
   formatModelGateHint,
   formatModelName,
+  formatModelPanelLabel,
   formatNumber,
   formatPassiveBenefit,
   formatRate,
@@ -412,19 +413,17 @@ export class UI {
   /**
    * @param {number} cost
    * @param {boolean} canBuy
-   * @param {number} agentGate
    * @returns {string}
    */
-  formatModelGoal(cost, canBuy, agentGate) {
+  formatModelGoal(cost, canBuy) {
     const { game } = this;
-    if (game.agents < agentGate) {
-      const short = agentGate - game.agents;
-      return `Needs ${agentGate} agents (${short} more).`;
-    }
     if (canBuy) {
       return "Ready to certify.";
     }
     const shortfall = cost - game.tokens;
+    if (shortfall <= 0) {
+      return `${formatNumber(cost)} tokens`;
+    }
     return formatAffordHint(shortfall, game.tokensPerSecond, game.tokensPerClick);
   }
 
@@ -475,13 +474,15 @@ export class UI {
     const agentMilestoneText = this.formatMilestoneText(AGENT, game.agents, "sec");
     const nextModel = getNextModel(game.modelTier);
     const currentModel = getCurrentModel(game.modelTier);
-    const modelLabelText = nextModel ? formatModelName(nextModel) : formatModelName(currentModel);
+    const modelLabelText = nextModel
+      ? formatModelPanelLabel(game.modelTier, nextModel)
+      : formatModelPanelLabel(game.modelTier, currentModel);
     const modelBenefitText = formatModelBenefit(game.modelTier);
     const modelDescText = nextModel?.description ?? currentModel.description;
     const modelCostText = nextModel?.cost ? formatNumber(nextModel.cost) : "";
     const canBuyModel = game.canBuyModel();
-    const modelGoalText = nextModel?.cost && nextModel.agentGate !== undefined
-      ? this.formatModelGoal(nextModel.cost, canBuyModel, nextModel.agentGate)
+    const modelGoalText = nextModel?.cost
+      ? this.formatModelGoal(nextModel.cost, canBuyModel)
       : "Maximum model tier.";
     const modelGateText = formatModelGateHint(game.modelTier, game.agents);
     const modelRunningText = formatModelName(currentModel);

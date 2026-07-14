@@ -332,6 +332,17 @@ export function formatModelName(model) {
 }
 
 /**
+ * Panel heading for the next model certification step.
+ * @param {number} modelTier
+ * @param {ModelDef} model
+ * @returns {string}
+ */
+export function formatModelPanelLabel(modelTier, model) {
+  const verb = modelTier === 0 ? "Upgrade" : "Research";
+  return `${verb} model: ${formatModelName(model)}`;
+}
+
+/**
  * @param {number} modelTier
  * @returns {string}
  */
