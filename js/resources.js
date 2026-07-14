@@ -10,8 +10,7 @@
  *   tokensPerClick?: number,
  * }} UpgradeDef */
 
-export const SAVE_KEY = "tokenmaxxing-quest.save.v1";
-export const SAVE_VERSION = 2;
+export const SAVE_KEY = "tokenmaxxing-quest.save";
 
 export const TICKS_PER_SECOND = 5;
 export const TICK_MS = 1000 / TICKS_PER_SECOND;
@@ -355,7 +354,7 @@ export function formatModelGateHint(modelTier, agents) {
     return "Maximum model tier.";
   }
   if (agents >= next.agentGate) {
-    return "Fleet clears on deploy.";
+    return "Agents reset; rules kept.";
   }
   const short = next.agentGate - agents;
   return `Needs ${next.agentGate} agents (${short} more).`;

@@ -85,7 +85,7 @@ test("model multiplier boosts click and passive income", () => {
   assert.equal(game.tokensPerSecond, 2 * getModelMultiplier(2));
 });
 
-test("buyModel requires agent gate and tokens, then resets agents", () => {
+test("buyModel requires agent gate and tokens, resets agents, keeps rules", () => {
   const next = getNextModel(0);
   assert.ok(next);
   const game = new Game({
@@ -93,6 +93,7 @@ test("buyModel requires agent gate and tokens, then resets agents", () => {
     state: new GameState({
       tokens: next.cost - 1,
       agents: next.agentGate,
+      rules: 7,
       lastTickAt: 0,
     }),
   });
@@ -106,6 +107,7 @@ test("buyModel requires agent gate and tokens, then resets agents", () => {
   assert.equal(result.unlocked[0].id, "first-model");
   assert.equal(game.modelTier, 1);
   assert.equal(game.agents, 0);
+  assert.equal(game.rules, 7);
   assert.equal(game.tokens, 0);
   assert.equal(game.modelMultiplier, getModelMultiplier(1));
 });

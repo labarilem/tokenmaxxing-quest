@@ -158,7 +158,7 @@ export class Game {
 
   /**
    * Certify the next LLM model if affordable and the agent gate is met.
-   * Resets the background-agent fleet to zero.
+   * Resets background agents to zero; rules and tokens are kept.
    * @returns {{ purchased: boolean, unlocked: import("./achievements.js").AchievementDef[] }}
    */
   buyModel() {

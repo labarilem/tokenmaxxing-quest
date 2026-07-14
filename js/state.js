@@ -1,4 +1,4 @@
-import { MODELS, SAVE_VERSION } from "./resources.js";
+import { MODELS } from "./resources.js";
 
 /**
  * Plain data model for the game — no rules, time, or persistence behavior.
@@ -44,11 +44,10 @@ export class GameState {
 
   /**
    * Serialize to the versioned save shape.
-   * @returns {{ version: number, tokens: number, rules: number, agents: number, modelTier: number, lastTickAt: number, achievements: string[] }}
+   * @returns {{ tokens: number, rules: number, agents: number, modelTier: number, lastTickAt: number, achievements: string[] }}
    */
   toSaveData() {
     return {
-      version: SAVE_VERSION,
       tokens: this.tokens,
       rules: this.rules,
       agents: this.agents,

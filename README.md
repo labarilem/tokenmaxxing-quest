@@ -2,6 +2,8 @@
 
 An incremental browser game about maximizing LLM token spending to advance your career at a big tech company. Satirical take on [token maxxing](https://en.wikipedia.org/wiki/Workplace_impact_of_artificial_intelligence#Token_maxxing).
 
+> **Alpha** — saves and balance may break between updates. No migration guarantees.
+
 **Play:** [https://labarilem.github.io/tokenmaxxing-quest/](https://labarilem.github.io/tokenmaxxing-quest/) *(after enabling GitHub Pages)*
 
 ## V0.1 — Current gameplay
