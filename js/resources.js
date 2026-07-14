@@ -63,7 +63,7 @@ export const MODELS = [
     version: "4.0",
     cost: 2_500,
     agentGate: 12,
-    description: "Snappier excuses, same hallucinations.",
+    description: "Snappier excuses, less hallucinations. Probably.",
   },
   {
     id: "sage-4.2",
