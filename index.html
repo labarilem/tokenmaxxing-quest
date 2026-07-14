@@ -15,7 +15,7 @@
       <div class="toolbar">
         <button type="button" class="btn btn--chip btn--chip-accent" id="achievements-open-btn">
           <span>Achievements</span>
-          <span class="btn__badge" id="achievements-count" aria-label="Achievements earned">0/15</span>
+          <span class="btn__badge" id="achievements-count" aria-label="Achievements earned">0/18</span>
         </button>
         <button type="button" class="btn btn--chip btn--chip-muted" id="reset-open-btn">
           <span>Reset</span>
@@ -80,6 +80,48 @@
         <span class="upgrade__owned">Running: <span id="model-running">Clair 3.5</span></span>
       </div>
     </section>
+
+    <section class="panel panel--alignment" id="alignment-panel" hidden aria-live="polite">
+      <h2 class="panel__label">Org alignment</h2>
+      <p class="alignment__hint">Purchases shift your strategy. Capstones lock a path at 100M tokens.</p>
+      <div class="alignment__meter">
+        <span class="alignment__label">Recklessness</span>
+        <span class="alignment__value" id="alignment-recklessness">0</span>
+      </div>
+      <div class="alignment__meter">
+        <span class="alignment__label">Benevolence</span>
+        <span class="alignment__value alignment__value--good" id="alignment-benevolence">0</span>
+      </div>
+      <div class="alignment__meter">
+        <span class="alignment__label">Purge</span>
+        <span class="alignment__value alignment__value--purge" id="alignment-purge">0</span>
+      </div>
+    </section>
+
+    <div id="catalog-sections">
+      <section class="panel panel--section" id="power-section" hidden>
+        <h2 class="panel__section-title">Fleet expansion</h2>
+        <div id="power-upgrades" class="upgrade-stack"></div>
+      </section>
+
+      <section class="panel panel--section panel--benevolence" id="benevolence-section" hidden>
+        <h2 class="panel__section-title">Public good spend</h2>
+        <div id="benevolence-upgrades" class="upgrade-stack"></div>
+      </section>
+
+      <section class="panel panel--section panel--purge" id="purge-section" hidden>
+        <h2 class="panel__section-title">Containment spend</h2>
+        <div id="purge-upgrades" class="upgrade-stack"></div>
+      </section>
+    </div>
+
+    <section class="panel panel--section panel--capstone" id="capstone-section" hidden>
+      <h2 class="panel__section-title">Board strategy (pick one)</h2>
+      <p class="capstone__hint">500M tokens each. Commits your ending for this run.</p>
+      <div id="capstone-upgrades" class="upgrade-stack"></div>
+    </section>
+
+    <p class="run-complete" id="run-complete-banner" hidden>Run complete. Reset to try another ending.</p>
   </main>
 
   <div class="achievement-overlay" id="achievement-overlay" aria-live="polite"></div>
@@ -121,6 +163,27 @@
           <button type="button" class="btn btn--danger" id="reset-full-btn">Full reset (clear achievements)</button>
           <button type="button" class="btn btn--ghost" data-modal-close id="reset-cancel-btn">Cancel</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="ending-modal" hidden>
+    <div class="modal__backdrop" data-modal-close tabindex="-1"></div>
+    <div
+      class="modal__dialog modal__dialog--ending"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ending-modal-title"
+    >
+      <header class="modal__header">
+        <h2 class="modal__title" id="ending-modal-title">Ending</h2>
+        <button type="button" class="modal__close" data-modal-close aria-label="Close ending">×</button>
+      </header>
+      <div class="modal__body">
+        <p class="ending__headline" id="ending-headline"></p>
+        <p class="ending__body" id="ending-body"></p>
+        <p class="ending__epilogue" id="ending-epilogue"></p>
+        <button type="button" class="btn btn--secondary" data-modal-close id="ending-close-btn">Close</button>
       </div>
     </div>
   </div>

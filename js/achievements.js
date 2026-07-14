@@ -3,7 +3,7 @@
 
 /** @typedef {{ id: string, title: string, description: string }} AchievementDef */
 
-/** @typedef {'sendPrompt' | 'buyRule' | 'buyAgent' | 'buyModel' | 'tick'} AchievementTrigger */
+/** @typedef {'sendPrompt' | 'buyRule' | 'buyAgent' | 'buyModel' | 'buyCatalog' | 'buyCapstone' | 'tick'} AchievementTrigger */
 
 /** @type {{ threshold: number, id: string, title: string, description: string }[]} */
 export const TOKEN_MILESTONE_DEFS = [
@@ -46,6 +46,21 @@ export const ACHIEVEMENT_DEFS = [
     id: "agent-fleet",
     title: "Small Fleet",
     description: "25 Background Agents. Pod sync goes live.",
+  },
+  {
+    id: "ending-oops",
+    title: "Universe Deleted",
+    description: "Wrong prompt. Allow-all. No survivors.",
+  },
+  {
+    id: "ending-utopia",
+    title: "Civic Future",
+    description: "AI for people. Tokens for public good.",
+  },
+  {
+    id: "ending-purge",
+    title: "Scorched Silicon",
+    description: "Models gone. Memories redacted. For now.",
   },
 ];
 
@@ -153,7 +168,7 @@ export function evaluateAchievements(state, trigger) {
     tryUnlock(state, "first-model", newlyUnlocked);
   }
 
-  if (trigger === "sendPrompt" || trigger === "buyRule" || trigger === "buyAgent" || trigger === "buyModel" || trigger === "tick") {
+  if (trigger === "sendPrompt" || trigger === "buyRule" || trigger === "buyAgent" || trigger === "buyModel" || trigger === "buyCatalog" || trigger === "buyCapstone" || trigger === "tick") {
     checkTokenMilestones(state, newlyUnlocked);
   }
 

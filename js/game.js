@@ -1,4 +1,5 @@
-import { evaluateAchievements } from "./achievements.js";
+import { evaluateAchievements, getAchievementDef } from "./achievements.js";
+import { getEndingDef, hasReachedEnding } from "./endings.js";
 import {
   AUTOSAVE_TICKS,
   SAVE_KEY,
@@ -7,14 +8,25 @@ import {
   getModelMultiplier,
   getNextModel,
   getRuleCost,
-  getTokensPerClick,
-  getTokensPerSecond,
+  getTokensPerClickForState,
+  getTokensPerSecondForState,
 } from "./resources.js";
 import { GameState } from "./state.js";
 import { SystemClock } from "./clock.js";
+import {
+  CAPSTONES,
+  canBuyCatalogEntry,
+  getCatalogCostForState,
+  getOwnedCount,
+  isCatalogUnlocked,
+  applyAlignmentDelta,
+} from "./upgrades.js";
 
 /** @typedef {import("./clock.js").Clock} Clock */
 /** @typedef {import("./storage.js").KeyValueStore} KeyValueStore */
+/** @typedef {import("./upgrades.js").CatalogEntry} CatalogEntry */
+/** @typedef {import("./upgrades.js").CapstoneDef} CapstoneDef */
+/** @typedef {import("./endings.js").EndingDef} EndingDef */
 
 /**
  * Game engine — owns the rules, tick progression, and persistence coordination
@@ -70,12 +82,12 @@ export class Game {
 
   /** @returns {number} tokens earned per manual prompt */
   get tokensPerClick() {
-    return getTokensPerClick(this.state.rules) * this.modelMultiplier;
+    return getTokensPerClickForState(this.state);
   }
 
   /** @returns {number} passive tokens generated per second */
   get tokensPerSecond() {
-    return getTokensPerSecond(this.state.agents) * this.modelMultiplier;
+    return getTokensPerSecondForState(this.state);
   }
 
   /** @returns {number} cost of the next rule */
@@ -94,17 +106,30 @@ export class Game {
   }
 
   /** @returns {boolean} */
+  get isRunComplete() {
+    return hasReachedEnding(this.state);
+  }
+
+  /** @returns {boolean} */
+  canAct() {
+    return !this.isRunComplete;
+  }
+
+  /** @returns {boolean} */
   canBuyRule() {
-    return this.state.tokens >= this.ruleCost;
+    return this.canAct() && this.state.tokens >= this.ruleCost;
   }
 
   /** @returns {boolean} */
   canBuyAgent() {
-    return this.state.tokens >= this.agentCost;
+    return this.canAct() && this.state.tokens >= this.agentCost;
   }
 
   /** @returns {boolean} */
   canBuyModel() {
+    if (!this.canAct()) {
+      return false;
+    }
     const next = getNextModel(this.state.modelTier);
     if (!next?.cost || next.agentGate === undefined) {
       return false;
@@ -116,11 +141,36 @@ export class Game {
   }
 
   /**
+   * @param {CatalogEntry} entry
+   * @returns {boolean}
+   */
+  canBuyCatalog(entry) {
+    return this.canAct() && canBuyCatalogEntry(this.state, entry);
+  }
+
+  /**
+   * @param {CapstoneDef} capstone
+   * @returns {boolean}
+   */
+  canBuyCapstone(capstone) {
+    if (!this.canAct() || this.state.strategyPath !== null) {
+      return false;
+    }
+    if (!capstone.gate(this.state)) {
+      return false;
+    }
+    return this.state.tokens >= capstone.cost;
+  }
+
+  /**
    * Manual action: send a prompt.
    * @returns {import("./achievements.js").AchievementDef[]} newly unlocked achievements
    */
   sendPrompt() {
-    this.state.tokens += this.tokensPerClick;
+    if (!this.canAct()) {
+      return [];
+    }
+    this.state.creditTokens(this.tokensPerClick);
     return evaluateAchievements(this.state, "sendPrompt");
   }
 
@@ -176,12 +226,64 @@ export class Game {
   }
 
   /**
+   * @param {CatalogEntry} entry
+   * @returns {{ purchased: boolean, unlocked: import("./achievements.js").AchievementDef[] }}
+   */
+  buyCatalog(entry) {
+    if (!this.canBuyCatalog(entry)) {
+      return { purchased: false, unlocked: [] };
+    }
+    const owned = getOwnedCount(this.state, entry);
+    const cost = getCatalogCostForState(this.state, entry);
+    this.state.tokens -= cost;
+    this.state[/** @type {keyof GameState} */ (entry.stateKey)] = owned + 1;
+    if (entry.alignment) {
+      applyAlignmentDelta(entry.alignment, this.state);
+    }
+    return {
+      purchased: true,
+      unlocked: evaluateAchievements(this.state, "buyCatalog"),
+    };
+  }
+
+  /**
+   * @param {CapstoneDef} capstone
+   * @returns {{ purchased: boolean, ending: EndingDef | null, unlocked: import("./achievements.js").AchievementDef[] }}
+   */
+  buyCapstone(capstone) {
+    if (!this.canBuyCapstone(capstone)) {
+      return { purchased: false, ending: null, unlocked: [] };
+    }
+    this.state.tokens -= capstone.cost;
+    this.state.strategyPath = capstone.path;
+    const ending = getEndingDef(capstone.path) ?? null;
+    const unlocked = evaluateAchievements(this.state, "buyCapstone");
+    if (ending && !this.state.hasAchievement(ending.achievementId)) {
+      this.state.unlockAchievement(ending.achievementId);
+      const def = getAchievementDef(ending.achievementId);
+      if (def) {
+        unlocked.push(def);
+      }
+    }
+    this.save();
+    return { purchased: true, ending, unlocked };
+  }
+
+  /**
+   * @param {CatalogEntry} entry
+   * @returns {boolean}
+   */
+  isCatalogVisible(entry) {
+    return isCatalogUnlocked(this.state, entry);
+  }
+
+  /**
    * Advance the simulation by one tick.
    * @returns {import("./achievements.js").AchievementDef[]} newly unlocked achievements
    */
   tick() {
     if (this.tokensPerSecond > 0) {
-      this.state.tokens += this.tokensPerSecond * TOKENS_PER_TICK;
+      this.state.creditTokens(this.tokensPerSecond * TOKENS_PER_TICK);
     }
     this.state.lastTickAt = this.clock.now();
     this.state.ticksSinceSave += 1;

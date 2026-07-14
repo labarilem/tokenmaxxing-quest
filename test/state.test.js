@@ -5,14 +5,16 @@ import { GameState } from "../js/state.js";
 
 test("toSaveData emits the save shape", () => {
   const state = new GameState({ tokens: 12, rules: 3, agents: 4, lastTickAt: 999, achievements: ["first-prompt"] });
-  assert.deepEqual(state.toSaveData(), {
-    tokens: 12,
-    rules: 3,
-    agents: 4,
-    modelTier: 0,
-    lastTickAt: 999,
-    achievements: ["first-prompt"],
-  });
+  const save = state.toSaveData();
+  assert.equal(save.tokens, 12);
+  assert.equal(save.rules, 3);
+  assert.equal(save.agents, 4);
+  assert.equal(save.modelTier, 0);
+  assert.equal(save.lastTickAt, 999);
+  assert.deepEqual(save.achievements, ["first-prompt"]);
+  assert.equal(save.lifetimeTokens, 0);
+  assert.equal(save.strategyPath, null);
+  assert.equal(save.alignmentBenevolence, 0);
 });
 
 test("fromSaveData restores modelTier", () => {

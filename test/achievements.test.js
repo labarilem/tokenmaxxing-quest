@@ -92,8 +92,8 @@ test("getJobSubtitle formats company and title", () => {
   assert.equal(getJobSubtitle(state), "Big Tech Corp — Staff Engineer");
 });
 
-test("achievement catalog has fifteen milestones", () => {
-  assert.equal(ACHIEVEMENT_DEFS.length, 15);
+test("achievement catalog has eighteen milestones", () => {
+  assert.equal(ACHIEVEMENT_DEFS.length, 18);
 });
 
 test("token milestones cover every power of ten through one billion", () => {
