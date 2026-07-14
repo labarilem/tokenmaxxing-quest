@@ -34,6 +34,7 @@ Always update the **Mechanics** table and **Changelog** section with a dated ent
 - Do not expand beyond the current version scope unless the user asks
 - Put new ideas in DESIGN.md **Planned** section first, then implement in a focused follow-up
 - Match satirical big-tech / tokenmaxxing tone in player-facing copy
+- **Purchase buttons** use the label **Buy** for every token-cost upgrade (Agent Rule, Background Agent, model tier) — never alternate verbs like Certify or Upgrade on the button itself
 
 ## File map
 

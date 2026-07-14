@@ -1,4 +1,3 @@
-import { getCurrentModel, formatModelName } from "./resources.js";
 
 /** @typedef {import("./state.js").GameState} GameState */
 
@@ -95,8 +94,7 @@ export function getJobTitle(state) {
  * @returns {string}
  */
 export function getJobSubtitle(state) {
-  const model = formatModelName(getCurrentModel(state.modelTier));
-  return `Big Tech Corp — ${getJobTitle(state)} · ${model}`;
+  return `Big Tech Corp — ${getJobTitle(state)}`;
 }
 
 /**

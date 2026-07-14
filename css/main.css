@@ -254,11 +254,6 @@ body {
   color: var(--text);
 }
 
-.btn__icon {
-  font-size: 1rem;
-  line-height: 1;
-}
-
 .btn__badge {
   margin-left: auto;
   padding: 2px 8px;

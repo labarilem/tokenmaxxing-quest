@@ -418,7 +418,7 @@ export class UI {
   formatModelGoal(cost, canBuy) {
     const { game } = this;
     if (canBuy) {
-      return "Ready to certify.";
+      return "Ready to buy.";
     }
     const shortfall = cost - game.tokens;
     if (shortfall <= 0) {

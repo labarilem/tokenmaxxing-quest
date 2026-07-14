@@ -117,7 +117,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Headcount Approved** | Achievement: buy first Background Agent |
 | **Quarterly Target** | Achievement: reach 100 tokens |
 | **Token powers of ten** | Achievements at 1, 10, 100 … 1B tokens (10 milestones) |
-| **Job title progression** | Header subtitle promotes on token milestones (100 → Senior, 1k → Staff, … 1B → CTO); shows certified model name |
+| **Job title progression** | Header subtitle promotes on token milestones (100 → Senior, 1k → Staff, … 1B → CTO); company + job title only (no model name) |
 | **Small Fleet** | Achievement: own 25 Background Agents |
 | **Next goal UI** | Each upgrade shows afford hint (prompts and/or passive ETA) and next milestone |
 | **Upgrade benefit labels** | Each upgrade shows marginal gain for the next purchase (e.g. +1 token/click, +1 token/s; scales at milestones) |
@@ -192,12 +192,19 @@ Open `http://localhost:8080`.
 - Dropped save `version` field and renamed key to `tokenmaxxing-quest.save` (no migration)
 - Clarified model certify resets **agents only**; **Agent Rules are kept**
 
+### 2026-07-14 — Header copy, Buy buttons, toolbar cleanup
+
+- Header subtitle no longer shows certified model name (company + job title only)
+- All token-cost upgrade buttons use **Buy** (including model tier); project rule added
+- Vif 4.0 flavor copy: "Snappier excuses, less hallucinations. Probably."
+- Removed toolbar icons from Achievements and Reset chips (text-only, consistent with rest of UI)
+
 ### 2026-07-14 — LLM model certification (prestige)
 
 - Added **LLM model** upgrade panel (Option A prestige): certify with tokens when an agent gate is met; **+15% all income per tier**; **agents reset to 0** on certify (rules kept)
 - Model ladder: Clair 3.5 → Vif 4.0 → Sage 4.2 → Grand 4.5 → Noir 4.8 → Fort 5.0 (short French names, fictional — not real vendor models)
 - Agent gates aligned to fleet pacing (12 / 25 / 38 / 52 / 65); costs tuned for ~4–15 min passive save at gate
-- Header subtitle shows certified model; **Model Citizen** achievement on first certify
+- Header subtitle shows company and job title only; **Model Citizen** achievement on first certify
 
 ### 2026-07-13 — Upgrade benefit labels
 
