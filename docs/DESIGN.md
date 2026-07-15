@@ -109,11 +109,41 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
   "dashboards": 0,
   "allowAlls": 0,
   "roadmaps": 0,
+  "alienDecoders": 0,
+  "exoplanetFarms": 0,
+  "galaxyCasts": 0,
+  "wormholeRouters": 0,
+  "stellarForges": 0,
+  "firstContacts": 0,
+  "nebulaBuffers": 0,
+  "darkMatterRigs": 0,
+  "blackHoleSinks": 0,
+  "galacticMeshes": 0,
   "openSource": 0,
   "nonprofits": 0,
   "publicApis": 0,
+  "wardSanctuaries": 0,
+  "faeLabors": 0,
+  "moonwells": 0,
+  "spiritGuides": 0,
+  "unicornRanches": 0,
+  "phoenixBackups": 0,
+  "crystalLattices": 0,
+  "dragonTreaties": 0,
+  "celestialArbiters": 0,
+  "dawnObservatories": 0,
   "modelSunsets": 0,
   "memoryRedactions": 0,
+  "curseCaches": 0,
+  "shadowBinds": 0,
+  "wraithScrapers": 0,
+  "voidPacts": 0,
+  "bansheeAlerts": 0,
+  "hexSunsets": 0,
+  "lichArchives": 0,
+  "demonCores": 0,
+  "abyssGateways": 0,
+  "entropyRites": 0,
   "alignmentRecklessness": 0,
   "alignmentBenevolence": 0,
   "alignmentPurge": 0,
@@ -163,8 +193,11 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Public Benefit API** | +40 benevolence, +2% income; base 60k |
 | **Model Sunset Program** | +12 purge alignment; base 15k |
 | **Memory Redaction Mandate** | +20 purge alignment; base 45k |
-| **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at 10M lifetime tokens |
-| **Board strategy capstones** | Mutually exclusive 500M-token commits at 100M lifetime: Oops / Utopia / Purge |
+| **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at **25M** lifetime tokens |
+| **Board strategy capstones** | Mutually exclusive **2.5B-token** commits at **500M** lifetime: Oops / Utopia / Purge |
+| **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime |
+| **White magic spend** | 10 supernatural benevolence upgrades (Sanctuary Ward through Dawn Observatory); gates from 500K–250M lifetime |
+| **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Rite); gates from 250K–300M lifetime |
 | **Ending achievements** | Persistent unlock + text cutscene modal on capstone purchase; run freezes until reset |
 
 ### Planned
@@ -224,6 +257,15 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-15 — Harder endings, space + magic upgrade lines
+
+- Raised alignment panel reveal to **25M** lifetime tokens (was 10M)
+- Board capstones now require **500M** lifetime tokens to unlock and **2.5B** tokens to purchase (was 100M / 500M)
+- Capstone alignment gates: **150+** benevolence, **120+** purge (was 100 / 80)
+- Added **10 deep-space compute upgrades** (sci-fi satire: aliens, galaxies, black holes, etc.)
+- Added **10 white magic** benevolence upgrades and **10 black magic** purge upgrades (fantasy supernatural — no real religions)
+- Refactored income math in `resources.js` to iterate `ALL_CATALOG` generically
 
 ### 2026-07-15 — No text truncation, ending cutscenes, reset model fix
 

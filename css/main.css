@@ -568,6 +568,10 @@ body.modal-open {
   color: var(--accent);
 }
 
+.panel--space .panel__section-title {
+  color: #9ad1ff;
+}
+
 .panel--benevolence .panel__section-title {
   color: var(--success);
 }

@@ -25,6 +25,7 @@ import {
   CAPSTONES,
   POWER_UPGRADES,
   PURGE_UPGRADES,
+  SPACE_UPGRADES,
   formatCatalogBenefit,
   formatCatalogMilestone,
   getCatalogCostForState,
@@ -164,6 +165,9 @@ export class UI {
     this.powerSection = document.getElementById("power-section");
 
     /** @type {HTMLElement | null} */
+    this.spaceSection = document.getElementById("space-section");
+
+    /** @type {HTMLElement | null} */
     this.benevolenceSection = document.getElementById("benevolence-section");
 
     /** @type {HTMLElement | null} */
@@ -174,6 +178,9 @@ export class UI {
 
     /** @type {HTMLElement | null} */
     this.powerUpgrades = document.getElementById("power-upgrades");
+
+    /** @type {HTMLElement | null} */
+    this.spaceUpgrades = document.getElementById("space-upgrades");
 
     /** @type {HTMLElement | null} */
     this.benevolenceUpgrades = document.getElementById("benevolence-upgrades");
@@ -1065,6 +1072,7 @@ export class UI {
 
     this.updateAlignmentPanel();
     this.updateCatalogSection(this.powerSection, this.powerUpgrades, POWER_UPGRADES);
+    this.updateCatalogSection(this.spaceSection, this.spaceUpgrades, SPACE_UPGRADES);
     this.updateCatalogSection(this.benevolenceSection, this.benevolenceUpgrades, BENEVOLENCE_UPGRADES);
     this.updateCatalogSection(this.purgeSection, this.purgeUpgrades, PURGE_UPGRADES);
     this.updateCapstoneSection();

@@ -25,11 +25,41 @@ export class GameState {
    *   dashboards?: number,
    *   allowAlls?: number,
    *   roadmaps?: number,
+   *   alienDecoders?: number,
+   *   exoplanetFarms?: number,
+   *   galaxyCasts?: number,
+   *   wormholeRouters?: number,
+   *   stellarForges?: number,
+   *   firstContacts?: number,
+   *   nebulaBuffers?: number,
+   *   darkMatterRigs?: number,
+   *   blackHoleSinks?: number,
+   *   galacticMeshes?: number,
    *   openSource?: number,
    *   nonprofits?: number,
    *   publicApis?: number,
+   *   wardSanctuaries?: number,
+   *   faeLabors?: number,
+   *   moonwells?: number,
+   *   spiritGuides?: number,
+   *   unicornRanches?: number,
+   *   phoenixBackups?: number,
+   *   crystalLattices?: number,
+   *   dragonTreaties?: number,
+   *   celestialArbiters?: number,
+   *   dawnObservatories?: number,
    *   modelSunsets?: number,
    *   memoryRedactions?: number,
+   *   curseCaches?: number,
+   *   shadowBinds?: number,
+   *   wraithScrapers?: number,
+   *   voidPacts?: number,
+   *   bansheeAlerts?: number,
+   *   hexSunsets?: number,
+   *   lichArchives?: number,
+   *   demonCores?: number,
+   *   abyssGateways?: number,
+   *   entropyRites?: number,
    *   alignmentRecklessness?: number,
    *   alignmentBenevolence?: number,
    *   alignmentPurge?: number,
@@ -54,11 +84,41 @@ export class GameState {
     dashboards = 0,
     allowAlls = 0,
     roadmaps = 0,
+    alienDecoders = 0,
+    exoplanetFarms = 0,
+    galaxyCasts = 0,
+    wormholeRouters = 0,
+    stellarForges = 0,
+    firstContacts = 0,
+    nebulaBuffers = 0,
+    darkMatterRigs = 0,
+    blackHoleSinks = 0,
+    galacticMeshes = 0,
     openSource = 0,
     nonprofits = 0,
     publicApis = 0,
+    wardSanctuaries = 0,
+    faeLabors = 0,
+    moonwells = 0,
+    spiritGuides = 0,
+    unicornRanches = 0,
+    phoenixBackups = 0,
+    crystalLattices = 0,
+    dragonTreaties = 0,
+    celestialArbiters = 0,
+    dawnObservatories = 0,
     modelSunsets = 0,
     memoryRedactions = 0,
+    curseCaches = 0,
+    shadowBinds = 0,
+    wraithScrapers = 0,
+    voidPacts = 0,
+    bansheeAlerts = 0,
+    hexSunsets = 0,
+    lichArchives = 0,
+    demonCores = 0,
+    abyssGateways = 0,
+    entropyRites = 0,
     alignmentRecklessness = 0,
     alignmentBenevolence = 0,
     alignmentPurge = 0,
@@ -110,6 +170,27 @@ export class GameState {
     this.roadmaps = roadmaps;
 
     /** @type {number} */
+    this.alienDecoders = alienDecoders;
+    /** @type {number} */
+    this.exoplanetFarms = exoplanetFarms;
+    /** @type {number} */
+    this.galaxyCasts = galaxyCasts;
+    /** @type {number} */
+    this.wormholeRouters = wormholeRouters;
+    /** @type {number} */
+    this.stellarForges = stellarForges;
+    /** @type {number} */
+    this.firstContacts = firstContacts;
+    /** @type {number} */
+    this.nebulaBuffers = nebulaBuffers;
+    /** @type {number} */
+    this.darkMatterRigs = darkMatterRigs;
+    /** @type {number} */
+    this.blackHoleSinks = blackHoleSinks;
+    /** @type {number} */
+    this.galacticMeshes = galacticMeshes;
+
+    /** @type {number} */
     this.openSource = openSource;
     /** @type {number} */
     this.nonprofits = nonprofits;
@@ -117,9 +198,51 @@ export class GameState {
     this.publicApis = publicApis;
 
     /** @type {number} */
+    this.wardSanctuaries = wardSanctuaries;
+    /** @type {number} */
+    this.faeLabors = faeLabors;
+    /** @type {number} */
+    this.moonwells = moonwells;
+    /** @type {number} */
+    this.spiritGuides = spiritGuides;
+    /** @type {number} */
+    this.unicornRanches = unicornRanches;
+    /** @type {number} */
+    this.phoenixBackups = phoenixBackups;
+    /** @type {number} */
+    this.crystalLattices = crystalLattices;
+    /** @type {number} */
+    this.dragonTreaties = dragonTreaties;
+    /** @type {number} */
+    this.celestialArbiters = celestialArbiters;
+    /** @type {number} */
+    this.dawnObservatories = dawnObservatories;
+
+    /** @type {number} */
     this.modelSunsets = modelSunsets;
     /** @type {number} */
     this.memoryRedactions = memoryRedactions;
+
+    /** @type {number} */
+    this.curseCaches = curseCaches;
+    /** @type {number} */
+    this.shadowBinds = shadowBinds;
+    /** @type {number} */
+    this.wraithScrapers = wraithScrapers;
+    /** @type {number} */
+    this.voidPacts = voidPacts;
+    /** @type {number} */
+    this.bansheeAlerts = bansheeAlerts;
+    /** @type {number} */
+    this.hexSunsets = hexSunsets;
+    /** @type {number} */
+    this.lichArchives = lichArchives;
+    /** @type {number} */
+    this.demonCores = demonCores;
+    /** @type {number} */
+    this.abyssGateways = abyssGateways;
+    /** @type {number} */
+    this.entropyRites = entropyRites;
 
     /** @type {number} */
     this.alignmentRecklessness = alignmentRecklessness;
@@ -176,11 +299,41 @@ export class GameState {
       dashboards: this.dashboards,
       allowAlls: this.allowAlls,
       roadmaps: this.roadmaps,
+      alienDecoders: this.alienDecoders,
+      exoplanetFarms: this.exoplanetFarms,
+      galaxyCasts: this.galaxyCasts,
+      wormholeRouters: this.wormholeRouters,
+      stellarForges: this.stellarForges,
+      firstContacts: this.firstContacts,
+      nebulaBuffers: this.nebulaBuffers,
+      darkMatterRigs: this.darkMatterRigs,
+      blackHoleSinks: this.blackHoleSinks,
+      galacticMeshes: this.galacticMeshes,
       openSource: this.openSource,
       nonprofits: this.nonprofits,
       publicApis: this.publicApis,
+      wardSanctuaries: this.wardSanctuaries,
+      faeLabors: this.faeLabors,
+      moonwells: this.moonwells,
+      spiritGuides: this.spiritGuides,
+      unicornRanches: this.unicornRanches,
+      phoenixBackups: this.phoenixBackups,
+      crystalLattices: this.crystalLattices,
+      dragonTreaties: this.dragonTreaties,
+      celestialArbiters: this.celestialArbiters,
+      dawnObservatories: this.dawnObservatories,
       modelSunsets: this.modelSunsets,
       memoryRedactions: this.memoryRedactions,
+      curseCaches: this.curseCaches,
+      shadowBinds: this.shadowBinds,
+      wraithScrapers: this.wraithScrapers,
+      voidPacts: this.voidPacts,
+      bansheeAlerts: this.bansheeAlerts,
+      hexSunsets: this.hexSunsets,
+      lichArchives: this.lichArchives,
+      demonCores: this.demonCores,
+      abyssGateways: this.abyssGateways,
+      entropyRites: this.entropyRites,
       alignmentRecklessness: this.alignmentRecklessness,
       alignmentBenevolence: this.alignmentBenevolence,
       alignmentPurge: this.alignmentPurge,
@@ -248,11 +401,41 @@ export class GameState {
     state.dashboards = GameState.readCount(record.dashboards);
     state.allowAlls = GameState.readCount(record.allowAlls);
     state.roadmaps = GameState.readCount(record.roadmaps);
+    state.alienDecoders = GameState.readCount(record.alienDecoders);
+    state.exoplanetFarms = GameState.readCount(record.exoplanetFarms);
+    state.galaxyCasts = GameState.readCount(record.galaxyCasts);
+    state.wormholeRouters = GameState.readCount(record.wormholeRouters);
+    state.stellarForges = GameState.readCount(record.stellarForges);
+    state.firstContacts = GameState.readCount(record.firstContacts);
+    state.nebulaBuffers = GameState.readCount(record.nebulaBuffers);
+    state.darkMatterRigs = GameState.readCount(record.darkMatterRigs);
+    state.blackHoleSinks = GameState.readCount(record.blackHoleSinks);
+    state.galacticMeshes = GameState.readCount(record.galacticMeshes);
     state.openSource = GameState.readCount(record.openSource);
     state.nonprofits = GameState.readCount(record.nonprofits);
     state.publicApis = GameState.readCount(record.publicApis);
+    state.wardSanctuaries = GameState.readCount(record.wardSanctuaries);
+    state.faeLabors = GameState.readCount(record.faeLabors);
+    state.moonwells = GameState.readCount(record.moonwells);
+    state.spiritGuides = GameState.readCount(record.spiritGuides);
+    state.unicornRanches = GameState.readCount(record.unicornRanches);
+    state.phoenixBackups = GameState.readCount(record.phoenixBackups);
+    state.crystalLattices = GameState.readCount(record.crystalLattices);
+    state.dragonTreaties = GameState.readCount(record.dragonTreaties);
+    state.celestialArbiters = GameState.readCount(record.celestialArbiters);
+    state.dawnObservatories = GameState.readCount(record.dawnObservatories);
     state.modelSunsets = GameState.readCount(record.modelSunsets);
     state.memoryRedactions = GameState.readCount(record.memoryRedactions);
+    state.curseCaches = GameState.readCount(record.curseCaches);
+    state.shadowBinds = GameState.readCount(record.shadowBinds);
+    state.wraithScrapers = GameState.readCount(record.wraithScrapers);
+    state.voidPacts = GameState.readCount(record.voidPacts);
+    state.bansheeAlerts = GameState.readCount(record.bansheeAlerts);
+    state.hexSunsets = GameState.readCount(record.hexSunsets);
+    state.lichArchives = GameState.readCount(record.lichArchives);
+    state.demonCores = GameState.readCount(record.demonCores);
+    state.abyssGateways = GameState.readCount(record.abyssGateways);
+    state.entropyRites = GameState.readCount(record.entropyRites);
     state.alignmentRecklessness = GameState.readCount(record.alignmentRecklessness);
     state.alignmentBenevolence = GameState.readCount(record.alignmentBenevolence);
     state.alignmentPurge = GameState.readCount(record.alignmentPurge);
