@@ -216,6 +216,7 @@ Agents: apply that skill's pre-implementation checklist before any mechanic chan
 ## UI/UX Guidelines
 
 - Single-column card layout, max-width 480px
+- Header + token counter pinned (`position: sticky`) while scrolling long upgrade lists
 - Minimum 44×44px touch targets on all buttons
 - Base font 16px; tabular nums for counters
 - Dark theme by default
@@ -258,6 +259,10 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-15 — Sticky header and token panel
+
+- Pinned game header and tokens counter while scrolling long upgrade catalogs
 
 ### 2026-07-15 — Header company name follows upgrade themes
 
