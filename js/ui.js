@@ -14,6 +14,7 @@ import {
   getCurrentModel,
   getMarginalClickGain,
   getMarginalPassiveGain,
+  getModelCertificationCost,
   getNextAgentMilestone,
   getNextModel,
   getNextRuleMilestone,
@@ -886,10 +887,11 @@ export class UI {
       : formatModelPanelLabel(game.modelTier, currentModel);
     const modelBenefitText = formatModelBenefit(game.modelTier);
     const modelDescText = nextModel?.description ?? currentModel.description;
-    const modelCostText = nextModel?.cost ? formatNumber(nextModel.cost) : "";
+    const modelCostValue = getModelCertificationCost(nextModel);
+    const modelCostText = modelCostValue !== undefined ? formatNumber(modelCostValue) : "";
     const canBuyModel = game.canBuyModel();
-    const modelGoalText = nextModel?.cost
-      ? this.formatModelGoal(nextModel.cost, canBuyModel)
+    const modelGoalText = modelCostValue !== undefined
+      ? this.formatModelGoal(modelCostValue, canBuyModel)
       : "Maximum model tier.";
     const modelGateText = formatModelGateHint(game.modelTier, game.agents);
     const modelRunningText = formatModelName(currentModel);

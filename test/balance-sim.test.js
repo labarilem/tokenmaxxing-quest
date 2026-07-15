@@ -53,3 +53,14 @@ test("simulateAllEndings completes every path under step budget", () => {
     assert.ok(result.lifetimeTokens >= CAPSTONE_COST);
   }
 });
+
+test("simulateAllEndings reaches each ending in at least one hour of optimal play", () => {
+  const ONE_HOUR_MS = 60 * 60 * 1000;
+  const results = simulateAllEndings();
+  for (const result of results) {
+    assert.ok(
+      result.elapsedMs >= ONE_HOUR_MS,
+      `${result.path} ended in ${result.elapsedMs}ms, expected >= ${ONE_HOUR_MS}ms`,
+    );
+  }
+});

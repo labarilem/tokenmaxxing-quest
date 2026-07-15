@@ -5,6 +5,7 @@ import { ENDING_DEFS } from "./endings.js";
 import {
   getMarginalClickGain,
   getMarginalPassiveGain,
+  getModelCertificationCost,
   getNextModel,
 } from "./resources.js";
 import {
@@ -13,6 +14,7 @@ import {
   CAPSTONE_PURGE_MIN,
   CAPSTONE_REVEAL_TOKENS,
   CAPSTONES,
+  getCatalogCostForState,
   POWER_UPGRADES,
   PURGE_UPGRADES,
   SPACE_UPGRADES,
@@ -171,28 +173,23 @@ export function getAffordableActions(game, path) {
   }
   if (game.canBuyModel()) {
     const next = getNextModel(game.modelTier);
-    if (next?.cost) {
-      actions.push({ kind: "model", cost: next.cost });
+    const cost = getModelCertificationCost(next);
+    if (cost !== undefined) {
+      actions.push({ kind: "model", cost });
     }
   }
 
   for (const entry of getCatalogForPath(path)) {
     if (game.canBuyCatalog(entry)) {
-      actions.push({ kind: "catalog", entry, cost: getCatalogCostForAction(game, entry) });
+      actions.push({
+        kind: "catalog",
+        entry,
+        cost: getCatalogCostForState(game.state, entry),
+      });
     }
   }
 
   return actions;
-}
-
-/**
- * @param {Game} game
- * @param {import("./upgrades.js").CatalogEntry} entry
- * @returns {number}
- */
-function getCatalogCostForAction(game, entry) {
-  const owned = game.state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
-  return Math.ceil(entry.baseCost * entry.costGrowthRate ** owned);
 }
 
 /**
@@ -308,8 +305,9 @@ export function getNextPurchaseTargetCost(game, path) {
   }
 
   const nextModel = getNextModel(game.modelTier);
-  if (nextModel?.cost && !game.canBuyModel()) {
-    costs.push(nextModel.cost);
+  const nextModelCost = getModelCertificationCost(nextModel);
+  if (nextModelCost !== undefined && !game.canBuyModel()) {
+    costs.push(nextModelCost);
   }
 
   for (const entry of getCatalogForPath(path)) {
@@ -321,7 +319,7 @@ export function getNextPurchaseTargetCost(game, path) {
       if (entry.gate && !entry.gate(game.state)) {
         continue;
       }
-      costs.push(getCatalogCostForAction(game, entry));
+      costs.push(getCatalogCostForState(game.state, entry));
     }
   }
 

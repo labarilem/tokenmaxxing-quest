@@ -19,6 +19,9 @@ import {
 
 export const SAVE_KEY = "tokenmaxxing-quest.save";
 
+/** Scales upgrade/catalog purchase costs for overall run pacing (see balance-sim). */
+export const ECONOMY_COST_MULTIPLIER = 2.05;
+
 export const TICKS_PER_SECOND = 5;
 export const TICK_MS = 1000 / TICKS_PER_SECOND;
 export const TOKENS_PER_TICK = 1 / TICKS_PER_SECOND;
@@ -68,7 +71,7 @@ export const MODELS = [
     id: "vif-4.0",
     name: "Vif",
     version: "4.0",
-    cost: 2_500,
+    cost: 5_000,
     agentGate: 12,
     description: "Snappier excuses, less hallucinations. Probably.",
   },
@@ -76,7 +79,7 @@ export const MODELS = [
     id: "sage-4.2",
     name: "Sage",
     version: "4.2",
-    cost: 20_000,
+    cost: 40_000,
     agentGate: 25,
     description: "Wise enough to sound confident.",
   },
@@ -84,7 +87,7 @@ export const MODELS = [
     id: "grand-4.5",
     name: "Grand",
     version: "4.5",
-    cost: 35_000,
+    cost: 70_000,
     agentGate: 38,
     description: "General availability, general token bill.",
   },
@@ -92,7 +95,7 @@ export const MODELS = [
     id: "noir-4.8",
     name: "Noir",
     version: "4.8",
-    cost: 150_000,
+    cost: 300_000,
     agentGate: 52,
     description: "Deep thinking mode. Deep invoice.",
   },
@@ -100,7 +103,7 @@ export const MODELS = [
     id: "fort-5.0",
     name: "Fort",
     version: "5.0",
-    cost: 600_000,
+    cost: 1_200_000,
     agentGate: 65,
     description: "Strong opinions. Stronger burn rate.",
   },
@@ -128,7 +131,21 @@ export function formatRate(rate) {
  * @returns {number}
  */
 export function getUpgradeCost(upgrade, owned) {
-  return Math.ceil(upgrade.baseCost * upgrade.costGrowthRate ** owned);
+  return Math.ceil(
+    upgrade.baseCost * upgrade.costGrowthRate ** owned * ECONOMY_COST_MULTIPLIER,
+  );
+}
+
+/**
+ * Token cost to certify a model tier from the ladder definition.
+ * @param {ModelDef} model
+ * @returns {number | undefined}
+ */
+export function getModelCertificationCost(model) {
+  if (!model || model.cost === undefined) {
+    return undefined;
+  }
+  return Math.ceil(model.cost * ECONOMY_COST_MULTIPLIER);
 }
 
 /**

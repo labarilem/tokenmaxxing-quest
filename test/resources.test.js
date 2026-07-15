@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   AGENT,
+  ECONOMY_COST_MULTIPLIER,
   RULE,
   formatAffordHint,
   formatClickBenefit,
@@ -31,13 +32,16 @@ test("formatNumber always shows full digits with grouping", () => {
 });
 
 test("getRuleCost grows exponentially and stays cheaper than agents early", () => {
-  assert.equal(getRuleCost(0), RULE.baseCost);
+  assert.equal(getRuleCost(0), Math.ceil(RULE.baseCost * ECONOMY_COST_MULTIPLIER));
   assert.ok(getRuleCost(0) < getAgentCost(0));
-  assert.equal(getRuleCost(1), Math.ceil(RULE.baseCost * RULE.costGrowthRate));
+  assert.equal(
+    getRuleCost(1),
+    Math.ceil(RULE.baseCost * RULE.costGrowthRate * ECONOMY_COST_MULTIPLIER),
+  );
 });
 
 test("getAgentCost is pricier than before", () => {
-  assert.equal(getAgentCost(0), 75);
+  assert.equal(getAgentCost(0), Math.ceil(AGENT.baseCost * ECONOMY_COST_MULTIPLIER));
   assert.ok(getAgentCost(0) > getRuleCost(0) * 5);
 });
 

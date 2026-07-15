@@ -5,11 +5,12 @@ import { Game } from "../js/game.js";
 import { GameState } from "../js/state.js";
 import { ManualClock } from "../js/clock.js";
 import { getEndingDef, ENDING_DEFS } from "../js/endings.js";
-import { getNextModel } from "../js/resources.js";
+import { getModelCertificationCost, getNextModel } from "../js/resources.js";
 import {
   BENEVOLENCE_UPGRADES,
   CAPSTONE_REVEAL_TOKENS,
   CAPSTONES,
+  getCatalogCost,
   POWER_UPGRADES,
   PURGE_UPGRADES,
 } from "../js/upgrades.js";
@@ -21,7 +22,11 @@ test("buyCatalog applies benevolence alignment for open source grant", () => {
 
   const game = new Game({
     clock: new ManualClock(0),
-    state: new GameState({ tokens: openSource.baseCost, lifetimeTokens: 1_000, lastTickAt: 0 }),
+    state: new GameState({
+      tokens: getCatalogCost(openSource, 0),
+      lifetimeTokens: 1_000,
+      lastTickAt: 0,
+    }),
   });
 
   const result = game.buyCatalog(openSource);
@@ -37,7 +42,7 @@ test("buyCatalog shifts recklessness for allow-all profile", () => {
   const game = new Game({
     clock: new ManualClock(0),
     state: new GameState({
-      tokens: allowAll.baseCost,
+      tokens: getCatalogCost(allowAll, 0),
       modelTier: 5,
       lifetimeTokens: 1_000_000,
       lastTickAt: 0,
@@ -80,7 +85,7 @@ test("white magic grant increases benevolence alignment", () => {
   const game = new Game({
     clock: new ManualClock(0),
     state: new GameState({
-      tokens: ward.baseCost,
+      tokens: getCatalogCost(ward, 0),
       lifetimeTokens: 500_000,
       lastTickAt: 0,
     }),
@@ -98,7 +103,7 @@ test("black magic cache increases purge alignment", () => {
   const game = new Game({
     clock: new ManualClock(0),
     state: new GameState({
-      tokens: curse.baseCost,
+      tokens: getCatalogCost(curse, 0),
       lifetimeTokens: 250_000,
       lastTickAt: 0,
     }),
@@ -191,7 +196,9 @@ test("buyModel works after new-game reset following an ending", () => {
   assert.equal(game.state.strategyPath, null);
   assert.equal(game.canAct(), true);
 
-  game.state.tokens = next.cost;
+  const cost = getModelCertificationCost(next);
+  assert.ok(cost !== undefined);
+  game.state.tokens = cost;
   game.state.agents = next.agentGate;
 
   assert.equal(game.canBuyModel(), true);

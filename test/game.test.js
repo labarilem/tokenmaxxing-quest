@@ -11,6 +11,7 @@ import {
   RULE,
   TICKS_PER_SECOND,
   getAgentCost,
+  getModelCertificationCost,
   getModelMultiplier,
   getNextModel,
   getRuleCost,
@@ -63,7 +64,7 @@ test("buyRule fails when tokens are insufficient", () => {
 test("buyRule spends tokens, increments rules, and boosts click power", () => {
   const game = new Game({
     clock: new ManualClock(0),
-    state: new GameState({ tokens: RULE.baseCost, lastTickAt: 0 }),
+    state: new GameState({ tokens: getRuleCost(0), lastTickAt: 0 }),
   });
 
   const result = game.buyRule();
@@ -88,10 +89,12 @@ test("model multiplier boosts click and passive income", () => {
 test("buyModel requires agent gate and tokens, resets agents, keeps rules", () => {
   const next = getNextModel(0);
   assert.ok(next);
+  const cost = getModelCertificationCost(next);
+  assert.ok(cost !== undefined);
   const game = new Game({
     clock: new ManualClock(0),
     state: new GameState({
-      tokens: next.cost - 1,
+      tokens: cost - 1,
       agents: next.agentGate,
       rules: 7,
       lastTickAt: 0,
@@ -99,7 +102,7 @@ test("buyModel requires agent gate and tokens, resets agents, keeps rules", () =
   });
   assert.equal(game.canBuyModel(), false);
 
-  game.state.tokens = next.cost;
+  game.state.tokens = cost;
   assert.equal(game.canBuyModel(), true);
 
   const result = game.buyModel();
@@ -115,10 +118,12 @@ test("buyModel requires agent gate and tokens, resets agents, keeps rules", () =
 test("buyModel fails when agent gate is not met", () => {
   const next = getNextModel(0);
   assert.ok(next);
+  const cost = getModelCertificationCost(next);
+  assert.ok(cost !== undefined);
   const game = new Game({
     clock: new ManualClock(0),
     state: new GameState({
-      tokens: next.cost,
+      tokens: cost,
       agents: next.agentGate - 1,
       lastTickAt: 0,
     }),
@@ -140,7 +145,7 @@ test("buyAgent fails when tokens are insufficient", () => {
 test("buyAgent spends tokens, increments agents, and raises passive rate", () => {
   const game = new Game({
     clock: new ManualClock(0),
-    state: new GameState({ tokens: AGENT.baseCost, lastTickAt: 0 }),
+    state: new GameState({ tokens: getAgentCost(0), lastTickAt: 0 }),
   });
 
   const result = game.buyAgent();

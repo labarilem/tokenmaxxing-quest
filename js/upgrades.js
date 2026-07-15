@@ -1,5 +1,7 @@
 /** @typedef {import("./state.js").GameState} GameState */
 
+import { ECONOMY_COST_MULTIPLIER } from "./resources.js";
+
 /** @typedef {{
  *   at: number,
  *   multiplier: number,
@@ -35,8 +37,8 @@
  * }} CatalogEntry */
 
 export const ALIGNMENT_REVEAL_TOKENS = 25_000_000;
-export const CAPSTONE_REVEAL_TOKENS = 500_000_000;
-export const CAPSTONE_COST = 2_500_000_000;
+export const CAPSTONE_REVEAL_TOKENS = 800_000_000;
+export const CAPSTONE_COST = 6_000_000_000;
 export const CAPSTONE_BENEVOLENCE_MIN = 150;
 export const CAPSTONE_PURGE_MIN = 120;
 
@@ -180,7 +182,7 @@ export const POWER_UPGRADES = [
     costGrowthRate: 1,
     maxOwned: 3,
     category: "power",
-    gateHint: "Needs 500M lifetime tokens.",
+    gateHint: "Needs 800M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS,
     incomeMultiplierPerOwned: 2,
     alignment: { recklessness: 5 },
@@ -712,7 +714,9 @@ export function getCatalogCost(entry, owned) {
   if (entry.maxOwned !== undefined && owned >= entry.maxOwned) {
     return Infinity;
   }
-  return Math.ceil(entry.baseCost * entry.costGrowthRate ** owned);
+  return Math.ceil(
+    entry.baseCost * entry.costGrowthRate ** owned * ECONOMY_COST_MULTIPLIER,
+  );
 }
 
 /**

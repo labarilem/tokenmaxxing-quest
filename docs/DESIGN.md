@@ -164,10 +164,10 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 |----------|----------|
 | **Tokens** | Primary resource — company AI tokens consumed |
 | **Send Prompt** | Manual click; base +1 token, plus +1 per owned Agent Rule (with milestone multipliers) |
-| **Agent Rule** | First upgrade; base 8 tokens, ×1.10 cost growth; +1 token per prompt per rule; milestones at **15** and **40** owned (×2 each) |
-| **Background Agent** | Pricier passive upgrade; base **75** tokens, ×1.14 cost growth; +1 token/s each; milestones at **25** and **60** owned (×2 each) |
-| **LLM model certification** | Prestige-style upgrade panel; costs tokens + requires agent gate; **+15% all token income per tier** (×1.15, ×1.30, …); **resets agents to 0** on certify (**rules kept**); persists across new game |
-| **Model ladder** | Clair 3.5 (start) → Vif 4.0 (12 agents, 2.5k) → Sage 4.2 (25, 20k) → Grand 4.5 (38, 35k) → Noir 4.8 (52, 150k) → Fort 5.0 (65, 600k) |
+| **Agent Rule** | First upgrade; base 8 tokens, ×1.10 cost growth; +1 token per prompt per rule; milestones at **15** and **40** owned (×2 each); costs scaled by **ECONOMY_COST_MULTIPLIER (2.05×)** |
+| **Background Agent** | Pricier passive upgrade; base **75** tokens, ×1.14 cost growth; +1 token/s each; milestones at **25** and **60** owned (×2 each); costs scaled by **2.05×** |
+| **LLM model certification** | Prestige-style upgrade panel; costs tokens + requires agent gate; **+15% all token income per tier** (×1.15, ×1.30, …); **resets agents to 0** on certify (**rules kept**); persists across new game; certification costs scaled by **2.05×** |
+| **Model ladder** | Clair 3.5 (start) → Vif 4.0 (12 agents, 5k) → Sage 4.2 (25, 40k) → Grand 4.5 (38, 70k) → Noir 4.8 (52, 300k) → Fort 5.0 (65, 1.2M) — base costs before **2.05×** multiplier |
 | **Model Citizen** | Achievement: certify first model upgrade |
 | **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn; toolbar shows earned count |
 | **First Prompt** | Achievement: send your first prompt |
@@ -199,7 +199,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Model Sunset Program** | +12 purge alignment; base 15k |
 | **Memory Redaction Mandate** | +20 purge alignment; base 45k |
 | **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at **25M** lifetime tokens |
-| **Board strategy capstones** | Mutually exclusive **2.5B-token** commits at **500M** lifetime: Oops / Utopia / Purge |
+| **Board strategy capstones** | Mutually exclusive **6B-token** commits at **800M** lifetime: Oops / Utopia / Purge |
 | **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime |
 | **White magic spend** | 10 supernatural benevolence upgrades (Sanctuary Ward through Dawn Observatory); gates from 500K–250M lifetime |
 | **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Rite); gates from 250K–300M lifetime |
@@ -264,11 +264,18 @@ Open `http://localhost:8080`.
 
 ## Changelog
 
+### 2026-07-15 — Slower ending pacing (~1 hour per path)
+
+- Added `ECONOMY_COST_MULTIPLIER` (**2.05×**) applied to rules, agents, catalog upgrades, and model certification costs
+- Raised board capstones to **6B tokens** at **800M** lifetime reveal (was 2.5B / 500M)
+- Doubled base model certification costs in the ladder (before multiplier)
+- Simulated optimal play now reaches each ending in **~1h 4m–1h 6m** (was ~28–29m)
+
 ### 2026-07-15 — Ending pace balance simulator
 
 - Added `js/balance-sim.js` headless greedy player that simulates optimal hybrid play (passive + manual prompts) to each capstone ending
 - Added `npm run balance:endings` CLI report and `balance-endings` GitHub Actions workflow on mechanics changes
-- Current baseline (5 prompts/s, tab focused): **oops ~28m**, **utopia ~29m**, **purge ~29m**
+- Current baseline (5 prompts/s, tab focused): **oops ~1h 4m**, **utopia ~1h 6m**, **purge ~1h 6m**
 
 ### 2026-07-15 — Sticky header and token panel
 

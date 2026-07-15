@@ -5,6 +5,7 @@ import {
   SAVE_KEY,
   TOKENS_PER_TICK,
   getAgentCost,
+  getModelCertificationCost,
   getModelMultiplier,
   getNextModel,
   getRuleCost,
@@ -102,7 +103,8 @@ export class Game {
 
   /** @returns {number | null} token cost of the next model, if any */
   get modelCost() {
-    return getNextModel(this.state.modelTier)?.cost ?? null;
+    const next = getNextModel(this.state.modelTier);
+    return getModelCertificationCost(next) ?? null;
   }
 
   /** @returns {boolean} */
@@ -131,12 +133,13 @@ export class Game {
       return false;
     }
     const next = getNextModel(this.state.modelTier);
-    if (!next?.cost || next.agentGate === undefined) {
+    const cost = getModelCertificationCost(next);
+    if (!next || cost === undefined || next.agentGate === undefined) {
       return false;
     }
     return (
       this.state.agents >= next.agentGate &&
-      this.state.tokens >= next.cost
+      this.state.tokens >= cost
     );
   }
 
@@ -213,10 +216,11 @@ export class Game {
    */
   buyModel() {
     const next = getNextModel(this.state.modelTier);
-    if (!next?.cost || next.agentGate === undefined || !this.canBuyModel()) {
+    const cost = getModelCertificationCost(next);
+    if (!next || cost === undefined || next.agentGate === undefined || !this.canBuyModel()) {
       return { purchased: false, unlocked: [] };
     }
-    this.state.tokens -= next.cost;
+    this.state.tokens -= cost;
     this.state.modelTier += 1;
     this.state.agents = 0;
     return {
