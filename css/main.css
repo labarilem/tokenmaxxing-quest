@@ -590,6 +590,14 @@ body.modal-open {
   color: #9ad1ff;
 }
 
+.panel--enterprise .panel__section-title {
+  color: #c9b8ff;
+}
+
+.panel--orbital .panel__section-title {
+  color: #ffd59a;
+}
+
 .panel--benevolence .panel__section-title {
   color: var(--success);
 }

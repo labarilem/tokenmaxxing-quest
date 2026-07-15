@@ -15,9 +15,13 @@ test("getCatalogForPath includes alignment lines per ending", () => {
   const purge = getCatalogForPath("purge");
 
   assert.ok(oops.some((entry) => entry.id === "swarm"));
+  assert.ok(oops.some((entry) => entry.id === "perf-review-bot"));
+  assert.ok(oops.some((entry) => entry.id === "ring-station-relay"));
   assert.ok(!oops.some((entry) => entry.id === "open-source"));
   assert.ok(utopia.some((entry) => entry.id === "open-source"));
+  assert.ok(utopia.some((entry) => entry.id === "community-coop"));
   assert.ok(purge.some((entry) => entry.id === "model-sunset"));
+  assert.ok(purge.some((entry) => entry.id === "soulbound-eula"));
 });
 
 test("formatDuration renders human-readable pacing", () => {

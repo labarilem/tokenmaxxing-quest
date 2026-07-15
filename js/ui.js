@@ -24,6 +24,8 @@ import {
   BENEVOLENCE_UPGRADES,
   CAPSTONE_REVEAL_TOKENS,
   CAPSTONES,
+  ENTERPRISE_UPGRADES,
+  ORBITAL_UPGRADES,
   POWER_UPGRADES,
   PURGE_UPGRADES,
   SPACE_UPGRADES,
@@ -166,7 +168,13 @@ export class UI {
     this.powerSection = document.getElementById("power-section");
 
     /** @type {HTMLElement | null} */
+    this.enterpriseSection = document.getElementById("enterprise-section");
+
+    /** @type {HTMLElement | null} */
     this.spaceSection = document.getElementById("space-section");
+
+    /** @type {HTMLElement | null} */
+    this.orbitalSection = document.getElementById("orbital-section");
 
     /** @type {HTMLElement | null} */
     this.benevolenceSection = document.getElementById("benevolence-section");
@@ -181,7 +189,13 @@ export class UI {
     this.powerUpgrades = document.getElementById("power-upgrades");
 
     /** @type {HTMLElement | null} */
+    this.enterpriseUpgrades = document.getElementById("enterprise-upgrades");
+
+    /** @type {HTMLElement | null} */
     this.spaceUpgrades = document.getElementById("space-upgrades");
+
+    /** @type {HTMLElement | null} */
+    this.orbitalUpgrades = document.getElementById("orbital-upgrades");
 
     /** @type {HTMLElement | null} */
     this.benevolenceUpgrades = document.getElementById("benevolence-upgrades");
@@ -1074,7 +1088,9 @@ export class UI {
 
     this.updateAlignmentPanel();
     this.updateCatalogSection(this.powerSection, this.powerUpgrades, POWER_UPGRADES);
+    this.updateCatalogSection(this.enterpriseSection, this.enterpriseUpgrades, ENTERPRISE_UPGRADES);
     this.updateCatalogSection(this.spaceSection, this.spaceUpgrades, SPACE_UPGRADES);
+    this.updateCatalogSection(this.orbitalSection, this.orbitalUpgrades, ORBITAL_UPGRADES);
     this.updateCatalogSection(this.benevolenceSection, this.benevolenceUpgrades, BENEVOLENCE_UPGRADES);
     this.updateCatalogSection(this.purgeSection, this.purgeUpgrades, PURGE_UPGRADES);
     this.updateCapstoneSection();

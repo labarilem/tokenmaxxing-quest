@@ -16,11 +16,13 @@ test("getCompanyName advances through late big-tech fleet milestones", () => {
 
 test("getCompanyName shifts to deep space when space theme unlocks", () => {
   assert.equal(
-    getCompanyName(new GameState({ lifetimeTokens: 50_000_000 })),
-    "Deep Space Division",
+    getCompanyName(new GameState({ lifetimeTokens: 3_000_000 })),
+    "Enterprise Ops Group",
   );
   assert.equal(
-    getCompanyName(new GameState({ lifetimeTokens: 50_000_000, alienDecoders: 1 })),
+    getCompanyName(
+      new GameState({ lifetimeTokens: 50_000_000, regulatoryKabukis: 1, alienDecoders: 1 }),
+    ),
     "Exoplanet Token Farms",
   );
   assert.equal(

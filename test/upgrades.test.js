@@ -124,6 +124,9 @@ test("buyCapstone commits utopia ending when benevolence gate is met", () => {
       tokens: utopia.cost,
       lifetimeTokens: CAPSTONE_REVEAL_TOKENS,
       alignmentBenevolence: 160,
+      capstoneBriefingSuites: 1,
+      ethicsSummits: 1,
+      stewardshipCovenants: 1,
       lastTickAt: 0,
     }),
   });
