@@ -1,6 +1,8 @@
 
 /** @typedef {import("./state.js").GameState} GameState */
 
+import { getCompanyName } from "./company.js";
+
 /** @typedef {{ id: string, title: string, description: string }} AchievementDef */
 
 /** @typedef {'sendPrompt' | 'buyRule' | 'buyAgent' | 'buyModel' | 'buyCatalog' | 'buyCapstone' | 'tick'} AchievementTrigger */
@@ -109,7 +111,7 @@ export function getJobTitle(state) {
  * @returns {string}
  */
 export function getJobSubtitle(state) {
-  return `Big Tech Corp — ${getJobTitle(state)}`;
+  return `${getCompanyName(state)} — ${getJobTitle(state)}`;
 }
 
 /**

@@ -48,6 +48,7 @@ js/
   storage.js        → KeyValueStore abstraction (LocalStorageAdapter, MemoryStorage)
   resources.js      → constants, formatting, upgrade definitions
   achievements.js   → achievement definitions + unlock evaluation
+  company.js        → header company name progression by theme
   upgrades.js       → power/benevolence/purge catalog + capstones + alignment
   endings.js        → ending narratives + resolution helpers
   ui.js             → DOM bindings, update-on-change only
@@ -170,7 +171,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Headcount Approved** | Achievement: buy first Background Agent |
 | **Quarterly Target** | Achievement: reach 100 tokens |
 | **Token powers of ten** | Achievements at 1, 10, 100 … 1B tokens (10 milestones) |
-| **Job title progression** | Header subtitle promotes on token milestones (100 → Senior, 1k → Staff, … 1B → CTO); company + job title only (no model name) |
+| **Job title progression** | Header subtitle promotes on token milestones (100 → Senior, 1k → Staff, … 1B → CTO); **company name** advances with unlocked themes (Big Tech → deep space → magic); job title only (no model name) |
 | **Small Fleet** | Achievement: own 25 Background Agents |
 | **Next goal UI** | Each upgrade shows afford hint (prompts and/or passive ETA) and next milestone |
 | **Upgrade benefit labels** | Each upgrade shows marginal gain for the next purchase (e.g. +1 token/click, +1 token/s; scales at milestones) |
@@ -257,6 +258,11 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-15 — Header company name follows upgrade themes
+
+- Added `js/company.js`: company name progresses from Big Tech through deep-space and magic themes as upgrade lines unlock
+- Ending commits override with path-specific company names
 
 ### 2026-07-15 — Harder endings, space + magic upgrade lines
 
