@@ -18,9 +18,25 @@ import {
   getNextModel,
   getNextRuleMilestone,
 } from "./resources.js";
+import {
+  ALIGNMENT_REVEAL_TOKENS,
+  BENEVOLENCE_UPGRADES,
+  CAPSTONE_REVEAL_TOKENS,
+  CAPSTONES,
+  POWER_UPGRADES,
+  PURGE_UPGRADES,
+  formatCatalogBenefit,
+  formatCatalogMilestone,
+  getCatalogCostForState,
+  getOwnedCount,
+  isCatalogUnlocked,
+} from "./upgrades.js";
 
 /** @typedef {import("./achievements.js").AchievementDef} AchievementDef */
 /** @typedef {import("./game.js").Game} Game */
+/** @typedef {import("./upgrades.js").CatalogEntry} CatalogEntry */
+/** @typedef {import("./upgrades.js").CapstoneDef} CapstoneDef */
+/** @typedef {import("./endings.js").EndingDef} EndingDef */
 
 const TOAST_VISIBLE_MS = 4000;
 const TOAST_EXIT_MS = 300;
@@ -133,6 +149,60 @@ export class UI {
     this.resetFullBtn = document.getElementById("reset-full-btn");
 
     /** @type {HTMLElement | null} */
+    this.alignmentPanel = document.getElementById("alignment-panel");
+
+    /** @type {HTMLElement | null} */
+    this.alignmentRecklessness = document.getElementById("alignment-recklessness");
+
+    /** @type {HTMLElement | null} */
+    this.alignmentBenevolence = document.getElementById("alignment-benevolence");
+
+    /** @type {HTMLElement | null} */
+    this.alignmentPurge = document.getElementById("alignment-purge");
+
+    /** @type {HTMLElement | null} */
+    this.powerSection = document.getElementById("power-section");
+
+    /** @type {HTMLElement | null} */
+    this.benevolenceSection = document.getElementById("benevolence-section");
+
+    /** @type {HTMLElement | null} */
+    this.purgeSection = document.getElementById("purge-section");
+
+    /** @type {HTMLElement | null} */
+    this.capstoneSection = document.getElementById("capstone-section");
+
+    /** @type {HTMLElement | null} */
+    this.powerUpgrades = document.getElementById("power-upgrades");
+
+    /** @type {HTMLElement | null} */
+    this.benevolenceUpgrades = document.getElementById("benevolence-upgrades");
+
+    /** @type {HTMLElement | null} */
+    this.purgeUpgrades = document.getElementById("purge-upgrades");
+
+    /** @type {HTMLElement | null} */
+    this.capstoneUpgrades = document.getElementById("capstone-upgrades");
+
+    /** @type {HTMLElement | null} */
+    this.runCompleteBanner = document.getElementById("run-complete-banner");
+
+    /** @type {HTMLElement | null} */
+    this.endingModal = document.getElementById("ending-modal");
+
+    /** @type {HTMLElement | null} */
+    this.endingTitle = document.getElementById("ending-modal-title");
+
+    /** @type {HTMLElement | null} */
+    this.endingHeadline = document.getElementById("ending-headline");
+
+    /** @type {HTMLElement | null} */
+    this.endingBody = document.getElementById("ending-body");
+
+    /** @type {HTMLElement | null} */
+    this.endingEpilogue = document.getElementById("ending-epilogue");
+
+    /** @type {HTMLElement | null} */
     this.activeModal = null;
 
     /** @type {HTMLElement | null} */
@@ -164,6 +234,31 @@ export class UI {
     this.cachedAchievementsCount = "";
     this.cachedAchievementKey = "";
     this.cachedJobSubtitle = "";
+
+    /** @type {Map<string, HTMLElement>} */
+    this.catalogPanels = new Map();
+
+    /** @type {Map<string, HTMLElement>} */
+    this.capstonePanels = new Map();
+
+    /** @type {Map<string, {
+     *   benefit?: HTMLElement,
+     *   goal?: HTMLElement,
+     *   milestone?: HTMLElement,
+     *   cost?: HTMLElement,
+     *   count?: HTMLElement,
+     *   button?: HTMLButtonElement,
+     * }}>} */
+    this.catalogCache = new Map();
+
+    /** @type {Map<string, {
+     *   goal?: HTMLElement,
+     *   button?: HTMLButtonElement,
+     * }}>} */
+    this.capstoneCache = new Map();
+
+    this.cachedAlignmentKey = "";
+    this.cachedRunComplete = null;
 
     this.handleKeydown = this.handleKeydown.bind(this);
 
@@ -221,7 +316,7 @@ export class UI {
       this.update();
     });
 
-    for (const modal of [this.achievementsModal, this.resetModal]) {
+    for (const modal of [this.achievementsModal, this.resetModal, this.endingModal]) {
       if (!modal) {
         continue;
       }
@@ -306,6 +401,290 @@ export class UI {
       return;
     }
     this.closeModal(this.resetModal);
+  }
+
+  /**
+   * @param {EndingDef} ending
+   */
+  openEndingModal(ending) {
+    if (!this.endingModal) {
+      return;
+    }
+    if (this.endingTitle) {
+      this.endingTitle.textContent = ending.title;
+    }
+    if (this.endingHeadline) {
+      this.endingHeadline.textContent = ending.headline;
+    }
+    if (this.endingBody) {
+      this.endingBody.textContent = ending.body;
+    }
+    if (this.endingEpilogue) {
+      this.endingEpilogue.textContent = ending.epilogue;
+    }
+    this.openModal(this.endingModal, null);
+  }
+
+  /**
+   * @param {HTMLElement} container
+   * @param {CatalogEntry} entry
+   * @returns {HTMLElement}
+   */
+  ensureCatalogPanel(container, entry) {
+    let panel = this.catalogPanels.get(entry.id);
+    if (panel) {
+      return panel;
+    }
+
+    panel = document.createElement("section");
+    panel.className = "panel panel--upgrade";
+    panel.dataset.catalogId = entry.id;
+
+    const label = document.createElement("h3");
+    label.className = "panel__label";
+    label.textContent = entry.name;
+
+    const benefit = document.createElement("p");
+    benefit.className = "upgrade__benefit";
+
+    const desc = document.createElement("p");
+    desc.className = "upgrade__desc";
+    desc.textContent = entry.description;
+
+    const goal = document.createElement("p");
+    goal.className = "upgrade__hint";
+
+    const milestone = document.createElement("p");
+    milestone.className = "upgrade__milestone";
+
+    const row = document.createElement("div");
+    row.className = "upgrade__row";
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn--secondary btn--buy";
+
+    const costWrap = document.createElement("span");
+    const cost = document.createElement("span");
+    costWrap.append("Buy", document.createTextNode(" · "), cost, document.createTextNode(" tokens"));
+    button.append(costWrap);
+
+    const owned = document.createElement("span");
+    owned.className = "upgrade__owned";
+    const count = document.createElement("span");
+    owned.append("Owned: ", count);
+
+    row.append(button, owned);
+    panel.append(label, benefit, desc, goal, milestone, row);
+    container.appendChild(panel);
+
+    button.addEventListener("click", () => {
+      const { purchased, unlocked } = this.game.buyCatalog(entry);
+      if (purchased) {
+        this.update();
+        this.handleNewAchievements(unlocked);
+      }
+    });
+
+    this.catalogPanels.set(entry.id, panel);
+    this.catalogCache.set(entry.id, { benefit, goal, milestone, cost, count, button });
+    return panel;
+  }
+
+  /**
+   * @param {CapstoneDef} capstone
+   * @returns {HTMLElement}
+   */
+  ensureCapstonePanel(capstone) {
+    const existing = this.capstonePanels.get(capstone.id);
+    if (existing) {
+      return existing;
+    }
+    if (!this.capstoneUpgrades) {
+      return null;
+    }
+
+    const panel = document.createElement("section");
+    panel.className = "panel panel--upgrade";
+    panel.dataset.capstoneId = capstone.id;
+
+    const label = document.createElement("h3");
+    label.className = "panel__label";
+    label.textContent = capstone.name;
+
+    const desc = document.createElement("p");
+    desc.className = "upgrade__desc";
+    desc.textContent = capstone.description;
+
+    const goal = document.createElement("p");
+    goal.className = "upgrade__hint";
+
+    const row = document.createElement("div");
+    row.className = "upgrade__row";
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `btn btn--secondary btn--buy btn--capstone-${capstone.path}`;
+    button.textContent = `Buy · ${formatNumber(capstone.cost)} tokens`;
+
+    row.append(button);
+    panel.append(label, desc, goal, row);
+    this.capstoneUpgrades.appendChild(panel);
+
+    button.addEventListener("click", () => {
+      const { purchased, ending, unlocked } = this.game.buyCapstone(capstone);
+      if (purchased) {
+        this.update();
+        this.handleNewAchievements(unlocked);
+        if (ending) {
+          this.openEndingModal(ending);
+        }
+      }
+    });
+
+    this.capstonePanels.set(capstone.id, panel);
+    this.capstoneCache.set(capstone.id, { goal, button });
+    return panel;
+  }
+
+  /**
+   * @param {HTMLElement | null} section
+   * @param {HTMLElement | null} container
+   * @param {CatalogEntry[]} entries
+   */
+  updateCatalogSection(section, container, entries) {
+    if (!section || !container) {
+      return;
+    }
+
+    const visible = entries.filter((entry) => this.game.isCatalogVisible(entry));
+    section.hidden = visible.length === 0;
+
+    for (const entry of visible) {
+      const panel = this.ensureCatalogPanel(container, entry);
+      panel.hidden = false;
+      const owned = getOwnedCount(this.game.state, entry);
+      const cost = getCatalogCostForState(this.game.state, entry);
+      const canBuy = this.game.canBuyCatalog(entry);
+      const cache = this.catalogCache.get(entry.id);
+      if (!cache) {
+        continue;
+      }
+
+      if (cache.benefit) {
+        cache.benefit.textContent = formatCatalogBenefit(entry, this.game.state);
+      }
+      if (cache.goal) {
+        cache.goal.textContent = canBuy
+          ? "Ready to buy."
+          : isCatalogUnlocked(this.game.state, entry)
+            ? this.formatUpgradeGoal(cost, false)
+            : entry.gateHint;
+      }
+      if (cache.milestone) {
+        cache.milestone.textContent = formatCatalogMilestone(entry, owned);
+      }
+      if (cache.cost) {
+        cache.cost.textContent = Number.isFinite(cost) ? formatNumber(cost) : "Max";
+      }
+      if (cache.count) {
+        cache.count.textContent = String(owned);
+      }
+      if (cache.button) {
+        cache.button.disabled = !canBuy;
+        cache.button.classList.toggle("btn--ready", canBuy);
+      }
+    }
+
+    for (const [id, panel] of this.catalogPanels) {
+      if (!entries.some((entry) => entry.id === id)) {
+        continue;
+      }
+      if (!entries.some((entry) => entry.id === id && this.game.isCatalogVisible(entry))) {
+        panel.hidden = true;
+      }
+    }
+  }
+
+  updateCapstoneSection() {
+    if (!this.capstoneSection) {
+      return;
+    }
+
+    const show = this.game.state.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS || this.game.isRunComplete;
+    this.capstoneSection.hidden = !show;
+
+    for (const capstone of CAPSTONES) {
+      this.ensureCapstonePanel(capstone);
+      const cache = this.capstoneCache.get(capstone.id);
+      if (!cache) {
+        continue;
+      }
+      const canBuy = this.game.canBuyCapstone(capstone);
+      const gateMet = capstone.gate(this.game.state);
+      if (cache.goal) {
+        if (this.game.state.strategyPath) {
+          cache.goal.textContent =
+            this.game.state.strategyPath === capstone.path
+              ? "Strategy committed for this run."
+              : "Another strategy was chosen.";
+        } else if (canBuy) {
+          cache.goal.textContent = "Ready to present to the Board.";
+        } else if (!gateMet) {
+          cache.goal.textContent = capstone.gateHint;
+        } else {
+          cache.goal.textContent = this.formatUpgradeGoal(capstone.cost, false);
+        }
+      }
+      if (cache.button) {
+        cache.button.disabled = !canBuy;
+        cache.button.classList.toggle("btn--ready", canBuy);
+      }
+    }
+  }
+
+  updateAlignmentPanel() {
+    const { state } = this.game;
+    const show =
+      state.lifetimeTokens >= ALIGNMENT_REVEAL_TOKENS ||
+      state.alignmentRecklessness > 0 ||
+      state.alignmentBenevolence > 0 ||
+      state.alignmentPurge > 0 ||
+      state.strategyPath !== null;
+
+    if (this.alignmentPanel) {
+      this.alignmentPanel.hidden = !show;
+    }
+
+    const key = `${state.alignmentRecklessness}|${state.alignmentBenevolence}|${state.alignmentPurge}`;
+    if (key !== this.cachedAlignmentKey) {
+      this.cachedAlignmentKey = key;
+
+      if (this.alignmentRecklessness) {
+        this.alignmentRecklessness.textContent = String(state.alignmentRecklessness);
+      }
+      if (this.alignmentBenevolence) {
+        this.alignmentBenevolence.textContent = String(state.alignmentBenevolence);
+      }
+      if (this.alignmentPurge) {
+        this.alignmentPurge.textContent = String(state.alignmentPurge);
+      }
+    }
+  }
+
+  updateRunCompleteState() {
+    const complete = this.game.isRunComplete;
+    if (complete === this.cachedRunComplete) {
+      return;
+    }
+    this.cachedRunComplete = complete;
+
+    if (this.runCompleteBanner) {
+      this.runCompleteBanner.hidden = !complete;
+    }
+    if (this.sendPromptBtn) {
+      this.sendPromptBtn.disabled = complete;
+    }
   }
 
   /**
@@ -662,6 +1041,13 @@ export class UI {
         this.achievementsCountDisplay.textContent = achievementsCountText;
       }
     }
+
+    this.updateAlignmentPanel();
+    this.updateCatalogSection(this.powerSection, this.powerUpgrades, POWER_UPGRADES);
+    this.updateCatalogSection(this.benevolenceSection, this.benevolenceUpgrades, BENEVOLENCE_UPGRADES);
+    this.updateCatalogSection(this.purgeSection, this.purgeUpgrades, PURGE_UPGRADES);
+    this.updateCapstoneSection();
+    this.updateRunCompleteState();
 
     this.updateAchievementsList();
   }

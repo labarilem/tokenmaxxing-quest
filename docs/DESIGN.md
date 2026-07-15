@@ -48,11 +48,14 @@ js/
   storage.js        → KeyValueStore abstraction (LocalStorageAdapter, MemoryStorage)
   resources.js      → constants, formatting, upgrade definitions
   achievements.js   → achievement definitions + unlock evaluation
+  upgrades.js       → power/benevolence/purge catalog + capstones + alignment
+  endings.js        → ending narratives + resolution helpers
   ui.js             → DOM bindings, update-on-change only
 test/
   game.test.js      → engine behavior (actions, ticks, save/load, reset)
   state.test.js     → save (de)serialization + validation
   achievements.test.js → achievement unlock rules
+  upgrades.test.js     → catalog purchases, alignment, capstone endings
 ```
 
 ### Testability & SOLID
@@ -94,7 +97,27 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
   "agents": 2,
   "modelTier": 1,
   "lastTickAt": 1710000000000,
-  "achievements": ["first-prompt"]
+  "achievements": ["first-prompt"],
+  "lifetimeTokens": 5000,
+  "swarms": 0,
+  "decoders": 0,
+  "contexts": 0,
+  "bloats": 0,
+  "clusters": 0,
+  "mcps": 0,
+  "schedulers": 0,
+  "dashboards": 0,
+  "allowAlls": 0,
+  "roadmaps": 0,
+  "openSource": 0,
+  "nonprofits": 0,
+  "publicApis": 0,
+  "modelSunsets": 0,
+  "memoryRedactions": 0,
+  "alignmentRecklessness": 0,
+  "alignmentBenevolence": 0,
+  "alignmentPurge": 0,
+  "strategyPath": null
 }
 ```
 
@@ -125,14 +148,30 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **One-line flavor copy** | Satirical upgrade/achievement descriptions stay one line on mobile (hard rule) |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
 | **Reset progress** | New game (keep achievements + model tier) or full reset (clear achievements + model tier); modal confirmation required |
+| **Parallel Agent Swarm** | +5 tokens/s each; base 500, ×1.16; gate 30 agents; milestones 20/50 |
+| **Speculative Decoding Rig** | +3% all income per owned; base 2k; gate 10 swarms |
+| **Context Window Expander** | +8 tokens/click per owned; base 3.5k; gate 50 rules; milestones 15/40 |
+| **Prompt Bloat Engine** | +5% all income per owned; base 5k; gate 25 swarms |
+| **Inference Cluster** | +50 tokens/s each; base 12k; gate Sage 4.2; milestones 10/25 |
+| **MCP Server Pod** | +1 token/s per agent per pod; base 20k; gate 50 agents + 5 clusters |
+| **Auto-Prompt Scheduler** | +4% of click rate as passive per owned; base 40k; gate Grand 4.5 |
+| **Executive Token Dashboard** | +10% all income per owned; base 80k; gate Noir 4.8 |
+| **Allow-All Permissions Profile** | +30% all income per owned; +8 recklessness; base 200k; gate Fort 5.0 + 1M lifetime |
+| **AGI Roadmap Deck** | ×2 all income per deck (max 3); base 1M; gate 100M lifetime |
+| **Open Source Maintainer Grant** | +15 benevolence; base 8k; no/minimal income |
+| **Nonprofit Compute Credit** | +25 benevolence; base 25k |
+| **Public Benefit API** | +40 benevolence, +2% income; base 60k |
+| **Model Sunset Program** | +12 purge alignment; base 15k |
+| **Memory Redaction Mandate** | +20 purge alignment; base 45k |
+| **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at 10M lifetime tokens |
+| **Board strategy capstones** | Mutually exclusive 500M-token commits at 100M lifetime: Oops / Utopia / Purge |
+| **Ending achievements** | Persistent unlock + narrative modal on capstone purchase; run freezes until reset |
 
 ### Planned
 
 | Version | Mechanic | Notes |
 |---------|----------|-------|
-| V0.2 | Parallel Agent swarm | Second upgrade; tokens/sec breakdown in UI |
-| V0.3 | Prompt Bloat multiplier | More tokens, flavor “code quality” stat declines |
-| V0.4 | Manager Review events | Random events; burnout debuff if over-tokenmaxxing |
+| V0.2 | Manager Review events | Random events; burnout debuff if over-tokenmaxxing |
 
 ## Incremental design guidance
 
@@ -185,6 +224,16 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-14 — Hybrid endings + 10 power upgrades + public-good spend
+
+- Added **10 pricier power upgrades** (Swarm through AGI Roadmap Deck) with gates, milestones, and composed income math
+- Added **open source**, **nonprofit**, and **public benefit API** purchases that shift **benevolence** alignment toward the utopia ending
+- Added **model sunset** and **memory redaction** purchases that shift **purge** alignment
+- Added **org alignment meters** (recklessness / benevolence / purge) revealed at 10M lifetime tokens
+- Added **three mutually exclusive Board strategy capstones** (500M tokens at 100M lifetime) committing one ending per run
+- Endings persist as achievements with narrative modal; run actions freeze until reset
+- New modules: `js/upgrades.js`, `js/endings.js`; extended save format with upgrade counts and alignment fields
 
 ### 2026-07-14 — Alpha status, simplified saves
 
