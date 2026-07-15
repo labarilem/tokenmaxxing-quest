@@ -51,12 +51,16 @@ js/
   company.js        → header company name progression by theme
   upgrades.js       → power/benevolence/purge catalog + capstones + alignment
   endings.js        → ending narratives + resolution helpers
+  balance-sim.js    → headless ending-pace simulator (greedy optimal player)
   ui.js             → DOM bindings, update-on-change only
 test/
   game.test.js      → engine behavior (actions, ticks, save/load, reset)
   state.test.js     → save (de)serialization + validation
   achievements.test.js → achievement unlock rules
   upgrades.test.js     → catalog purchases, alignment, capstone endings
+  balance-sim.test.js  → ending simulations complete for all paths
+scripts/
+  simulate-endings.js → CLI report for ending pace (`npm run balance:endings`)
 ```
 
 ### Testability & SOLID
@@ -259,6 +263,12 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-15 — Ending pace balance simulator
+
+- Added `js/balance-sim.js` headless greedy player that simulates optimal hybrid play (passive + manual prompts) to each capstone ending
+- Added `npm run balance:endings` CLI report and `balance-endings` GitHub Actions workflow on mechanics changes
+- Current baseline (5 prompts/s, tab focused): **oops ~28m**, **utopia ~29m**, **purge ~29m**
 
 ### 2026-07-15 — Sticky header and token panel
 
