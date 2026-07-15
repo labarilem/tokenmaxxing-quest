@@ -11,6 +11,7 @@ import {
   CAPSTONE_REVEAL_TOKENS,
   CAPSTONES,
   POWER_UPGRADES,
+  PURGE_UPGRADES,
 } from "../js/upgrades.js";
 import { getTokensPerClickForState, getTokensPerSecondForState } from "../js/resources.js";
 
@@ -60,6 +61,54 @@ test("context expander increases click income", () => {
   assert.ok(expanded > base);
 });
 
+test("exoplanet farm increases passive income", () => {
+  const state = new GameState({ exoplanetFarms: 2, lastTickAt: 0 });
+  const passive = getTokensPerSecondForState(state);
+  assert.ok(passive >= 500);
+});
+
+test("galaxy cast increases click income", () => {
+  const base = getTokensPerClickForState(new GameState({ lastTickAt: 0 }));
+  const expanded = getTokensPerClickForState(new GameState({ galaxyCasts: 2, lastTickAt: 0 }));
+  assert.ok(expanded > base);
+});
+
+test("white magic grant increases benevolence alignment", () => {
+  const ward = BENEVOLENCE_UPGRADES.find((entry) => entry.id === "ward-sanctuary");
+  assert.ok(ward);
+
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({
+      tokens: ward.baseCost,
+      lifetimeTokens: 500_000,
+      lastTickAt: 0,
+    }),
+  });
+
+  const result = game.buyCatalog(ward);
+  assert.equal(result.purchased, true);
+  assert.equal(game.state.alignmentBenevolence, 10);
+});
+
+test("black magic cache increases purge alignment", () => {
+  const curse = PURGE_UPGRADES.find((entry) => entry.id === "curse-cache");
+  assert.ok(curse);
+
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({
+      tokens: curse.baseCost,
+      lifetimeTokens: 250_000,
+      lastTickAt: 0,
+    }),
+  });
+
+  const result = game.buyCatalog(curse);
+  assert.equal(result.purchased, true);
+  assert.equal(game.state.alignmentPurge, 15);
+});
+
 test("buyCapstone commits utopia ending when benevolence gate is met", () => {
   const utopia = CAPSTONES.find((capstone) => capstone.path === "utopia");
   assert.ok(utopia);
@@ -69,7 +118,7 @@ test("buyCapstone commits utopia ending when benevolence gate is met", () => {
     state: new GameState({
       tokens: utopia.cost,
       lifetimeTokens: CAPSTONE_REVEAL_TOKENS,
-      alignmentBenevolence: 120,
+      alignmentBenevolence: 160,
       lastTickAt: 0,
     }),
   });

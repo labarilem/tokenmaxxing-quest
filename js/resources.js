@@ -1,8 +1,7 @@
 /** @typedef {import("./state.js").GameState} GameState */
 
 import {
-  BENEVOLENCE_UPGRADES,
-  POWER_UPGRADES,
+  ALL_CATALOG,
   getCatalogMultiplier,
 } from "./upgrades.js";
 
@@ -380,13 +379,13 @@ export function formatModelGateHint(modelTier, agents) {
 }
 
 /**
- * Percent-based income bonuses from power and benevolence upgrades.
+ * Percent-based income bonuses from catalog upgrades.
  * @param {GameState} state
  * @returns {number}
  */
 export function getPercentIncomeBonus(state) {
   let bonus = 0;
-  for (const entry of [...POWER_UPGRADES, ...BENEVOLENCE_UPGRADES]) {
+  for (const entry of ALL_CATALOG) {
     if (!entry.incomePercentPerOwned) {
       continue;
     }
@@ -397,14 +396,20 @@ export function getPercentIncomeBonus(state) {
 }
 
 /**
- * Stacking multipliers from roadmap decks.
+ * Stacking multipliers from catalog upgrades (e.g. roadmap decks, black holes).
  * @param {GameState} state
  * @returns {number}
  */
-export function getRoadmapMultiplier(state) {
+export function getStackingIncomeMultiplier(state) {
   let multiplier = 1;
-  for (let i = 0; i < state.roadmaps; i++) {
-    multiplier *= 2;
+  for (const entry of ALL_CATALOG) {
+    if (!entry.incomeMultiplierPerOwned) {
+      continue;
+    }
+    const owned = state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
+    for (let i = 0; i < owned; i++) {
+      multiplier *= entry.incomeMultiplierPerOwned;
+    }
   }
   return multiplier;
 }
@@ -414,7 +419,24 @@ export function getRoadmapMultiplier(state) {
  * @returns {number}
  */
 export function getIncomeMultiplier(state) {
-  return getModelMultiplier(state.modelTier) * (1 + getPercentIncomeBonus(state)) * getRoadmapMultiplier(state);
+  return getModelMultiplier(state.modelTier) * (1 + getPercentIncomeBonus(state)) * getStackingIncomeMultiplier(state);
+}
+
+/**
+ * Click income before global multipliers and scheduler conversion.
+ * @param {GameState} state
+ * @returns {number}
+ */
+export function getBaseClickIncome(state) {
+  let click = getTokensPerClick(state.rules);
+  for (const entry of ALL_CATALOG) {
+    if (!entry.clickPerOwned) {
+      continue;
+    }
+    const owned = state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
+    click += owned * entry.clickPerOwned * getCatalogMultiplier(entry, owned);
+  }
+  return click;
 }
 
 /**
@@ -422,15 +444,7 @@ export function getIncomeMultiplier(state) {
  * @returns {number}
  */
 export function getTokensPerClickForState(state) {
-  let click = getTokensPerClick(state.rules);
-
-  const contextEntry = POWER_UPGRADES.find((entry) => entry.id === "context");
-  if (contextEntry?.clickPerOwned) {
-    const owned = state.contexts;
-    click += owned * contextEntry.clickPerOwned * getCatalogMultiplier(contextEntry, owned);
-  }
-
-  return click * getIncomeMultiplier(state);
+  return getBaseClickIncome(state) * getIncomeMultiplier(state);
 }
 
 /**
@@ -440,31 +454,30 @@ export function getTokensPerClickForState(state) {
 export function getTokensPerSecondForState(state) {
   let passive = getTokensPerSecond(state.agents);
 
-  const swarmEntry = POWER_UPGRADES.find((entry) => entry.id === "swarm");
-  if (swarmEntry?.passivePerOwned) {
-    const owned = state.swarms;
-    passive += owned * swarmEntry.passivePerOwned * getCatalogMultiplier(swarmEntry, owned);
+  for (const entry of ALL_CATALOG) {
+    const owned = state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
+    if (entry.passivePerOwned) {
+      passive += owned * entry.passivePerOwned * getCatalogMultiplier(entry, owned);
+    }
+    if (entry.passivePerAgentPerOwned && state.agents > 0) {
+      passive += owned * entry.passivePerAgentPerOwned * state.agents;
+    }
+    if (entry.passivePerSwarmPerOwned && state.swarms > 0) {
+      passive += owned * entry.passivePerSwarmPerOwned * state.swarms;
+    }
   }
 
-  const clusterEntry = POWER_UPGRADES.find((entry) => entry.id === "cluster");
-  if (clusterEntry?.passivePerOwned) {
-    const owned = state.clusters;
-    passive += owned * clusterEntry.passivePerOwned * getCatalogMultiplier(clusterEntry, owned);
-  }
+  const clickBeforeMultiplier =
+    getBaseClickIncome(state) *
+    getModelMultiplier(state.modelTier) *
+    (1 + getPercentIncomeBonus(state)) *
+    getStackingIncomeMultiplier(state);
 
-  const mcpEntry = POWER_UPGRADES.find((entry) => entry.id === "mcp");
-  if (mcpEntry?.passivePerAgentPerOwned && state.agents > 0) {
-    passive += state.mcps * mcpEntry.passivePerAgentPerOwned * state.agents;
-  }
-
-  const schedulerEntry = POWER_UPGRADES.find((entry) => entry.id === "scheduler");
-  if (schedulerEntry?.passiveClickPercentPerOwned && state.schedulers > 0) {
-    const clickWithoutScheduler =
-      getTokensPerClick(state.rules) *
-      getModelMultiplier(state.modelTier) *
-      (1 + getPercentIncomeBonus(state)) *
-      getRoadmapMultiplier(state);
-    passive += clickWithoutScheduler * schedulerEntry.passiveClickPercentPerOwned * state.schedulers;
+  for (const entry of ALL_CATALOG) {
+    const owned = state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
+    if (entry.passiveClickPercentPerOwned && owned > 0) {
+      passive += clickBeforeMultiplier * entry.passiveClickPercentPerOwned * owned;
+    }
   }
 
   return passive * getIncomeMultiplier(state);

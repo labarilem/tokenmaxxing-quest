@@ -9,25 +9,27 @@
 </head>
 <body>
   <main class="game" id="game">
-    <header class="game__header">
-      <h1 class="game__title">Tokenmaxxing Quest <span class="game__alpha">Alpha</span></h1>
-      <p class="game__subtitle" id="job-subtitle">Big Tech Corp — Software Engineer II</p>
-      <div class="toolbar">
-        <button type="button" class="btn btn--chip btn--chip-accent" id="achievements-open-btn">
-          <span>Achievements</span>
-          <span class="btn__badge" id="achievements-count" aria-label="Achievements earned">0/18</span>
-        </button>
-        <button type="button" class="btn btn--chip btn--chip-muted" id="reset-open-btn">
-          <span>Reset</span>
-        </button>
-      </div>
-    </header>
+    <div class="game__sticky-top">
+      <header class="game__header">
+        <h1 class="game__title">Tokenmaxxing Quest <span class="game__alpha">Alpha</span></h1>
+        <p class="game__subtitle" id="job-subtitle">Big Tech Corp — Software Engineer II</p>
+        <div class="toolbar">
+          <button type="button" class="btn btn--chip btn--chip-accent" id="achievements-open-btn">
+            <span>Achievements</span>
+            <span class="btn__badge" id="achievements-count" aria-label="Achievements earned">0/18</span>
+          </button>
+          <button type="button" class="btn btn--chip btn--chip-muted" id="reset-open-btn">
+            <span>Reset</span>
+          </button>
+        </div>
+      </header>
 
-    <section class="panel panel--resource" aria-live="polite">
-      <h2 class="panel__label">Tokens Consumed</h2>
-      <p class="resource__value" id="tokens-display">0</p>
-      <p class="resource__rate" id="rate-display">+0.0 tokens/s</p>
-    </section>
+      <section class="panel panel--resource" aria-live="polite">
+        <h2 class="panel__label">Tokens Consumed</h2>
+        <p class="resource__value" id="tokens-display">0</p>
+        <p class="resource__rate" id="rate-display">+0.0 tokens/s</p>
+      </section>
+    </div>
 
     <section class="panel panel--actions">
       <button type="button" class="btn btn--primary" id="send-prompt-btn">Send Prompt (+1 token)</button>
@@ -104,20 +106,25 @@
         <div id="power-upgrades" class="upgrade-stack"></div>
       </section>
 
+      <section class="panel panel--section panel--space" id="space-section" hidden>
+        <h2 class="panel__section-title">Deep space compute</h2>
+        <div id="space-upgrades" class="upgrade-stack"></div>
+      </section>
+
       <section class="panel panel--section panel--benevolence" id="benevolence-section" hidden>
-        <h2 class="panel__section-title">Public good spend</h2>
+        <h2 class="panel__section-title">White magic spend</h2>
         <div id="benevolence-upgrades" class="upgrade-stack"></div>
       </section>
 
       <section class="panel panel--section panel--purge" id="purge-section" hidden>
-        <h2 class="panel__section-title">Containment spend</h2>
+        <h2 class="panel__section-title">Black magic spend</h2>
         <div id="purge-upgrades" class="upgrade-stack"></div>
       </section>
     </div>
 
     <section class="panel panel--section panel--capstone" id="capstone-section" hidden>
       <h2 class="panel__section-title">Board strategy (pick one)</h2>
-      <p class="capstone__hint">500M tokens each. Commits your ending for this run.</p>
+      <p class="capstone__hint" id="capstone-hint">2.5B tokens each. Commits your ending for this run.</p>
       <div id="capstone-upgrades" class="upgrade-stack"></div>
     </section>
 
