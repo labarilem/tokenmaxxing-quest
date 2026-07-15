@@ -130,9 +130,7 @@ body {
   margin: 0 0 8px;
   color: var(--text-muted);
   font-size: 0.875rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
 }
 
 .upgrade__goal {
@@ -341,11 +339,7 @@ body {
   margin: 0;
   font-size: 0.8125rem;
   color: var(--text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  line-height: 1.35;
 }
 
 .achievement-overlay {
@@ -412,9 +406,6 @@ body {
   font-size: 0.9375rem;
   font-weight: 600;
   line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 @keyframes achievement-enter {
@@ -640,23 +631,36 @@ body.modal-open {
 }
 
 .ending__headline {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.3;
 }
 
-.ending__body,
-.ending__epilogue {
+.ending__cutscene {
   margin: 0 0 12px;
-  color: var(--text-muted);
-  font-size: 0.875rem;
-  line-height: 1.45;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .ending__epilogue {
+  margin: 0 0 12px;
   color: var(--success);
+  font-size: 0.875rem;
   font-weight: 600;
+  line-height: 1.45;
+}
+
+.modal__dialog--ending {
+  max-width: 440px;
 }
 
 .modal__dialog--ending .btn {

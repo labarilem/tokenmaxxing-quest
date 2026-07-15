@@ -4,7 +4,8 @@ import assert from "node:assert/strict";
 import { Game } from "../js/game.js";
 import { GameState } from "../js/state.js";
 import { ManualClock } from "../js/clock.js";
-import { getEndingDef } from "../js/endings.js";
+import { getEndingDef, ENDING_DEFS } from "../js/endings.js";
+import { getNextModel } from "../js/resources.js";
 import {
   BENEVOLENCE_UPGRADES,
   CAPSTONE_REVEAL_TOKENS,
@@ -114,4 +115,47 @@ test("run actions stop after ending is committed", () => {
   assert.deepEqual(game.sendPrompt(), []);
   assert.equal(game.tokens, 100);
   assert.equal(game.buyRule().purchased, false);
+});
+
+test("buyModel works after new-game reset following an ending", () => {
+  const next = getNextModel(0);
+  assert.ok(next);
+
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({
+      tokens: 0,
+      agents: 0,
+      modelTier: 0,
+      strategyPath: "utopia",
+      achievements: ["ending-utopia"],
+      lastTickAt: 0,
+    }),
+  });
+
+  assert.equal(game.isRunComplete, true);
+  assert.equal(game.canBuyModel(), false);
+
+  game.resetProgress({ keepAchievements: true });
+
+  assert.equal(game.isRunComplete, false);
+  assert.equal(game.state.strategyPath, null);
+  assert.equal(game.canAct(), true);
+
+  game.state.tokens = next.cost;
+  game.state.agents = next.agentGate;
+
+  assert.equal(game.canBuyModel(), true);
+  const result = game.buyModel();
+  assert.equal(result.purchased, true);
+  assert.equal(game.modelTier, 1);
+});
+
+test("each ending has a unique cutscene", () => {
+  const cutscenes = ENDING_DEFS.map((def) => def.cutscene);
+  assert.equal(new Set(cutscenes).size, cutscenes.length);
+  for (const def of ENDING_DEFS) {
+    assert.ok(def.cutscene.includes("[ACHIEVEMENT:"));
+    assert.notEqual(def.cutscene, def.headline);
+  }
 });

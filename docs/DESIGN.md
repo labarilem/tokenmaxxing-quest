@@ -145,7 +145,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Next goal UI** | Each upgrade shows afford hint (prompts and/or passive ETA) and next milestone |
 | **Upgrade benefit labels** | Each upgrade shows marginal gain for the next purchase (e.g. +1 token/click, +1 token/s; scales at milestones) |
 | **Full token display** | Token counter always shows full digits with grouping (no K/M/B abbreviations) |
-| **One-line flavor copy** | Satirical upgrade/achievement descriptions stay one line on mobile (hard rule) |
+| **One-line flavor copy** | Satirical upgrade/achievement descriptions stay short; no CSS ellipsis truncation |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
 | **Reset progress** | New game (keep achievements + model tier) or full reset (clear achievements + model tier); modal confirmation required |
 | **Parallel Agent Swarm** | +5 tokens/s each; base 500, ×1.16; gate 30 agents; milestones 20/50 |
@@ -165,7 +165,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Memory Redaction Mandate** | +20 purge alignment; base 45k |
 | **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at 10M lifetime tokens |
 | **Board strategy capstones** | Mutually exclusive 500M-token commits at 100M lifetime: Oops / Utopia / Purge |
-| **Ending achievements** | Persistent unlock + narrative modal on capstone purchase; run freezes until reset |
+| **Ending achievements** | Persistent unlock + text cutscene modal on capstone purchase; run freezes until reset |
 
 ### Planned
 
@@ -186,7 +186,7 @@ Agents: apply that skill's pre-implementation checklist before any mechanic chan
 - Base font 16px; tabular nums for counters
 - Dark theme by default
 - `prefers-reduced-motion: reduce` disables press animations
-- Satirical micro-copy — **one line max** on upgrade panels; achievement descriptions ≤2 lines on mobile
+- Satirical micro-copy — keep upgrade and achievement descriptions short; no ellipsis truncation in CSS
 - Use `aria-live="polite"` on resource panel and achievement overlay for screen readers
 - Achievements and Reset open centered modals (backdrop click, Escape, or close button to dismiss)
 - Toolbar chip buttons under the header for secondary actions
@@ -224,6 +224,12 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-15 — No text truncation, ending cutscenes, reset model fix
+
+- Removed CSS ellipsis / line-clamp truncation on upgrade, achievement, and toast copy
+- Each ending now shows a unique funny text-based cutscene in the ending modal
+- Reset clears cached buy-button state so model upgrades work again after a completed run
 
 ### 2026-07-14 — Hybrid endings + 10 power upgrades + public-good spend
 

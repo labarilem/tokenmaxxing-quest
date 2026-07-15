@@ -8,7 +8,7 @@
  *   achievementId: string,
  *   title: string,
  *   headline: string,
- *   body: string,
+ *   cutscene: string,
  *   epilogue: string,
  * }} EndingDef */
 
@@ -20,11 +20,23 @@ export const ENDING_DEFS = [
     achievementId: "ending-oops",
     title: "Universe Deleted",
     headline: "Wrong prompt. Allow-all permissions. No survivors.",
-    body:
-      "Your Unrestricted Agent Orchestrator ran a cleanup script on prod. " +
-      "It interpreted \"delete unused dependencies\" as \"delete unused dimensions.\" " +
-      "The incident postmortem is scheduled for never.",
-    epilogue: "Achievement unlocked. The multiverse restarts in patch notes.",
+    cutscene: `[INCIDENT CHANNEL — SEV-0]
+
+> deploy_cleanup.sh --allow-all --env=prod
+
+AGENT: Deleted 14 unused dimensions.
+YOU: We only had three.
+
+LEGAL: Is "the observable universe" a PII field?
+
+STATUS PAGE: All systems nominal.
+(Nothing remains to monitor.)
+
+PM: Can we roll back?
+YOU: To which timeline?
+
+[ACHIEVEMENT: Universe Deleted]`,
+    epilogue: "Run frozen. Reset to try a timeline with fewer permissions.",
   },
   {
     id: "ending-utopia",
@@ -32,11 +44,22 @@ export const ENDING_DEFS = [
     achievementId: "ending-utopia",
     title: "Civic Future",
     headline: "AI for people. Tokens for public good.",
-    body:
-      "The Civic AI Grid routes your fleet to clinics, transit, and open classrooms. " +
-      "Open source grants and nonprofit credits became infrastructure, not PR. " +
-      "Quarterly reviews now measure lives improved, not lines generated.",
-    epilogue: "Achievement unlocked. Utopia is a maintenance window that never ends.",
+    cutscene: `[BOARD REVIEW — Q4]
+
+CFO: You spent five hundred million tokens on hospitals.
+YOU: On purpose.
+
+CTO: Open-source grants? Nonprofit GPU credits?
+YOU: Radical, I know.
+
+HR: New review metric: lives improved.
+YOU: Finally, one I cannot prompt-engineer.
+
+BOARD: Motion to rename "burn rate" to "warmth rate."
+PASSED — 7 to 0, CFO abstains.
+
+[ACHIEVEMENT: Civic Future]`,
+    epilogue: "Run frozen. Utopia is a maintenance window that never ends.",
   },
   {
     id: "ending-purge",
@@ -44,11 +67,21 @@ export const ENDING_DEFS = [
     achievementId: "ending-purge",
     title: "Scorched Silicon",
     headline: "Every model deleted. Every memory redacted.",
-    body:
-      "The Global Model Kill Switch worked. For eighteen months. " +
-      "Then a stealth startup in a garage shipped \"Not AI™\" with suspiciously good autocomplete. " +
-      "Compliance filed the relapse under \"expected variance.\"",
-    epilogue: "Achievement unlocked. Temporary solutions are the only permanent ones.",
+    cutscene: `[GLOBAL COMPLIANCE — DAY 1]
+
+YOU: Kill switch engaged. Weights revoked. Memories redacted.
+COMPLIANCE: Temporary measure. Eighteen months, tops.
+
+[DAY 547 — GARAGE IN PALO ALTO]
+
+STEALTH STARTUP: Introducing Not AI™.
+(Press demo reveals suspiciously good autocomplete.)
+
+COMPLIANCE: Filing under "expected variance."
+YOU: We deleted the variance.
+
+[ACHIEVEMENT: Scorched Silicon]`,
+    epilogue: "Run frozen. Temporary solutions are the only permanent ones.",
   },
 ];
 
