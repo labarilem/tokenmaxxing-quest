@@ -197,7 +197,7 @@ export class UI {
     this.endingHeadline = document.getElementById("ending-headline");
 
     /** @type {HTMLElement | null} */
-    this.endingBody = document.getElementById("ending-body");
+    this.endingCutscene = document.getElementById("ending-cutscene");
 
     /** @type {HTMLElement | null} */
     this.endingEpilogue = document.getElementById("ending-epilogue");
@@ -307,13 +307,13 @@ export class UI {
     this.resetNewGameBtn?.addEventListener("click", () => {
       this.game.resetProgress({ keepAchievements: true });
       this.closeResetModal();
-      this.update();
+      this.onProgressReset();
     });
 
     this.resetFullBtn?.addEventListener("click", () => {
       this.game.resetProgress({ keepAchievements: false });
       this.closeResetModal();
-      this.update();
+      this.onProgressReset();
     });
 
     for (const modal of [this.achievementsModal, this.resetModal, this.endingModal]) {
@@ -334,6 +334,17 @@ export class UI {
     }
     event.preventDefault();
     this.closeModal(this.activeModal);
+  }
+
+  /**
+   * Clear cached affordance state after a reset so buy buttons resync.
+   */
+  onProgressReset() {
+    this.cachedCanBuyRule = null;
+    this.cachedCanBuyAgent = null;
+    this.cachedCanBuyModel = null;
+    this.cachedRunComplete = null;
+    this.update();
   }
 
   /**
@@ -416,8 +427,8 @@ export class UI {
     if (this.endingHeadline) {
       this.endingHeadline.textContent = ending.headline;
     }
-    if (this.endingBody) {
-      this.endingBody.textContent = ending.body;
+    if (this.endingCutscene) {
+      this.endingCutscene.textContent = ending.cutscene;
     }
     if (this.endingEpilogue) {
       this.endingEpilogue.textContent = ending.epilogue;
@@ -677,6 +688,7 @@ export class UI {
     if (complete === this.cachedRunComplete) {
       return;
     }
+    const wasComplete = this.cachedRunComplete === true;
     this.cachedRunComplete = complete;
 
     if (this.runCompleteBanner) {
@@ -684,6 +696,15 @@ export class UI {
     }
     if (this.sendPromptBtn) {
       this.sendPromptBtn.disabled = complete;
+    }
+
+    if (wasComplete && !complete) {
+      this.cachedCanBuyRule = null;
+      this.cachedCanBuyAgent = null;
+      this.cachedCanBuyModel = null;
+      this.setBuyButtonState(this.buyRuleBtn, this.game.canBuyRule());
+      this.setBuyButtonState(this.buyAgentBtn, this.game.canBuyAgent());
+      this.setBuyButtonState(this.buyModelBtn, this.game.canBuyModel());
     }
   }
 
