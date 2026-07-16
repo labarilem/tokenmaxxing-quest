@@ -269,6 +269,15 @@ Open `http://localhost:8080`.
 
 ## Changelog
 
+### 2026-07-16 — Flat catalog UI, alignment income, catalog achievements
+
+- Removed section grouping headers (Fleet expansion, Enterprise ops, White/Black magic spend, etc.); each catalog upgrade is its own panel
+- Benevolence, purge, white-magic, and black-magic upgrades now grant token/s or % token income in addition to alignment
+- Orbital prep items (Board War Room, Orbital Audit Desk, Capstone Briefing Suite) also grant token income
+- Added **ALIGNMENT_COST_SCALE (1.05×)** and steeper alignment-line cost growth to preserve ~1h ending pace after income buff
+- Added **68 catalog purchase achievements** (one per catalog upgrade); ending achievements show redacted title/description while locked
+- Simulated optimal play (5 prompts/s, tab focused): **oops ~1h 0m**, **utopia ~1h 10m**, **purge ~1h 13m**
+
 ### 2026-07-15 — Incremental-design pacing refactor (~1 hour per path)
 
 - Removed global `ECONOMY_COST_MULTIPLIER`; early generators keep base costs
