@@ -193,18 +193,21 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Executive Token Dashboard** | +10% all income per owned; base 80k; gate Noir 4.8 |
 | **Allow-All Permissions Profile** | +30% all income per owned; +8 recklessness; base 200k; gate Fort 5.0 + 1M lifetime |
 | **AGI Roadmap Deck** | ×2 all income per deck (max 3); base 1M; gate 100M lifetime |
-| **Open Source Maintainer Grant** | +15 benevolence; base 8k; no/minimal income |
-| **Nonprofit Compute Credit** | +25 benevolence; base 25k |
-| **Public Benefit API** | +40 benevolence, +2% income; base 60k |
-| **Model Sunset Program** | +12 purge alignment; base 15k |
-| **Memory Redaction Mandate** | +20 purge alignment; base 45k |
+| **Open Source Maintainer Grant** | +15 benevolence, +2 token/s; base 9.5k; ×1.26 cost growth |
+| **Nonprofit Compute Credit** | +25 benevolence, +4 token/s; base 30k |
+| **Public Benefit API** | +40 benevolence, +2% income; base 72k |
+| **Model Sunset Program** | +12 purge, +2 token/s; base 18k |
+| **Memory Redaction Mandate** | +20 purge, +5 token/s; base 52k |
 | **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at **25M** lifetime tokens |
 | **Board strategy capstones** | Mutually exclusive **12B-token** commits at **500M** lifetime; require **Capstone Briefing Suite** (orbital prep chain). Utopia also needs **Ethics Summit** + **Stewardship Covenant** and **150+** benevolence; Purge needs **120+** purge alignment |
 | **Enterprise ops** | 8 corporate mid-game upgrades (Perf Review Automator through Antitrust Distraction Taskforce); gates ~3M–280M lifetime; costs scaled by **ENTERPRISE_COST_SCALE (2×)** |
 | **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime; costs scaled by **MID_GAME_COST_SCALE (1.38×)** |
 | **Orbital infrastructure** | 8 endgame prep upgrades (Orbital Manifest Ledger through Capstone Briefing Suite); gates ~340M–560M lifetime; costs scaled by **ORBITAL_COST_SCALE (3.5×)**; required before capstones |
-| **White magic spend** | 12 supernatural benevolence upgrades (Sanctuary Ward through Stewardship Covenant); gates from 500K–420M lifetime; includes utopia-only capstone prep (**Ethics Summit**, **Stewardship Covenant**) |
-| **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Rite); gates from 250K–300M lifetime |
+| **White magic spend** | 12 supernatural benevolence upgrades (Sanctuary Ward through Stewardship Covenant); each grants token/s or % income plus benevolence; gates from 500K–420M lifetime; **ALIGNMENT_COST_SCALE (1.05×)** |
+| **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Rite); each grants token/s or % income plus purge; gates from 250K–300M lifetime |
+| **Catalog upgrade list** | All catalog upgrades render as individual panels (no section grouping headers) |
+| **Catalog achievements** | First purchase of each catalog upgrade unlocks a milestone achievement (68 total) |
+| **Redacted ending achievements** | Ending achievements appear locked in the list with redacted title/description until earned |
 | **Ending achievements** | Persistent unlock + text cutscene modal on capstone purchase; run freezes until reset |
 
 ### Planned
@@ -265,6 +268,15 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-16 — Flat catalog UI, alignment income, catalog achievements
+
+- Removed section grouping headers (Fleet expansion, Enterprise ops, White/Black magic spend, etc.); each catalog upgrade is its own panel
+- Benevolence, purge, white-magic, and black-magic upgrades now grant token/s or % token income in addition to alignment
+- Orbital prep items (Board War Room, Orbital Audit Desk, Capstone Briefing Suite) also grant token income
+- Added **ALIGNMENT_COST_SCALE (1.05×)** and steeper alignment-line cost growth to preserve ~1h ending pace after income buff
+- Added **68 catalog purchase achievements** (one per catalog upgrade); ending achievements show redacted title/description while locked
+- Simulated optimal play (5 prompts/s, tab focused): **oops ~1h 0m**, **utopia ~1h 10m**, **purge ~1h 13m**
 
 ### 2026-07-15 — Incremental-design pacing refactor (~1 hour per path)
 
