@@ -1,0 +1,33 @@
+name: Balance endings
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "js/**"
+      - "docs/DESIGN.md"
+      - "scripts/simulate-endings.js"
+      - "test/balance-sim.test.js"
+      - "package.json"
+  pull_request:
+    paths:
+      - "js/**"
+      - "docs/DESIGN.md"
+      - "scripts/simulate-endings.js"
+      - "test/balance-sim.test.js"
+      - "package.json"
+  workflow_dispatch:
+
+jobs:
+  ending-pace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Report ending pace
+        run: npm run balance:endings

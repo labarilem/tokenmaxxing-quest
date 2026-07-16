@@ -3,6 +3,8 @@
 
 import {
   BENEVOLENCE_UPGRADES,
+  ENTERPRISE_UPGRADES,
+  ORBITAL_UPGRADES,
   PURGE_UPGRADES,
   SPACE_UPGRADES,
   getOwnedCount,
@@ -42,15 +44,25 @@ function anyUnlockedIn(state, entries) {
  * @returns {0 | 1 | 2 | 3}
  */
 function getThemeTier(state) {
+  const orbitalOwned = countOwnedIn(state, ORBITAL_UPGRADES);
   const spaceOwned = countOwnedIn(state, SPACE_UPGRADES);
+  const enterpriseOwned = countOwnedIn(state, ENTERPRISE_UPGRADES);
   const magicOwned = countOwnedIn(state, WHITE_MAGIC_UPGRADES) + countOwnedIn(state, BLACK_MAGIC_UPGRADES);
   const spaceUnlocked = anyUnlockedIn(state, SPACE_UPGRADES);
+  const orbitalUnlocked = anyUnlockedIn(state, ORBITAL_UPGRADES);
+  const enterpriseUnlocked = anyUnlockedIn(state, ENTERPRISE_UPGRADES);
 
   if (magicOwned > 0) {
     return 3;
   }
+  if (orbitalOwned > 0 || orbitalUnlocked) {
+    return 2.5;
+  }
   if (spaceOwned > 0 || spaceUnlocked) {
     return 2;
+  }
+  if (enterpriseOwned > 0 || enterpriseUnlocked) {
+    return 1.5;
   }
   if (state.roadmaps >= 1 || state.modelTier >= 4 || state.clusters >= 3) {
     return 1;
@@ -121,6 +133,50 @@ function getSpaceCompanyName(state) {
 }
 
 /**
+ * @param {GameState} state
+ * @returns {string}
+ */
+function getEnterpriseCompanyName(state) {
+  const enterpriseOwned = countOwnedIn(state, ENTERPRISE_UPGRADES);
+
+  if (state.procurementBlackHoles > 0) {
+    return "Procurement Singularity LLC";
+  }
+  if (state.vendorLockins >= 3) {
+    return "Vendor Lock-in Partners";
+  }
+  if (enterpriseOwned >= 3) {
+    return "OKR Inflation Holdings";
+  }
+  if (enterpriseOwned > 0) {
+    return "Perf Review Dynamics";
+  }
+  return "Enterprise Ops Group";
+}
+
+/**
+ * @param {GameState} state
+ * @returns {string}
+ */
+function getOrbitalCompanyName(state) {
+  const orbitalOwned = countOwnedIn(state, ORBITAL_UPGRADES);
+
+  if (state.boardWarRooms > 0) {
+    return "Board War Room Corp";
+  }
+  if (state.dysonAllocators > 0) {
+    return "Dyson Swarm Allocators";
+  }
+  if (orbitalOwned >= 3) {
+    return "Lagrange Cache Unlimited";
+  }
+  if (orbitalOwned > 0) {
+    return "Orbital Relay Services";
+  }
+  return "Near-Earth Token Works";
+}
+
+/**
  * Player-facing company name in the header, advancing with unlocked upgrade themes.
  * @param {GameState} state
  * @returns {string}
@@ -141,8 +197,14 @@ export function getCompanyName(state) {
   if (tier >= 3) {
     return getMagicCompanyName(state);
   }
+  if (tier >= 2.5) {
+    return getOrbitalCompanyName(state);
+  }
   if (tier >= 2) {
     return getSpaceCompanyName(state);
+  }
+  if (tier >= 1.5) {
+    return getEnterpriseCompanyName(state);
   }
   if (tier >= 1) {
     if (state.roadmaps >= 2) {

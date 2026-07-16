@@ -51,6 +51,9 @@ export const AGENT = {
   ],
 };
 
+/** Model certification costs scale separately from core generators. */
+export const MODEL_COST_SCALE = 1.75;
+
 /** Permanent token multiplier gained per certified model tier (Option A prestige). */
 export const MODEL_BONUS_PER_TIER = 0.15;
 
@@ -129,6 +132,18 @@ export function formatRate(rate) {
  */
 export function getUpgradeCost(upgrade, owned) {
   return Math.ceil(upgrade.baseCost * upgrade.costGrowthRate ** owned);
+}
+
+/**
+ * Token cost to certify a model tier from the ladder definition.
+ * @param {ModelDef | null | undefined} model
+ * @returns {number | undefined}
+ */
+export function getModelCertificationCost(model) {
+  if (!model || model.cost === undefined) {
+    return undefined;
+  }
+  return Math.ceil(model.cost * MODEL_COST_SCALE);
 }
 
 /**

@@ -14,6 +14,7 @@ import {
   getCurrentModel,
   getMarginalClickGain,
   getMarginalPassiveGain,
+  getModelCertificationCost,
   getNextAgentMilestone,
   getNextModel,
   getNextRuleMilestone,
@@ -23,6 +24,8 @@ import {
   BENEVOLENCE_UPGRADES,
   CAPSTONE_REVEAL_TOKENS,
   CAPSTONES,
+  ENTERPRISE_UPGRADES,
+  ORBITAL_UPGRADES,
   POWER_UPGRADES,
   PURGE_UPGRADES,
   SPACE_UPGRADES,
@@ -165,7 +168,13 @@ export class UI {
     this.powerSection = document.getElementById("power-section");
 
     /** @type {HTMLElement | null} */
+    this.enterpriseSection = document.getElementById("enterprise-section");
+
+    /** @type {HTMLElement | null} */
     this.spaceSection = document.getElementById("space-section");
+
+    /** @type {HTMLElement | null} */
+    this.orbitalSection = document.getElementById("orbital-section");
 
     /** @type {HTMLElement | null} */
     this.benevolenceSection = document.getElementById("benevolence-section");
@@ -180,7 +189,13 @@ export class UI {
     this.powerUpgrades = document.getElementById("power-upgrades");
 
     /** @type {HTMLElement | null} */
+    this.enterpriseUpgrades = document.getElementById("enterprise-upgrades");
+
+    /** @type {HTMLElement | null} */
     this.spaceUpgrades = document.getElementById("space-upgrades");
+
+    /** @type {HTMLElement | null} */
+    this.orbitalUpgrades = document.getElementById("orbital-upgrades");
 
     /** @type {HTMLElement | null} */
     this.benevolenceUpgrades = document.getElementById("benevolence-upgrades");
@@ -886,10 +901,11 @@ export class UI {
       : formatModelPanelLabel(game.modelTier, currentModel);
     const modelBenefitText = formatModelBenefit(game.modelTier);
     const modelDescText = nextModel?.description ?? currentModel.description;
-    const modelCostText = nextModel?.cost ? formatNumber(nextModel.cost) : "";
+    const modelCostValue = getModelCertificationCost(nextModel);
+    const modelCostText = modelCostValue !== undefined ? formatNumber(modelCostValue) : "";
     const canBuyModel = game.canBuyModel();
-    const modelGoalText = nextModel?.cost
-      ? this.formatModelGoal(nextModel.cost, canBuyModel)
+    const modelGoalText = modelCostValue !== undefined
+      ? this.formatModelGoal(modelCostValue, canBuyModel)
       : "Maximum model tier.";
     const modelGateText = formatModelGateHint(game.modelTier, game.agents);
     const modelRunningText = formatModelName(currentModel);
@@ -1072,7 +1088,9 @@ export class UI {
 
     this.updateAlignmentPanel();
     this.updateCatalogSection(this.powerSection, this.powerUpgrades, POWER_UPGRADES);
+    this.updateCatalogSection(this.enterpriseSection, this.enterpriseUpgrades, ENTERPRISE_UPGRADES);
     this.updateCatalogSection(this.spaceSection, this.spaceUpgrades, SPACE_UPGRADES);
+    this.updateCatalogSection(this.orbitalSection, this.orbitalUpgrades, ORBITAL_UPGRADES);
     this.updateCatalogSection(this.benevolenceSection, this.benevolenceUpgrades, BENEVOLENCE_UPGRADES);
     this.updateCatalogSection(this.purgeSection, this.purgeUpgrades, PURGE_UPGRADES);
     this.updateCapstoneSection();

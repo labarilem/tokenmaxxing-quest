@@ -31,12 +31,21 @@
  *   passivePerSwarmPerOwned?: number,
  *   passiveClickPercentPerOwned?: number,
  *   incomeMultiplierPerOwned?: number,
- *   category: "power" | "space" | "benevolence" | "white-magic" | "purge" | "black-magic",
+ *   category: "power" | "enterprise" | "space" | "orbital" | "benevolence" | "white-magic" | "purge" | "black-magic",
  * }} CatalogEntry */
 
 export const ALIGNMENT_REVEAL_TOKENS = 25_000_000;
 export const CAPSTONE_REVEAL_TOKENS = 500_000_000;
-export const CAPSTONE_COST = 2_500_000_000;
+export const CAPSTONE_COST = 12_000_000_000;
+
+/** Mid-game corporate layer pricing — separate from early generators. */
+export const ENTERPRISE_COST_SCALE = 2;
+
+/** Fleet and deep-space catalog tiers after the core loop. */
+export const MID_GAME_COST_SCALE = 1.38;
+
+/** Endgame orbital prep uses steeper costs without inflating early generators. */
+export const ORBITAL_COST_SCALE = 3.5;
 export const CAPSTONE_BENEVOLENCE_MIN = 150;
 export const CAPSTONE_PURGE_MIN = 120;
 
@@ -168,7 +177,7 @@ export const POWER_UPGRADES = [
     category: "power",
     gateHint: "Needs Fort 5.0 and 1M lifetime tokens.",
     gate: (s) => s.modelTier >= 5 && s.lifetimeTokens >= 1_000_000,
-    incomePercentPerOwned: 0.3,
+    incomePercentPerOwned: 0.25,
     alignment: { recklessness: 8 },
   },
   {
@@ -182,8 +191,168 @@ export const POWER_UPGRADES = [
     category: "power",
     gateHint: "Needs 500M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS,
-    incomeMultiplierPerOwned: 2,
+    incomeMultiplierPerOwned: 1.35,
     alignment: { recklessness: 5 },
+  },
+];
+
+/** Corporate ops layer — unlocks between fleet expansion and deep space. */
+/** @type {CatalogEntry[]} */
+export const ENTERPRISE_UPGRADES = [
+  {
+    id: "perf-review-bot",
+    stateKey: "perfReviewBots",
+    name: "Perf Review Automator",
+    description: "Writes your self-review from last quarter's Jira noise.",
+    baseCost: 750_000,
+    costGrowthRate: 1.17,
+    category: "enterprise",
+    gateHint: "Needs 3M lifetime tokens or 2 Executive Dashboards.",
+    gate: (s) => s.lifetimeTokens >= 3_000_000 || s.dashboards >= 2,
+    passivePerOwned: 35,
+    alignment: { recklessness: 2 },
+    milestones: [
+      { at: 10, multiplier: 2, label: "calibration season" },
+      { at: 25, multiplier: 2, label: "stack rank mode" },
+    ],
+  },
+  {
+    id: "headcount-bot",
+    stateKey: "headcountBots",
+    name: "Headcount Requisition Bot",
+    description: "Backfills headcount you were never allowed to cut.",
+    baseCost: 1_200_000,
+    costGrowthRate: 1.18,
+    category: "enterprise",
+    gateHint: "Needs 8M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= 8_000_000,
+    passivePerAgentPerOwned: 0.5,
+    alignment: { recklessness: 2 },
+  },
+  {
+    id: "okr-inflator",
+    stateKey: "okrInflators",
+    name: "Quarterly OKR Inflator",
+    description: "Stretch goals that stretch the token budget instead.",
+    baseCost: 2_500_000,
+    costGrowthRate: 1.17,
+    category: "enterprise",
+    gateHint: "Needs 15M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= 15_000_000,
+    incomePercentPerOwned: 0.035,
+    alignment: { recklessness: 3 },
+  },
+  {
+    id: "vendor-lockin",
+    stateKey: "vendorLockins",
+    name: "Vendor Lock-in Accelerator",
+    description: "Multi-year contracts for single-quarter demos.",
+    baseCost: 5_000_000,
+    costGrowthRate: 1.16,
+    category: "enterprise",
+    gateHint: "Needs Fort 5.0 and 25M lifetime tokens.",
+    gate: (s) => s.modelTier >= 5 && s.lifetimeTokens >= 25_000_000,
+    passivePerOwned: 120,
+    alignment: { recklessness: 3 },
+    milestones: [
+      { at: 8, multiplier: 2, label: "renewal auto-pilot" },
+      { at: 20, multiplier: 2, label: "exit fee waived" },
+    ],
+  },
+  {
+    id: "procurement-black-hole",
+    stateKey: "procurementBlackHoles",
+    name: "Procurement Black Hole",
+    description: "POs disappear into approvals. Tokens do not.",
+    baseCost: 12_000_000,
+    costGrowthRate: 1.15,
+    category: "enterprise",
+    gateHint: "Needs 40M lifetime tokens and 2 Allow-All Profiles.",
+    gate: (s) => s.lifetimeTokens >= 40_000_000 && s.allowAlls >= 2,
+    incomePercentPerOwned: 0.06,
+    alignment: { recklessness: 5 },
+  },
+  {
+    id: "exec-offsite",
+    stateKey: "execOffsites",
+    name: "Executive Offsite Simulator",
+    description: "Trust falls for agents. Trust rises for burn charts.",
+    baseCost: 22_000_000,
+    costGrowthRate: 1.16,
+    category: "enterprise",
+    gateHint: "Needs 35M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= 35_000_000,
+    passivePerOwned: 90,
+    alignment: { recklessness: 3 },
+    milestones: [
+      { at: 8, multiplier: 2, label: "rope course" },
+      { at: 18, multiplier: 2, label: "vision sprint" },
+    ],
+  },
+  {
+    id: "series-z-round",
+    stateKey: "seriesZRounds",
+    name: "Series Z Funding Round",
+    description: "Valuation up. Runway down. Tokens immaculate.",
+    baseCost: 48_000_000,
+    costGrowthRate: 1.15,
+    category: "enterprise",
+    gateHint: "Needs 60M lifetime tokens and 1 Procurement Black Hole.",
+    gate: (s) => s.lifetimeTokens >= 60_000_000 && s.procurementBlackHoles >= 1,
+    incomePercentPerOwned: 0.05,
+    alignment: { recklessness: 4 },
+  },
+  {
+    id: "regulatory-kabuki",
+    stateKey: "regulatoryKabukis",
+    name: "Regulatory Kabuki Stage",
+    description: "Compliance theater with standing ovations from Legal.",
+    baseCost: 85_000_000,
+    costGrowthRate: 1.14,
+    category: "enterprise",
+    gateHint: "Needs 90M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= 90_000_000,
+    incomePercentPerOwned: 0.03,
+    alignment: { recklessness: 2 },
+  },
+  {
+    id: "ipo-roadshow",
+    stateKey: "ipoRoadshows",
+    name: "IPO Roadshow Autopilot",
+    description: "Pitch decks that pitch more pitch decks.",
+    baseCost: 130_000_000,
+    costGrowthRate: 1.14,
+    category: "enterprise",
+    gateHint: "Needs 120M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= 120_000_000,
+    passivePerOwned: 200,
+    alignment: { recklessness: 3 },
+  },
+  {
+    id: "token-buyback",
+    stateKey: "tokenBuybacks",
+    name: "Token Buyback Desk",
+    description: "Repurchase tokens to pump the internal metric.",
+    baseCost: 220_000_000,
+    costGrowthRate: 1.13,
+    category: "enterprise",
+    gateHint: "Needs 180M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= 180_000_000,
+    incomePercentPerOwned: 0.035,
+    alignment: { recklessness: 3 },
+  },
+  {
+    id: "antitrust-distraction",
+    stateKey: "antitrustDistractions",
+    name: "Antitrust Distraction Taskforce",
+    description: "Monopoly? No, we prefer market educator.",
+    baseCost: 350_000_000,
+    costGrowthRate: 1.12,
+    category: "enterprise",
+    gateHint: "Needs 280M lifetime tokens and 1 Regulatory Kabuki Stage.",
+    gate: (s) => s.lifetimeTokens >= 280_000_000 && s.regulatoryKabukis >= 1,
+    passivePerOwned: 450,
+    alignment: { recklessness: 4 },
   },
 ];
 
@@ -197,8 +366,8 @@ export const SPACE_UPGRADES = [
     baseCost: 2_500_000,
     costGrowthRate: 1.17,
     category: "space",
-    gateHint: "Needs 50M lifetime tokens.",
-    gate: (s) => s.lifetimeTokens >= 50_000_000,
+    gateHint: "Needs 50M lifetime tokens and 1 Regulatory Kabuki Stage.",
+    gate: (s) => s.lifetimeTokens >= 50_000_000 && s.regulatoryKabukis >= 1,
     incomePercentPerOwned: 0.05,
     alignment: { recklessness: 4 },
   },
@@ -316,7 +485,7 @@ export const SPACE_UPGRADES = [
     category: "space",
     gateHint: "Needs 300M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 300_000_000,
-    incomeMultiplierPerOwned: 1.5,
+    incomeMultiplierPerOwned: 1.35,
     alignment: { recklessness: 10 },
   },
   {
@@ -329,12 +498,120 @@ export const SPACE_UPGRADES = [
     category: "space",
     gateHint: "Needs 350M lifetime tokens and 1 Black Hole Sink.",
     gate: (s) => s.lifetimeTokens >= 350_000_000 && s.blackHoleSinks >= 1,
-    passivePerOwned: 5000,
+    passivePerOwned: 3500,
     alignment: { recklessness: 7 },
     milestones: [
       { at: 5, multiplier: 2, label: "arm relay" },
       { at: 12, multiplier: 2, label: "supercluster mesh" },
     ],
+  },
+];
+
+/** Orbital infrastructure — late-game layer before board capstones. */
+/** @type {CatalogEntry[]} */
+export const ORBITAL_UPGRADES = [
+  {
+    id: "orbital-manifest",
+    stateKey: "orbitalManifests",
+    name: "Orbital Manifest Ledger",
+    description: "Track every prompt in LEO. Lose none, bill all.",
+    baseCost: 320_000_000,
+    costGrowthRate: 1.16,
+    category: "orbital",
+    gateHint: "Needs 340M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= 340_000_000,
+    passivePerOwned: 600,
+    alignment: { recklessness: 6 },
+  },
+  {
+    id: "ring-station-relay",
+    stateKey: "ringStationRelays",
+    name: "Ring Station Relay",
+    description: "Low-orbit handoff for prompts that missed the deadline.",
+    baseCost: 280_000_000,
+    costGrowthRate: 1.16,
+    category: "orbital",
+    gateHint: "Needs 380M lifetime tokens and 1 Orbital Manifest Ledger.",
+    gate: (s) => s.lifetimeTokens >= 380_000_000 && s.orbitalManifests >= 1,
+    passivePerOwned: 800,
+    alignment: { recklessness: 5 },
+  },
+  {
+    id: "lagrange-cache",
+    stateKey: "lagrangeCaches",
+    name: "Lagrange Token Cache",
+    description: "Stable orbit for unstable spend forecasts.",
+    baseCost: 420_000_000,
+    costGrowthRate: 1.15,
+    category: "orbital",
+    gateHint: "Needs 420M lifetime tokens and 1 Galactic Token Mesh.",
+    gate: (s) => s.lifetimeTokens >= 420_000_000 && s.galacticMeshes >= 1,
+    incomePercentPerOwned: 0.035,
+    alignment: { recklessness: 5 },
+  },
+  {
+    id: "solar-sail-mirror",
+    stateKey: "solarSailMirrors",
+    name: "Solar Sail Prompt Mirror",
+    description: "Reflect prompts around the planet. Bill twice.",
+    baseCost: 550_000_000,
+    costGrowthRate: 1.17,
+    category: "orbital",
+    gateHint: "Needs 460M lifetime tokens and 1 Ring Station Relay.",
+    gate: (s) => s.lifetimeTokens >= 460_000_000 && s.ringStationRelays >= 1,
+    clickPerOwned: 12,
+    alignment: { recklessness: 4 },
+  },
+  {
+    id: "dyson-allocator",
+    stateKey: "dysonAllocators",
+    name: "Dyson Swarm Allocator",
+    description: "Fraction of a sun per inference batch.",
+    baseCost: 700_000_000,
+    costGrowthRate: 1,
+    maxOwned: 2,
+    category: "orbital",
+    gateHint: "Needs 500M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS,
+    incomeMultiplierPerOwned: 1.15,
+    alignment: { recklessness: 8 },
+  },
+  {
+    id: "board-war-room",
+    stateKey: "boardWarRooms",
+    name: "Board War Room Terminal",
+    description: "Live burn chart for executives who love suspense.",
+    baseCost: 900_000_000,
+    costGrowthRate: 1.14,
+    category: "orbital",
+    gateHint: "Needs 520M lifetime tokens and 1 Dyson Swarm Allocator.",
+    gate: (s) => s.lifetimeTokens >= 520_000_000 && s.dysonAllocators >= 1,
+    alignment: { recklessness: 6 },
+  },
+  {
+    id: "orbital-audit-desk",
+    stateKey: "orbitalAuditDesks",
+    name: "Orbital Audit Desk",
+    description: "Compliance in zero-G. Findings orbit forever.",
+    baseCost: 1_200_000_000,
+    costGrowthRate: 1.13,
+    category: "orbital",
+    gateHint: "Needs 540M lifetime tokens and 1 Board War Room.",
+    gate: (s) => s.lifetimeTokens >= 540_000_000 && s.boardWarRooms >= 1,
+    alignment: { recklessness: 5 },
+  },
+  {
+    id: "capstone-briefing-suite",
+    stateKey: "capstoneBriefingSuites",
+    name: "Capstone Briefing Suite",
+    description: "Slide deck for the slide deck that ends the world.",
+    baseCost: 1_500_000_000,
+    costGrowthRate: 1,
+    maxOwned: 1,
+    category: "orbital",
+    gateHint: "Needs 560M lifetime tokens and 1 Orbital Audit Desk.",
+    gate: (s) => s.lifetimeTokens >= 560_000_000 && s.orbitalAuditDesks >= 1,
+    alignment: { recklessness: 10 },
   },
 ];
 
@@ -375,7 +652,19 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 100,000 tokens.",
     gate: (s) => s.tokens >= 100_000 || s.lifetimeTokens >= 100_000,
     alignment: { benevolence: 40 },
-    incomePercentPerOwned: 0.02,
+    incomePercentPerOwned: 0.018,
+  },
+  {
+    id: "community-coop",
+    stateKey: "communityCoops",
+    name: "Community Token Co-op",
+    description: "Member-owned GPUs. No cap table, fewer NDAs.",
+    baseCost: 2_800_000,
+    costGrowthRate: 1.14,
+    category: "benevolence",
+    gateHint: "Needs 8M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= 8_000_000,
+    alignment: { benevolence: 18 },
   },
   {
     id: "ward-sanctuary",
@@ -412,7 +701,7 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 2M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 2_000_000,
     alignment: { benevolence: 18 },
-    incomePercentPerOwned: 0.03,
+    incomePercentPerOwned: 0.027,
   },
   {
     id: "spirit-guide",
@@ -449,7 +738,7 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 25M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 25_000_000,
     alignment: { benevolence: 22 },
-    incomePercentPerOwned: 0.04,
+    incomePercentPerOwned: 0.035,
   },
   {
     id: "crystal-lattice",
@@ -500,6 +789,32 @@ export const BENEVOLENCE_UPGRADES = [
     gate: (s) => s.lifetimeTokens >= 250_000_000,
     alignment: { benevolence: 40 },
   },
+  {
+    id: "ethics-summit",
+    stateKey: "ethicsSummits",
+    name: "Ethics Summit Sponsorship",
+    description: "Keynotes about responsibility. Catering billed to tokens.",
+    baseCost: 220_000_000,
+    costGrowthRate: 1,
+    maxOwned: 1,
+    category: "white-magic",
+    gateHint: "Needs 200M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= 200_000_000,
+    alignment: { benevolence: 30 },
+  },
+  {
+    id: "stewardship-covenant",
+    stateKey: "stewardshipCovenants",
+    name: "Stewardship Covenant Charter",
+    description: "Binding civic compute pledge. Lawyers bill hourly in tokens.",
+    baseCost: 900_000_000,
+    costGrowthRate: 1,
+    maxOwned: 1,
+    category: "white-magic",
+    gateHint: "Needs 420M lifetime tokens and 1 Ethics Summit Sponsorship.",
+    gate: (s) => s.lifetimeTokens >= 420_000_000 && s.ethicsSummits >= 1,
+    alignment: { benevolence: 35 },
+  },
 ];
 
 /** @type {CatalogEntry[]} */
@@ -527,6 +842,18 @@ export const PURGE_UPGRADES = [
     gateHint: "Needs 50,000 tokens.",
     gate: (s) => s.tokens >= 50_000 || s.lifetimeTokens >= 50_000,
     alignment: { purge: 20 },
+  },
+  {
+    id: "soulbound-eula",
+    stateKey: "soulboundEulas",
+    name: "Soulbound EULA Draft",
+    description: "Click-wrap eternity. Revocation is a myth.",
+    baseCost: 2_800_000,
+    costGrowthRate: 1.14,
+    category: "purge",
+    gateHint: "Needs 8M lifetime tokens.",
+    gate: (s) => s.lifetimeTokens >= 8_000_000,
+    alignment: { purge: 18 },
   },
   {
     id: "curse-cache",
@@ -653,7 +980,9 @@ export const PURGE_UPGRADES = [
 /** @type {CatalogEntry[]} */
 export const ALL_CATALOG = [
   ...POWER_UPGRADES,
+  ...ENTERPRISE_UPGRADES,
   ...SPACE_UPGRADES,
+  ...ORBITAL_UPGRADES,
   ...BENEVOLENCE_UPGRADES,
   ...PURGE_UPGRADES,
 ];
@@ -676,8 +1005,9 @@ export const CAPSTONES = [
     name: "Unrestricted Agent Orchestrator",
     description: "Ship autonomous everything. Permissions are a mindset.",
     cost: CAPSTONE_COST,
-    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens. Dominant recklessness helps.`,
-    gate: (s) => s.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS,
+    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens and Capstone Briefing Suite. Dominant recklessness helps.`,
+    gate: (s) =>
+      s.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS && s.capstoneBriefingSuites >= 1,
   },
   {
     id: "capstone-utopia",
@@ -685,9 +1015,12 @@ export const CAPSTONES = [
     name: "Civic AI Grid",
     description: "Redirect compute to hospitals, transit, and actual humans.",
     cost: CAPSTONE_COST,
-    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens and ${CAPSTONE_BENEVOLENCE_MIN}+ benevolence.`,
+    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens, Capstone Briefing Suite, Ethics Summit, Stewardship Covenant, and ${CAPSTONE_BENEVOLENCE_MIN}+ benevolence.`,
     gate: (s) =>
       s.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS &&
+      s.capstoneBriefingSuites >= 1 &&
+      s.ethicsSummits >= 1 &&
+      s.stewardshipCovenants >= 1 &&
       s.alignmentBenevolence >= CAPSTONE_BENEVOLENCE_MIN,
   },
   {
@@ -696,9 +1029,10 @@ export const CAPSTONES = [
     name: "Global Model Kill Switch",
     description: "Coordinated shutdown. Memory wipe on a global scale.",
     cost: CAPSTONE_COST,
-    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens and ${CAPSTONE_PURGE_MIN}+ purge alignment.`,
+    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens, Capstone Briefing Suite, and ${CAPSTONE_PURGE_MIN}+ purge alignment.`,
     gate: (s) =>
       s.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS &&
+      s.capstoneBriefingSuites >= 1 &&
       s.alignmentPurge >= CAPSTONE_PURGE_MIN,
   },
 ];
@@ -712,7 +1046,15 @@ export function getCatalogCost(entry, owned) {
   if (entry.maxOwned !== undefined && owned >= entry.maxOwned) {
     return Infinity;
   }
-  return Math.ceil(entry.baseCost * entry.costGrowthRate ** owned);
+  const scale =
+    entry.category === "orbital"
+      ? ORBITAL_COST_SCALE
+      : entry.category === "enterprise"
+        ? ENTERPRISE_COST_SCALE
+        : entry.category === "power" || entry.category === "space"
+          ? MID_GAME_COST_SCALE
+          : 1;
+  return Math.ceil(entry.baseCost * entry.costGrowthRate ** owned * scale);
 }
 
 /**

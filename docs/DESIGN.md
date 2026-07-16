@@ -51,12 +51,16 @@ js/
   company.js        → header company name progression by theme
   upgrades.js       → power/benevolence/purge catalog + capstones + alignment
   endings.js        → ending narratives + resolution helpers
+  balance-sim.js    → headless ending-pace simulator (greedy optimal player)
   ui.js             → DOM bindings, update-on-change only
 test/
   game.test.js      → engine behavior (actions, ticks, save/load, reset)
   state.test.js     → save (de)serialization + validation
   achievements.test.js → achievement unlock rules
   upgrades.test.js     → catalog purchases, alignment, capstone endings
+  balance-sim.test.js  → ending simulations complete for all paths
+scripts/
+  simulate-endings.js → CLI report for ending pace (`npm run balance:endings`)
 ```
 
 ### Testability & SOLID
@@ -162,8 +166,8 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Send Prompt** | Manual click; base +1 token, plus +1 per owned Agent Rule (with milestone multipliers) |
 | **Agent Rule** | First upgrade; base 8 tokens, ×1.10 cost growth; +1 token per prompt per rule; milestones at **15** and **40** owned (×2 each) |
 | **Background Agent** | Pricier passive upgrade; base **75** tokens, ×1.14 cost growth; +1 token/s each; milestones at **25** and **60** owned (×2 each) |
-| **LLM model certification** | Prestige-style upgrade panel; costs tokens + requires agent gate; **+15% all token income per tier** (×1.15, ×1.30, …); **resets agents to 0** on certify (**rules kept**); persists across new game |
-| **Model ladder** | Clair 3.5 (start) → Vif 4.0 (12 agents, 2.5k) → Sage 4.2 (25, 20k) → Grand 4.5 (38, 35k) → Noir 4.8 (52, 150k) → Fort 5.0 (65, 600k) |
+| **LLM model certification** | Prestige-style upgrade panel; costs tokens + requires agent gate; **+15% all token income per tier** (×1.15, ×1.30, …); **resets agents to 0** on certify (**rules kept**); persists across new game; certification costs scaled by **MODEL_COST_SCALE (1.75×)** |
+| **Model ladder** | Clair 3.5 (start) → Vif 4.0 (12 agents, 5k) → Sage 4.2 (25, 40k) → Grand 4.5 (38, 70k) → Noir 4.8 (52, 300k) → Fort 5.0 (65, 1.2M) |
 | **Model Citizen** | Achievement: certify first model upgrade |
 | **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn; toolbar shows earned count |
 | **First Prompt** | Achievement: send your first prompt |
@@ -195,9 +199,11 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Model Sunset Program** | +12 purge alignment; base 15k |
 | **Memory Redaction Mandate** | +20 purge alignment; base 45k |
 | **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at **25M** lifetime tokens |
-| **Board strategy capstones** | Mutually exclusive **2.5B-token** commits at **500M** lifetime: Oops / Utopia / Purge |
-| **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime |
-| **White magic spend** | 10 supernatural benevolence upgrades (Sanctuary Ward through Dawn Observatory); gates from 500K–250M lifetime |
+| **Board strategy capstones** | Mutually exclusive **12B-token** commits at **500M** lifetime; require **Capstone Briefing Suite** (orbital prep chain). Utopia also needs **Ethics Summit** + **Stewardship Covenant** and **150+** benevolence; Purge needs **120+** purge alignment |
+| **Enterprise ops** | 8 corporate mid-game upgrades (Perf Review Automator through Antitrust Distraction Taskforce); gates ~3M–280M lifetime; costs scaled by **ENTERPRISE_COST_SCALE (2×)** |
+| **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime; costs scaled by **MID_GAME_COST_SCALE (1.38×)** |
+| **Orbital infrastructure** | 8 endgame prep upgrades (Orbital Manifest Ledger through Capstone Briefing Suite); gates ~340M–560M lifetime; costs scaled by **ORBITAL_COST_SCALE (3.5×)**; required before capstones |
+| **White magic spend** | 12 supernatural benevolence upgrades (Sanctuary Ward through Stewardship Covenant); gates from 500K–420M lifetime; includes utopia-only capstone prep (**Ethics Summit**, **Stewardship Covenant**) |
 | **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Rite); gates from 250K–300M lifetime |
 | **Ending achievements** | Persistent unlock + text cutscene modal on capstone purchase; run freezes until reset |
 
@@ -259,6 +265,28 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-15 — Incremental-design pacing refactor (~1 hour per path)
+
+- Removed global `ECONOMY_COST_MULTIPLIER`; early generators keep base costs
+- Added **Enterprise ops** (8 upgrades) and **Orbital infrastructure** (8 upgrades) as revealed mid/late layers instead of blanket inflation
+- Tier-specific cost scales: **ENTERPRISE_COST_SCALE (2×)**, **MID_GAME_COST_SCALE (1.38×)** for power/space, **ORBITAL_COST_SCALE (3.5×)**, **MODEL_COST_SCALE (1.75×)** for model certification only
+- Board capstones: **12B tokens** at **500M** lifetime reveal; require **Capstone Briefing Suite** orbital prep chain
+- Utopia capstone additionally requires **Ethics Summit Sponsorship** and **Stewardship Covenant Charter** (alignment-only prep, no income boost)
+- Simulated optimal play (5 prompts/s, tab focused): **oops ~1h 0m**, **utopia ~1h 0m**, **purge ~1h 1m**
+
+### 2026-07-15 — Slower ending pacing (~1 hour per path) [superseded]
+
+- ~~Added `ECONOMY_COST_MULTIPLIER` (2.05×)~~ — replaced by layered upgrades above
+- Raised board capstones to **6B tokens** at **800M** lifetime reveal (was 2.5B / 500M)
+- Doubled base model certification costs in the ladder (before multiplier)
+- Simulated optimal play now reaches each ending in **~1h 4m–1h 6m** (was ~28–29m)
+
+### 2026-07-15 — Ending pace balance simulator
+
+- Added `js/balance-sim.js` headless greedy player that simulates optimal hybrid play (passive + manual prompts) to each capstone ending
+- Added `npm run balance:endings` CLI report and `balance-endings` GitHub Actions workflow on mechanics changes
+- Current baseline (5 prompts/s, tab focused): **oops ~1h 0m**, **utopia ~1h 0m**, **purge ~1h 1m**
 
 ### 2026-07-15 — Sticky header and token panel
 

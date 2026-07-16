@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "test": "node --test",
+    "balance:endings": "node scripts/simulate-endings.js",
     "serve": "python3 -m http.server 8080"
   }
 }

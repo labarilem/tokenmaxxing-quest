@@ -25,6 +25,25 @@ export class GameState {
    *   dashboards?: number,
    *   allowAlls?: number,
    *   roadmaps?: number,
+   *   perfReviewBots?: number,
+   *   headcountBots?: number,
+   *   okrInflators?: number,
+   *   vendorLockins?: number,
+   *   procurementBlackHoles?: number,
+   *   execOffsites?: number,
+   *   seriesZRounds?: number,
+   *   regulatoryKabukis?: number,
+   *   ipoRoadshows?: number,
+   *   tokenBuybacks?: number,
+   *   antitrustDistractions?: number,
+   *   ringStationRelays?: number,
+   *   lagrangeCaches?: number,
+   *   solarSailMirrors?: number,
+   *   dysonAllocators?: number,
+   *   boardWarRooms?: number,
+   *   orbitalManifests?: number,
+   *   orbitalAuditDesks?: number,
+   *   capstoneBriefingSuites?: number,
    *   alienDecoders?: number,
    *   exoplanetFarms?: number,
    *   galaxyCasts?: number,
@@ -38,6 +57,7 @@ export class GameState {
    *   openSource?: number,
    *   nonprofits?: number,
    *   publicApis?: number,
+   *   communityCoops?: number,
    *   wardSanctuaries?: number,
    *   faeLabors?: number,
    *   moonwells?: number,
@@ -48,8 +68,11 @@ export class GameState {
    *   dragonTreaties?: number,
    *   celestialArbiters?: number,
    *   dawnObservatories?: number,
+   *   ethicsSummits?: number,
+   *   stewardshipCovenants?: number,
    *   modelSunsets?: number,
    *   memoryRedactions?: number,
+   *   soulboundEulas?: number,
    *   curseCaches?: number,
    *   shadowBinds?: number,
    *   wraithScrapers?: number,
@@ -84,6 +107,25 @@ export class GameState {
     dashboards = 0,
     allowAlls = 0,
     roadmaps = 0,
+    perfReviewBots = 0,
+    headcountBots = 0,
+    okrInflators = 0,
+    vendorLockins = 0,
+    procurementBlackHoles = 0,
+    execOffsites = 0,
+    seriesZRounds = 0,
+    regulatoryKabukis = 0,
+    ipoRoadshows = 0,
+    tokenBuybacks = 0,
+    antitrustDistractions = 0,
+    ringStationRelays = 0,
+    lagrangeCaches = 0,
+    solarSailMirrors = 0,
+    dysonAllocators = 0,
+    boardWarRooms = 0,
+    orbitalManifests = 0,
+    orbitalAuditDesks = 0,
+    capstoneBriefingSuites = 0,
     alienDecoders = 0,
     exoplanetFarms = 0,
     galaxyCasts = 0,
@@ -97,6 +139,7 @@ export class GameState {
     openSource = 0,
     nonprofits = 0,
     publicApis = 0,
+    communityCoops = 0,
     wardSanctuaries = 0,
     faeLabors = 0,
     moonwells = 0,
@@ -107,8 +150,11 @@ export class GameState {
     dragonTreaties = 0,
     celestialArbiters = 0,
     dawnObservatories = 0,
+    ethicsSummits = 0,
+    stewardshipCovenants = 0,
     modelSunsets = 0,
     memoryRedactions = 0,
+    soulboundEulas = 0,
     curseCaches = 0,
     shadowBinds = 0,
     wraithScrapers = 0,
@@ -170,6 +216,45 @@ export class GameState {
     this.roadmaps = roadmaps;
 
     /** @type {number} */
+    this.perfReviewBots = perfReviewBots;
+    /** @type {number} */
+    this.headcountBots = headcountBots;
+    /** @type {number} */
+    this.okrInflators = okrInflators;
+    /** @type {number} */
+    this.vendorLockins = vendorLockins;
+    /** @type {number} */
+    this.procurementBlackHoles = procurementBlackHoles;
+    /** @type {number} */
+    this.execOffsites = execOffsites;
+    /** @type {number} */
+    this.seriesZRounds = seriesZRounds;
+    /** @type {number} */
+    this.regulatoryKabukis = regulatoryKabukis;
+    /** @type {number} */
+    this.ipoRoadshows = ipoRoadshows;
+    /** @type {number} */
+    this.tokenBuybacks = tokenBuybacks;
+    /** @type {number} */
+    this.antitrustDistractions = antitrustDistractions;
+    /** @type {number} */
+    this.ringStationRelays = ringStationRelays;
+    /** @type {number} */
+    this.lagrangeCaches = lagrangeCaches;
+    /** @type {number} */
+    this.solarSailMirrors = solarSailMirrors;
+    /** @type {number} */
+    this.dysonAllocators = dysonAllocators;
+    /** @type {number} */
+    this.boardWarRooms = boardWarRooms;
+    /** @type {number} */
+    this.orbitalManifests = orbitalManifests;
+    /** @type {number} */
+    this.orbitalAuditDesks = orbitalAuditDesks;
+    /** @type {number} */
+    this.capstoneBriefingSuites = capstoneBriefingSuites;
+
+    /** @type {number} */
     this.alienDecoders = alienDecoders;
     /** @type {number} */
     this.exoplanetFarms = exoplanetFarms;
@@ -198,6 +283,9 @@ export class GameState {
     this.publicApis = publicApis;
 
     /** @type {number} */
+    this.communityCoops = communityCoops;
+
+    /** @type {number} */
     this.wardSanctuaries = wardSanctuaries;
     /** @type {number} */
     this.faeLabors = faeLabors;
@@ -217,11 +305,18 @@ export class GameState {
     this.celestialArbiters = celestialArbiters;
     /** @type {number} */
     this.dawnObservatories = dawnObservatories;
+    /** @type {number} */
+    this.ethicsSummits = ethicsSummits;
+    /** @type {number} */
+    this.stewardshipCovenants = stewardshipCovenants;
 
     /** @type {number} */
     this.modelSunsets = modelSunsets;
     /** @type {number} */
     this.memoryRedactions = memoryRedactions;
+
+    /** @type {number} */
+    this.soulboundEulas = soulboundEulas;
 
     /** @type {number} */
     this.curseCaches = curseCaches;
@@ -299,6 +394,25 @@ export class GameState {
       dashboards: this.dashboards,
       allowAlls: this.allowAlls,
       roadmaps: this.roadmaps,
+      perfReviewBots: this.perfReviewBots,
+      headcountBots: this.headcountBots,
+      okrInflators: this.okrInflators,
+      vendorLockins: this.vendorLockins,
+      procurementBlackHoles: this.procurementBlackHoles,
+      execOffsites: this.execOffsites,
+      seriesZRounds: this.seriesZRounds,
+      regulatoryKabukis: this.regulatoryKabukis,
+      ipoRoadshows: this.ipoRoadshows,
+      tokenBuybacks: this.tokenBuybacks,
+      antitrustDistractions: this.antitrustDistractions,
+      ringStationRelays: this.ringStationRelays,
+      lagrangeCaches: this.lagrangeCaches,
+      solarSailMirrors: this.solarSailMirrors,
+      dysonAllocators: this.dysonAllocators,
+      boardWarRooms: this.boardWarRooms,
+      orbitalManifests: this.orbitalManifests,
+      orbitalAuditDesks: this.orbitalAuditDesks,
+      capstoneBriefingSuites: this.capstoneBriefingSuites,
       alienDecoders: this.alienDecoders,
       exoplanetFarms: this.exoplanetFarms,
       galaxyCasts: this.galaxyCasts,
@@ -312,6 +426,7 @@ export class GameState {
       openSource: this.openSource,
       nonprofits: this.nonprofits,
       publicApis: this.publicApis,
+      communityCoops: this.communityCoops,
       wardSanctuaries: this.wardSanctuaries,
       faeLabors: this.faeLabors,
       moonwells: this.moonwells,
@@ -322,8 +437,11 @@ export class GameState {
       dragonTreaties: this.dragonTreaties,
       celestialArbiters: this.celestialArbiters,
       dawnObservatories: this.dawnObservatories,
+      ethicsSummits: this.ethicsSummits,
+      stewardshipCovenants: this.stewardshipCovenants,
       modelSunsets: this.modelSunsets,
       memoryRedactions: this.memoryRedactions,
+      soulboundEulas: this.soulboundEulas,
       curseCaches: this.curseCaches,
       shadowBinds: this.shadowBinds,
       wraithScrapers: this.wraithScrapers,
@@ -401,6 +519,25 @@ export class GameState {
     state.dashboards = GameState.readCount(record.dashboards);
     state.allowAlls = GameState.readCount(record.allowAlls);
     state.roadmaps = GameState.readCount(record.roadmaps);
+    state.perfReviewBots = GameState.readCount(record.perfReviewBots);
+    state.headcountBots = GameState.readCount(record.headcountBots);
+    state.okrInflators = GameState.readCount(record.okrInflators);
+    state.vendorLockins = GameState.readCount(record.vendorLockins);
+    state.procurementBlackHoles = GameState.readCount(record.procurementBlackHoles);
+    state.execOffsites = GameState.readCount(record.execOffsites);
+    state.seriesZRounds = GameState.readCount(record.seriesZRounds);
+    state.regulatoryKabukis = GameState.readCount(record.regulatoryKabukis);
+    state.ipoRoadshows = GameState.readCount(record.ipoRoadshows);
+    state.tokenBuybacks = GameState.readCount(record.tokenBuybacks);
+    state.antitrustDistractions = GameState.readCount(record.antitrustDistractions);
+    state.ringStationRelays = GameState.readCount(record.ringStationRelays);
+    state.lagrangeCaches = GameState.readCount(record.lagrangeCaches);
+    state.solarSailMirrors = GameState.readCount(record.solarSailMirrors);
+    state.dysonAllocators = GameState.readCount(record.dysonAllocators);
+    state.boardWarRooms = GameState.readCount(record.boardWarRooms);
+    state.orbitalManifests = GameState.readCount(record.orbitalManifests);
+    state.orbitalAuditDesks = GameState.readCount(record.orbitalAuditDesks);
+    state.capstoneBriefingSuites = GameState.readCount(record.capstoneBriefingSuites);
     state.alienDecoders = GameState.readCount(record.alienDecoders);
     state.exoplanetFarms = GameState.readCount(record.exoplanetFarms);
     state.galaxyCasts = GameState.readCount(record.galaxyCasts);
@@ -414,6 +551,7 @@ export class GameState {
     state.openSource = GameState.readCount(record.openSource);
     state.nonprofits = GameState.readCount(record.nonprofits);
     state.publicApis = GameState.readCount(record.publicApis);
+    state.communityCoops = GameState.readCount(record.communityCoops);
     state.wardSanctuaries = GameState.readCount(record.wardSanctuaries);
     state.faeLabors = GameState.readCount(record.faeLabors);
     state.moonwells = GameState.readCount(record.moonwells);
@@ -424,8 +562,11 @@ export class GameState {
     state.dragonTreaties = GameState.readCount(record.dragonTreaties);
     state.celestialArbiters = GameState.readCount(record.celestialArbiters);
     state.dawnObservatories = GameState.readCount(record.dawnObservatories);
+    state.ethicsSummits = GameState.readCount(record.ethicsSummits);
+    state.stewardshipCovenants = GameState.readCount(record.stewardshipCovenants);
     state.modelSunsets = GameState.readCount(record.modelSunsets);
     state.memoryRedactions = GameState.readCount(record.memoryRedactions);
+    state.soulboundEulas = GameState.readCount(record.soulboundEulas);
     state.curseCaches = GameState.readCount(record.curseCaches);
     state.shadowBinds = GameState.readCount(record.shadowBinds);
     state.wraithScrapers = GameState.readCount(record.wraithScrapers);
