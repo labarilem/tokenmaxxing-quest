@@ -6,6 +6,7 @@ import {
   TOKEN_MILESTONE_DEFS,
   evaluateAchievements,
   getAchievementDef,
+  getAchievementDisplay,
   getJobSubtitle,
   getJobTitle,
 } from "../js/achievements.js";
@@ -92,8 +93,26 @@ test("getJobSubtitle formats company and title", () => {
   assert.equal(getJobSubtitle(state), "Big Tech Corp — Staff Engineer");
 });
 
-test("achievement catalog has eighteen milestones", () => {
-  assert.equal(ACHIEVEMENT_DEFS.length, 18);
+test("achievement catalog includes core milestones and catalog purchases", () => {
+  assert.equal(ACHIEVEMENT_DEFS.length, 86);
+  assert.ok(ACHIEVEMENT_DEFS.some((def) => def.id === "catalog-swarm"));
+  assert.ok(ACHIEVEMENT_DEFS.some((def) => def.id === "catalog-entropy-rite"));
+});
+
+test("ending achievements are redacted until unlocked", () => {
+  const ending = getAchievementDef("ending-utopia");
+  assert.ok(ending?.redacted);
+  const locked = getAchievementDisplay(ending, false);
+  assert.match(locked.title, /█/);
+  const unlocked = getAchievementDisplay(ending, true);
+  assert.equal(unlocked.title, "Civic Future");
+});
+
+test("evaluateAchievements unlocks catalog achievement on buyCatalog", () => {
+  const state = new GameState();
+  const unlocked = evaluateAchievements(state, "buyCatalog", { catalogId: "swarm" });
+  assert.equal(unlocked.length, 1);
+  assert.equal(unlocked[0].id, "catalog-swarm");
 });
 
 test("token milestones cover every power of ten through one billion", () => {

@@ -246,7 +246,7 @@ export class Game {
     }
     return {
       purchased: true,
-      unlocked: evaluateAchievements(this.state, "buyCatalog"),
+      unlocked: evaluateAchievements(this.state, "buyCatalog", { catalogId: entry.id }),
     };
   }
 

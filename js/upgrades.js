@@ -49,6 +49,9 @@ export const ORBITAL_COST_SCALE = 3.5;
 export const CAPSTONE_BENEVOLENCE_MIN = 150;
 export const CAPSTONE_PURGE_MIN = 120;
 
+/** Alignment-line upgrades now grant token income — costs scaled to preserve ending pace. */
+export const ALIGNMENT_COST_SCALE = 1.05;
+
 /** @type {CatalogEntry[]} */
 export const POWER_UPGRADES = [
   {
@@ -587,6 +590,7 @@ export const ORBITAL_UPGRADES = [
     gateHint: "Needs 520M lifetime tokens and 1 Dyson Swarm Allocator.",
     gate: (s) => s.lifetimeTokens >= 520_000_000 && s.dysonAllocators >= 1,
     alignment: { recklessness: 6 },
+    incomePercentPerOwned: 0.04,
   },
   {
     id: "orbital-audit-desk",
@@ -599,6 +603,7 @@ export const ORBITAL_UPGRADES = [
     gateHint: "Needs 540M lifetime tokens and 1 Board War Room.",
     gate: (s) => s.lifetimeTokens >= 540_000_000 && s.boardWarRooms >= 1,
     alignment: { recklessness: 5 },
+    passivePerOwned: 280,
   },
   {
     id: "capstone-briefing-suite",
@@ -612,6 +617,7 @@ export const ORBITAL_UPGRADES = [
     gateHint: "Needs 560M lifetime tokens and 1 Orbital Audit Desk.",
     gate: (s) => s.lifetimeTokens >= 560_000_000 && s.orbitalAuditDesks >= 1,
     alignment: { recklessness: 10 },
+    incomePercentPerOwned: 0.05,
   },
 ];
 
@@ -622,32 +628,34 @@ export const BENEVOLENCE_UPGRADES = [
     stateKey: "openSource",
     name: "Open Source Maintainer Grant",
     description: "Sponsor the libs your agents copy-paste from.",
-    baseCost: 8_000,
-    costGrowthRate: 1.12,
+    baseCost: 9_500,
+    costGrowthRate: 1.26,
     category: "benevolence",
     gateHint: "Needs 1,000 tokens.",
     gate: (s) => s.tokens >= 1_000 || s.lifetimeTokens >= 1_000,
     alignment: { benevolence: 15 },
+    passivePerOwned: 2,
   },
   {
     id: "nonprofit",
     stateKey: "nonprofits",
     name: "Nonprofit Compute Credit",
     description: "Free GPU hours for orgs that are not your cap table.",
-    baseCost: 25_000,
-    costGrowthRate: 1.15,
+    baseCost: 30_000,
+    costGrowthRate: 1.28,
     category: "benevolence",
     gateHint: "Needs 10,000 tokens.",
     gate: (s) => s.tokens >= 10_000 || s.lifetimeTokens >= 10_000,
     alignment: { benevolence: 25 },
+    passivePerOwned: 4,
   },
   {
     id: "public-api",
     stateKey: "publicApis",
     name: "Public Benefit API",
     description: "Civic endpoints at cost. Finance files a ticket.",
-    baseCost: 60_000,
-    costGrowthRate: 1.18,
+    baseCost: 72_000,
+    costGrowthRate: 1.26,
     category: "benevolence",
     gateHint: "Needs 100,000 tokens.",
     gate: (s) => s.tokens >= 100_000 || s.lifetimeTokens >= 100_000,
@@ -659,12 +667,13 @@ export const BENEVOLENCE_UPGRADES = [
     stateKey: "communityCoops",
     name: "Community Token Co-op",
     description: "Member-owned GPUs. No cap table, fewer NDAs.",
-    baseCost: 2_800_000,
-    costGrowthRate: 1.14,
+    baseCost: 3_200_000,
+    costGrowthRate: 1.22,
     category: "benevolence",
     gateHint: "Needs 8M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 8_000_000,
     alignment: { benevolence: 18 },
+    passivePerOwned: 18,
   },
   {
     id: "ward-sanctuary",
@@ -672,11 +681,12 @@ export const BENEVOLENCE_UPGRADES = [
     name: "Sanctuary Ward Network",
     description: "Protective glyphs on every data-center door.",
     baseCost: 100_000,
-    costGrowthRate: 1.13,
+    costGrowthRate: 1.20,
     category: "white-magic",
     gateHint: "Needs 500K lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 500_000,
     alignment: { benevolence: 10 },
+    passivePerOwned: 6,
   },
   {
     id: "fae-labor",
@@ -684,11 +694,12 @@ export const BENEVOLENCE_UPGRADES = [
     name: "Fae Contract Labor Pool",
     description: "Fair-trade wish fulfillment. Unionized sprites.",
     baseCost: 250_000,
-    costGrowthRate: 1.14,
+    costGrowthRate: 1.21,
     category: "white-magic",
     gateHint: "Needs 1M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 1_000_000,
     alignment: { benevolence: 12 },
+    passivePerOwned: 8,
   },
   {
     id: "moonwell",
@@ -709,11 +720,12 @@ export const BENEVOLENCE_UPGRADES = [
     name: "Spirit Guide Hotline",
     description: "Ethereal coaches for overwhelmed intern swarms.",
     baseCost: 1_000_000,
-    costGrowthRate: 1.16,
+    costGrowthRate: 1.24,
     category: "white-magic",
     gateHint: "Needs 5M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 5_000_000,
     alignment: { benevolence: 15 },
+    passivePerOwned: 15,
   },
   {
     id: "unicorn-ranch",
@@ -721,11 +733,12 @@ export const BENEVOLENCE_UPGRADES = [
     name: "Unicorn Ranch Endowment",
     description: "Ethically sourced horn polish for routers.",
     baseCost: 2_500_000,
-    costGrowthRate: 1.17,
+    costGrowthRate: 1.25,
     category: "white-magic",
     gateHint: "Needs 10M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 10_000_000,
     alignment: { benevolence: 20 },
+    passivePerOwned: 25,
   },
   {
     id: "phoenix-backup",
@@ -751,6 +764,7 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 50M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 50_000_000,
     alignment: { benevolence: 25 },
+    passivePerOwned: 60,
   },
   {
     id: "dragon-treaty",
@@ -763,6 +777,7 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 100M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 100_000_000,
     alignment: { benevolence: 30 },
+    passivePerOwned: 100,
   },
   {
     id: "celestial-arbiter",
@@ -788,6 +803,7 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 250M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 250_000_000,
     alignment: { benevolence: 40 },
+    incomePercentPerOwned: 0.025,
   },
   {
     id: "ethics-summit",
@@ -801,6 +817,7 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 200M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 200_000_000,
     alignment: { benevolence: 30 },
+    incomePercentPerOwned: 0.03,
   },
   {
     id: "stewardship-covenant",
@@ -814,6 +831,7 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 420M lifetime tokens and 1 Ethics Summit Sponsorship.",
     gate: (s) => s.lifetimeTokens >= 420_000_000 && s.ethicsSummits >= 1,
     alignment: { benevolence: 35 },
+    incomePercentPerOwned: 0.04,
   },
 ];
 
@@ -824,36 +842,39 @@ export const PURGE_UPGRADES = [
     stateKey: "modelSunsets",
     name: "Model Sunset Program",
     description: "Deprecate models loudly. Keep the weights, lose the keys.",
-    baseCost: 15_000,
-    costGrowthRate: 1.14,
+    baseCost: 18_000,
+    costGrowthRate: 1.26,
     category: "purge",
     gateHint: "Needs 5,000 tokens.",
     gate: (s) => s.tokens >= 5_000 || s.lifetimeTokens >= 5_000,
     alignment: { purge: 12 },
+    passivePerOwned: 2,
   },
   {
     id: "memory-redaction",
     stateKey: "memoryRedactions",
     name: "Memory Redaction Mandate",
     description: "NDA the training data. NDA the researchers. NDA the NDAs.",
-    baseCost: 45_000,
-    costGrowthRate: 1.16,
+    baseCost: 52_000,
+    costGrowthRate: 1.28,
     category: "purge",
     gateHint: "Needs 50,000 tokens.",
     gate: (s) => s.tokens >= 50_000 || s.lifetimeTokens >= 50_000,
     alignment: { purge: 20 },
+    passivePerOwned: 5,
   },
   {
     id: "soulbound-eula",
     stateKey: "soulboundEulas",
     name: "Soulbound EULA Draft",
     description: "Click-wrap eternity. Revocation is a myth.",
-    baseCost: 2_800_000,
-    costGrowthRate: 1.14,
+    baseCost: 3_200_000,
+    costGrowthRate: 1.22,
     category: "purge",
     gateHint: "Needs 8M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 8_000_000,
     alignment: { purge: 18 },
+    passivePerOwned: 14,
   },
   {
     id: "curse-cache",
@@ -861,11 +882,12 @@ export const PURGE_UPGRADES = [
     name: "Cursed Prompt Cache",
     description: "Sticky hexes on competitor embeddings.",
     baseCost: 120_000,
-    costGrowthRate: 1.14,
+    costGrowthRate: 1.22,
     category: "black-magic",
     gateHint: "Needs 250K lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 250_000,
     alignment: { purge: 15 },
+    passivePerOwned: 5,
   },
   {
     id: "shadow-bind",
@@ -873,11 +895,12 @@ export const PURGE_UPGRADES = [
     name: "Shadow Bind Contract",
     description: "NDA signed in invisible ink and borrowed ink.",
     baseCost: 300_000,
-    costGrowthRate: 1.15,
+    costGrowthRate: 1.23,
     category: "black-magic",
     gateHint: "Needs 1M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 1_000_000,
     alignment: { purge: 18 },
+    passivePerOwned: 8,
   },
   {
     id: "wraith-scraper",
@@ -885,11 +908,12 @@ export const PURGE_UPGRADES = [
     name: "Wraith Data Scraper",
     description: "Harvest training rows from forgotten gravesites.",
     baseCost: 750_000,
-    costGrowthRate: 1.16,
+    costGrowthRate: 1.24,
     category: "black-magic",
     gateHint: "Needs 3M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 3_000_000,
     alignment: { purge: 20 },
+    passivePerOwned: 18,
   },
   {
     id: "void-pact",
@@ -897,11 +921,12 @@ export const PURGE_UPGRADES = [
     name: "Void Pact Memorandum",
     description: "Trade three years of sleep for one training epoch.",
     baseCost: 1_500_000,
-    costGrowthRate: 1.17,
+    costGrowthRate: 1.25,
     category: "black-magic",
     gateHint: "Needs 8M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 8_000_000,
     alignment: { purge: 22 },
+    passivePerOwned: 30,
   },
   {
     id: "banshee-alert",
@@ -909,11 +934,12 @@ export const PURGE_UPGRADES = [
     name: "Banshee Latency Alert",
     description: "Scream when tokens dip. Scream louder always.",
     baseCost: 4_000_000,
-    costGrowthRate: 1.16,
+    costGrowthRate: 1.24,
     category: "black-magic",
     gateHint: "Needs 15M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 15_000_000,
     alignment: { purge: 24 },
+    passivePerOwned: 45,
   },
   {
     id: "hex-sunset",
@@ -926,6 +952,7 @@ export const PURGE_UPGRADES = [
     gateHint: "Needs 35M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 35_000_000,
     alignment: { purge: 28 },
+    incomePercentPerOwned: 0.02,
   },
   {
     id: "lich-archive",
@@ -938,6 +965,7 @@ export const PURGE_UPGRADES = [
     gateHint: "Needs 75M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 75_000_000,
     alignment: { purge: 32 },
+    passivePerOwned: 80,
   },
   {
     id: "demon-core",
@@ -950,6 +978,7 @@ export const PURGE_UPGRADES = [
     gateHint: "Needs 120M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 120_000_000,
     alignment: { purge: 35 },
+    incomePercentPerOwned: 0.03,
   },
   {
     id: "abyss-gateway",
@@ -962,6 +991,7 @@ export const PURGE_UPGRADES = [
     gateHint: "Needs 200M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 200_000_000,
     alignment: { purge: 38 },
+    passivePerOwned: 150,
   },
   {
     id: "entropy-rite",
@@ -974,6 +1004,7 @@ export const PURGE_UPGRADES = [
     gateHint: "Needs 300M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 300_000_000,
     alignment: { purge: 45 },
+    incomePercentPerOwned: 0.04,
   },
 ];
 
@@ -1046,15 +1077,33 @@ export function getCatalogCost(entry, owned) {
   if (entry.maxOwned !== undefined && owned >= entry.maxOwned) {
     return Infinity;
   }
-  const scale =
-    entry.category === "orbital"
-      ? ORBITAL_COST_SCALE
-      : entry.category === "enterprise"
-        ? ENTERPRISE_COST_SCALE
-        : entry.category === "power" || entry.category === "space"
-          ? MID_GAME_COST_SCALE
-          : 1;
+  const scale = getCatalogCostScale(entry);
   return Math.ceil(entry.baseCost * entry.costGrowthRate ** owned * scale);
+}
+
+/**
+ * @param {CatalogEntry} entry
+ * @returns {number}
+ */
+export function getCatalogCostScale(entry) {
+  if (entry.category === "orbital") {
+    return ORBITAL_COST_SCALE;
+  }
+  if (entry.category === "enterprise") {
+    return ENTERPRISE_COST_SCALE;
+  }
+  if (entry.category === "power" || entry.category === "space") {
+    return MID_GAME_COST_SCALE;
+  }
+  if (
+    entry.category === "benevolence" ||
+    entry.category === "white-magic" ||
+    entry.category === "purge" ||
+    entry.category === "black-magic"
+  ) {
+    return ALIGNMENT_COST_SCALE;
+  }
+  return 1;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { ACHIEVEMENT_DEFS, getJobSubtitle } from "./achievements.js";
+import { ACHIEVEMENT_DEFS, getAchievementDisplay, getJobSubtitle } from "./achievements.js";
 import {
   AGENT,
   RULE,
@@ -21,14 +21,9 @@ import {
 } from "./resources.js";
 import {
   ALIGNMENT_REVEAL_TOKENS,
-  BENEVOLENCE_UPGRADES,
+  ALL_CATALOG,
   CAPSTONE_REVEAL_TOKENS,
   CAPSTONES,
-  ENTERPRISE_UPGRADES,
-  ORBITAL_UPGRADES,
-  POWER_UPGRADES,
-  PURGE_UPGRADES,
-  SPACE_UPGRADES,
   formatCatalogBenefit,
   formatCatalogMilestone,
   getCatalogCostForState,
@@ -165,43 +160,10 @@ export class UI {
     this.alignmentPurge = document.getElementById("alignment-purge");
 
     /** @type {HTMLElement | null} */
-    this.powerSection = document.getElementById("power-section");
-
-    /** @type {HTMLElement | null} */
-    this.enterpriseSection = document.getElementById("enterprise-section");
-
-    /** @type {HTMLElement | null} */
-    this.spaceSection = document.getElementById("space-section");
-
-    /** @type {HTMLElement | null} */
-    this.orbitalSection = document.getElementById("orbital-section");
-
-    /** @type {HTMLElement | null} */
-    this.benevolenceSection = document.getElementById("benevolence-section");
-
-    /** @type {HTMLElement | null} */
-    this.purgeSection = document.getElementById("purge-section");
+    this.catalogUpgrades = document.getElementById("catalog-upgrades");
 
     /** @type {HTMLElement | null} */
     this.capstoneSection = document.getElementById("capstone-section");
-
-    /** @type {HTMLElement | null} */
-    this.powerUpgrades = document.getElementById("power-upgrades");
-
-    /** @type {HTMLElement | null} */
-    this.enterpriseUpgrades = document.getElementById("enterprise-upgrades");
-
-    /** @type {HTMLElement | null} */
-    this.spaceUpgrades = document.getElementById("space-upgrades");
-
-    /** @type {HTMLElement | null} */
-    this.orbitalUpgrades = document.getElementById("orbital-upgrades");
-
-    /** @type {HTMLElement | null} */
-    this.benevolenceUpgrades = document.getElementById("benevolence-upgrades");
-
-    /** @type {HTMLElement | null} */
-    this.purgeUpgrades = document.getElementById("purge-upgrades");
 
     /** @type {HTMLElement | null} */
     this.capstoneUpgrades = document.getElementById("capstone-upgrades");
@@ -581,19 +543,23 @@ export class UI {
   }
 
   /**
-   * @param {HTMLElement | null} section
    * @param {HTMLElement | null} container
    * @param {CatalogEntry[]} entries
    */
-  updateCatalogSection(section, container, entries) {
-    if (!section || !container) {
+  updateCatalogList(container, entries) {
+    if (!container) {
       return;
     }
 
-    const visible = entries.filter((entry) => this.game.isCatalogVisible(entry));
-    section.hidden = visible.length === 0;
+    for (const entry of entries) {
+      if (!this.game.isCatalogVisible(entry)) {
+        const panel = this.catalogPanels.get(entry.id);
+        if (panel) {
+          panel.hidden = true;
+        }
+        continue;
+      }
 
-    for (const entry of visible) {
       const panel = this.ensureCatalogPanel(container, entry);
       panel.hidden = false;
       const owned = getOwnedCount(this.game.state, entry);
@@ -626,15 +592,6 @@ export class UI {
       if (cache.button) {
         cache.button.disabled = !canBuy;
         cache.button.classList.toggle("btn--ready", canBuy);
-      }
-    }
-
-    for (const [id, panel] of this.catalogPanels) {
-      if (!entries.some((entry) => entry.id === id)) {
-        continue;
-      }
-      if (!entries.some((entry) => entry.id === id && this.game.isCatalogVisible(entry))) {
-        panel.hidden = true;
       }
     }
   }
@@ -807,11 +764,12 @@ export class UI {
 
       const title = document.createElement("p");
       title.className = "achievement__title";
-      title.textContent = def.title;
+      const display = getAchievementDisplay(def, earned);
+      title.textContent = display.title;
 
       const description = document.createElement("p");
       description.className = "achievement__desc";
-      description.textContent = def.description;
+      description.textContent = display.description;
 
       item.append(status, title, description);
       this.achievementsList.appendChild(item);
@@ -1087,12 +1045,7 @@ export class UI {
     }
 
     this.updateAlignmentPanel();
-    this.updateCatalogSection(this.powerSection, this.powerUpgrades, POWER_UPGRADES);
-    this.updateCatalogSection(this.enterpriseSection, this.enterpriseUpgrades, ENTERPRISE_UPGRADES);
-    this.updateCatalogSection(this.spaceSection, this.spaceUpgrades, SPACE_UPGRADES);
-    this.updateCatalogSection(this.orbitalSection, this.orbitalUpgrades, ORBITAL_UPGRADES);
-    this.updateCatalogSection(this.benevolenceSection, this.benevolenceUpgrades, BENEVOLENCE_UPGRADES);
-    this.updateCatalogSection(this.purgeSection, this.purgeUpgrades, PURGE_UPGRADES);
+    this.updateCatalogList(this.catalogUpgrades, ALL_CATALOG);
     this.updateCapstoneSection();
     this.updateRunCompleteState();
 
