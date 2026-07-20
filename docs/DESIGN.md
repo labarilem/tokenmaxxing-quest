@@ -10,6 +10,10 @@ The player embarks on a career quest: consume as many AI tokens as possible to e
 
 Tone: dry corporate satire. Player-facing copy should sound like internal tooling, standups, and perf reviews.
 
+### Plot rule: token-positive upgrades
+
+The entire fiction is about making LLMs generate/consume **ever more** tokens. To keep that plot consistent, **every purchasable upgrade must be framed as something that increases the number of tokens LLMs generate.** No upgrade name or description may describe *destroying, disposing, deprecating, wiping, blocking, or otherwise reducing* tokens, models, prompts, or the data that produces them. Dark "purge"-aligned upgrades may be ruthless or ominous (hoarding, forcing, cursing, surveilling), but must still drive token output upward. When adding an upgrade, state how it drives more token generation. Endings/capstones are the only exception — the purge capstone is deliberately destructive because it *ends* the run.
+
 ## Development status: Alpha
 
 The game is in **alpha**. Save format, balance, and mechanics may change without notice — **breaking changes are expected** and there is no save migration layer. Players may need to clear progress or start fresh after updates.
@@ -196,15 +200,16 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Open Source Maintainer Grant** | +15 benevolence, +2 token/s; base 9.5k; ×1.26 cost growth |
 | **Nonprofit Compute Credit** | +25 benevolence, +4 token/s; base 30k |
 | **Public Benefit API** | +40 benevolence, +2% income; base 72k |
-| **Model Sunset Program** | +12 purge, +2 token/s; base 18k |
-| **Memory Redaction Mandate** | +20 purge, +5 token/s; base 52k |
+| **Zombie Model Farm** | +12 purge, +2 token/s; base 18k |
+| **Total Recall Mandate** | +20 purge, +5 token/s; base 52k |
 | **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at **25M** lifetime tokens |
 | **Board strategy capstones** | Mutually exclusive **12B-token** commits at **500M** lifetime; require **Capstone Briefing Suite** (orbital prep chain). Utopia also needs **Ethics Summit** + **Stewardship Covenant** and **150+** benevolence; Purge needs **120+** purge alignment |
 | **Enterprise ops** | 8 corporate mid-game upgrades (Perf Review Automator through Antitrust Distraction Taskforce); gates ~3M–280M lifetime; costs scaled by **ENTERPRISE_COST_SCALE (2×)** |
 | **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime; costs scaled by **MID_GAME_COST_SCALE (1.38×)** |
 | **Orbital infrastructure** | 8 endgame prep upgrades (Orbital Manifest Ledger through Capstone Briefing Suite); gates ~340M–560M lifetime; costs scaled by **ORBITAL_COST_SCALE (3.5×)**; required before capstones |
 | **White magic spend** | 12 supernatural benevolence upgrades (Sanctuary Ward through Stewardship Covenant); each grants token/s or % income plus benevolence; gates from 500K–420M lifetime; **ALIGNMENT_COST_SCALE (1.05×)** |
-| **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Rite); each grants token/s or % income plus purge; gates from 250K–300M lifetime |
+| **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Harvest Cascade); each grants token/s or % income plus purge; gates from 250K–300M lifetime |
+| **Token-positive upgrades** | Every purchasable upgrade is framed as something that makes LLMs generate/consume **more** tokens; no upgrade name or description describes destroying, disposing, deprecating, wiping, or blocking tokens, models, prompts, or their data (enforced by `test/upgrades.test.js`). Endings/capstones are exempt (the purge ending is deliberately destructive) |
 | **Catalog upgrade list** | All catalog upgrades render as individual panels (no section grouping headers) |
 | **Catalog achievements** | First purchase of each catalog upgrade unlocks a milestone achievement (68 total) |
 | **Redacted ending achievements** | Ending achievements appear locked in the list with redacted title/description until earned |
@@ -268,6 +273,15 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-20 — Token-positive upgrade plot rule
+
+- Added the **token-positive upgrades** plot rule: every purchasable upgrade must be framed as increasing LLM token generation (no destroying/disposing/deprecating/wiping/blocking tokens, models, prompts, or data)
+- Reframed upgrades whose flavor contradicted the rule (names and/or descriptions only — costs, gates, income, alignment, ids, and stateKeys unchanged, so balance and saves are unaffected):
+  - `Procurement Black Hole` → **Procurement Fast Lane**; `Token Buyback Desk` → **Token Mint Desk**; `Black Hole Compute Sink` → **Accretion Disk Forge**; `Crystal Lattice Shield` → **Crystal Lattice Resonator**; `Model Sunset Program` → **Zombie Model Farm**; `Memory Redaction Mandate` → **Total Recall Mandate**; `Hexed Model Sunset` → **Hexed Overclock Rite**; `Entropy Rite Cascade` → **Entropy Harvest Cascade**
+  - Description-only fixes for Executive Offsite Simulator, Vendor Lock-in Accelerator, Regulatory Kabuki Stage, Antitrust Distraction Taskforce, Orbital Audit Desk, Sanctuary Ward Network, Dragon Treaty Fund, Phoenix Backup Ritual, Cursed Prompt Cache, Banshee Latency Alert, Abyss Gateway Protocol
+- Synced matching catalog-achievement copy in `achievements.js`
+- Added a guard test in `test/upgrades.test.js` that fails if any `ALL_CATALOG` name/description uses token-reduction language
 
 ### 2026-07-16 — Flat catalog UI, alignment income, catalog achievements
 

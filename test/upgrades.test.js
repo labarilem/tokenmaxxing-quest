@@ -7,6 +7,7 @@ import { ManualClock } from "../js/clock.js";
 import { getEndingDef, ENDING_DEFS } from "../js/endings.js";
 import { getModelCertificationCost, getNextModel } from "../js/resources.js";
 import {
+  ALL_CATALOG,
   BENEVOLENCE_UPGRADES,
   CAPSTONE_REVEAL_TOKENS,
   CAPSTONES,
@@ -208,6 +209,36 @@ test("buyModel works after new-game reset following an ending", () => {
   const result = game.buyModel();
   assert.equal(result.purchased, true);
   assert.equal(game.modelTier, 1);
+});
+
+test("no catalog upgrade describes destroying or reducing tokens (plot rule)", () => {
+  // Plot rule (docs/DESIGN.md): every upgrade must be framed as increasing LLM
+  // token generation. Names/descriptions must not describe destroying, disposing,
+  // deprecating, wiping, blocking, or repurchasing tokens/models/prompts/data.
+  const forbidden = [
+    /\bdispos(e|al|ing|ed)\b/i,
+    /\bredact/i,
+    /\bdeprecat/i,
+    /\bwip(e|ed|ing)\b/i,
+    /\bdelet(e|ed|ing)\b/i,
+    /\bbuyback\b/i,
+    /\brepurchas/i,
+    /\bshut ?down\b/i,
+    /\bkill switch\b/i,
+    /\blose the keys\b/i,
+    /\bblock\w*\s+(hostile\s+)?prompts?\b/i,
+    /\bmodels?\s+die\b/i,
+  ];
+
+  for (const entry of ALL_CATALOG) {
+    const text = `${entry.name} ${entry.description}`;
+    for (const pattern of forbidden) {
+      assert.ok(
+        !pattern.test(text),
+        `Upgrade "${entry.id}" violates the token-positive plot rule (matched ${pattern}): "${text}"`,
+      );
+    }
+  }
 });
 
 test("each ending has a unique cutscene", () => {
