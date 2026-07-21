@@ -108,6 +108,8 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
   "lastTickAt": 1710000000000,
   "achievements": ["first-prompt"],
   "lifetimeTokens": 5000,
+  "totalClicks": 120,
+  "playTimeMs": 600000,
   "swarms": 0,
   "decoders": 0,
   "contexts": 0,
@@ -194,7 +196,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Prompt Bloat Engine** | +5% all income per owned; base 5k; gate 25 swarms |
 | **Inference Cluster** | +50 tokens/s each; base 12k; gate Sage 4.2; milestones 10/25 |
 | **MCP Server Pod** | +1 token/s per agent per pod; base 20k; gate 50 agents + 5 clusters |
-| **Auto-Prompt Scheduler** | +4% of click rate as passive per owned; base 40k; gate Grand 4.5 |
+| **Auto-Prompt Scheduler** | +2.5% of click rate as passive per owned; base 60k, ×1.22; gate Grand 4.5 (nerfed from +4%/base 40k/×1.20) |
 | **Executive Token Dashboard** | +10% all income per owned; base 80k; gate Noir 4.8 |
 | **Allow-All Permissions Profile** | +30% all income per owned; +8 recklessness; base 200k; gate Fort 5.0 + 1M lifetime |
 | **AGI Roadmap Deck** | ×2 all income per deck (max 3); base 1M; gate 100M lifetime |
@@ -215,6 +217,10 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Catalog achievements** | First purchase of each catalog upgrade unlocks a milestone achievement (68 total) |
 | **Redacted ending achievements** | Ending achievements appear locked in the list with redacted title/description until earned |
 | **Ending achievements** | Persistent unlock + text cutscene modal on capstone purchase; run freezes until reset |
+| **Ending cutscene + run summary** | Ending modal is two-phase: a detailed text cutscene (each ending narrates *how we got there*) then a **Continue** button reveals a **Run summary** with total tokens produced (`lifetimeTokens`), prompts clicked (`totalClicks`), and time in focus (`playTimeMs`) |
+| **Run stats tracking** | `totalClicks` increments on each manual Send Prompt; `playTimeMs` accrues only during ticks (tab visible + focused), capped per-tick so away gaps are never counted; both persist in the save and reset with New game / Full reset |
+| **Pinnable Send Prompt** | The Send Prompt panel can be pinned to the bottom of the screen (fixed bar) or unpinned into normal flow via a Pin/Unpin toggle; **pinned by default** for easy mobile spam-clicking; preference stored in `localStorage` (`tokenmaxxing-quest.pinPrompt`), independent of game saves/resets |
+| **About page** | Toolbar **About** chip opens a modal describing the game and crediting the author ([Marco Labarile](https://marcolabarile.me)) |
 
 ### Planned
 
@@ -274,6 +280,15 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-21 — Ending cutscenes + run summary, pinnable prompt, About page, scheduler nerf
+
+- **Ending flow is now two-phase:** each capstone shows a longer text-only cutscene that narrates *how we got there* for that path, then a **Continue** button reveals a **Run summary** modal view with **total tokens produced**, **prompts clicked**, and **time in focus**.
+- **Run stats tracking:** added `totalClicks` (manual Send Prompt count) and `playTimeMs` (focused play time) to `GameState` + save format. `playTimeMs` only accrues inside `Game.tick()` (which runs while the tab is visible and focused) and caps each tick's delta so idle/away time is never counted; both reset on New game / Full reset.
+- **Pinnable Send Prompt:** the actions panel can be pinned to the bottom of the screen (fixed bar) or unpinned into normal flow via a **Pin/Unpin** toggle. **Pinned by default** for easy mobile spam-clicking. Preference persists in `localStorage` under `tokenmaxxing-quest.pinPrompt`, separate from the game save so resets don't clear it.
+- **About page:** new toolbar **About** chip opens a modal describing the game and crediting the author, [Marco Labarile](https://marcolabarile.me).
+- **Passive-click nerf:** **Auto-Prompt Scheduler** reduced from +4% → **+2.5%** of click rate as passive per owned, base cost 40k → **60k**, growth ×1.20 → **×1.22**; **Nebula Context Buffer** reduced from +10% → **+7%**, base 90M → **120M**, growth ×1.18 → **×1.19**.
+- Simulated optimal play (5 prompts/s, tab focused): **oops ~1h 21m**, **utopia ~1h 34m**, **purge ~1h 38m** (was ~1h 0m / 1h 10m / 1h 12m).
 
 ### 2026-07-21 — Spoiler-free board strategies + alignment tracker
 
