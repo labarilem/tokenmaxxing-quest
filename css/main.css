@@ -252,7 +252,6 @@ body {
 }
 
 .btn--chip-accent {
-  position: relative;
   color: var(--accent);
   border-color: var(--accent-dim);
 }
@@ -296,8 +295,6 @@ body {
 }
 
 .btn--chip-accent .btn__badge {
-  position: absolute;
-  right: 10px;
   margin-left: 0;
 }
 
