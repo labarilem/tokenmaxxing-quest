@@ -25,7 +25,7 @@ These are non-negotiable constraints for all versions:
 | Requirement | Detail |
 |-------------|--------|
 | **Browser-only** | Must run in a modern web browser with no install step |
-| **Mobile-friendly** | Usable on phones: touch targets, readable text, single-column layout |
+| **Mobile-friendly** | Usable on phones: touch targets, readable text, single-column layout (desktop uses a wider multi-column grid — see UI/UX Guidelines) |
 | **No game engine** | Render with HTML, CSS, and JavaScript only — no Phaser, Pixi, Unity, etc. |
 | **GitHub Pages** | Static files deployable to a free public GitHub Pages repo |
 | **Performance** | Snappy UI, low battery drain on mobile — no rAF game loop, pause when tab hidden |
@@ -221,6 +221,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Run stats tracking** | `totalClicks` increments on each manual Send Prompt; `playTimeMs` accrues only during ticks (tab visible + focused), capped per-tick so away gaps are never counted; both persist in the save and reset with New game / Full reset |
 | **Pinnable Send Prompt** | The Send Prompt panel can be pinned to the bottom of the screen (fixed bar) or unpinned into normal flow via a Pin/Unpin toggle; **pinned by default** for easy mobile spam-clicking; preference stored in `localStorage` (`tokenmaxxing-quest.pinPrompt`), independent of game saves/resets |
 | **About page** | Toolbar **About** chip opens a modal describing the game and crediting the author ([Marco Labarile](https://marcolabarile.me)) |
+| **Responsive dual layout** | Mobile/touch keeps the single-column card layout (max-width 480px); desktop (mouse + wide viewport) switches to a wider space-filling **grid** where upgrades render as table-like cells. CSS-only, gated on `@media (min-width: 720px) and (hover: hover) and (pointer: fine)` so phones/tablets never switch. Both layouts must be preserved (`.cursor/rules/responsive-layout.mdc`) |
 
 ### Planned
 
@@ -236,7 +237,13 @@ Agents: apply that skill's pre-implementation checklist before any mechanic chan
 
 ## UI/UX Guidelines
 
-- Single-column card layout, max-width 480px
+- **Two layouts (both required):** mobile-first single-column card layout
+  (max-width 480px) is the baseline; desktop (mouse + wide viewport) uses a
+  wider multi-column grid so upgrades fill the available width as table-like
+  cells. Desktop styling lives in the wide-viewport media query at the bottom of
+  `css/main.css`, gated on `(min-width: 720px) and (hover: hover) and (pointer: fine)`
+  so phones/tablets stay single-column. Never let one layout regress the other
+  (`.cursor/rules/responsive-layout.mdc`).
 - Header + token counter pinned (`position: sticky`) while scrolling long upgrade lists
 - Minimum 44×44px touch targets on all buttons
 - Base font 16px; tabular nums for counters
@@ -280,6 +287,22 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-21 — Desktop wide grid layout (mobile unchanged)
+
+- Added a **desktop-only** layout: on mouse/trackpad devices at wide viewports the
+  game container widens (`max-width: min(96vw, 1180px)`) and becomes a CSS grid, so
+  upgrades render as table-like cells across the available width instead of one tall
+  scrolling column. The header/tokens band, actions, catalog, capstone section, and
+  run-complete banner span the full width; fixed-tier and catalog upgrade cards flow
+  as equal-height grid cells with their Buy row anchored to the bottom.
+- **Mobile/touch UI is unchanged.** The desktop styling is confined to
+  `@media (min-width: 720px) and (hover: hover) and (pointer: fine)` at the bottom of
+  `css/main.css`, so phones and tablets (coarse pointer / no hover) keep the
+  single-column, max-width 480px layout even in landscape or on large screens.
+- CSS-only change — no HTML/JS edits, so the engine, save format, and gameplay are
+  untouched. Added `.cursor/rules/responsive-layout.mdc` requiring both layouts be
+  preserved going forward.
 
 ### 2026-07-21 — Ending cutscenes + run summary, pinnable prompt, About page, scheduler nerf
 
