@@ -405,6 +405,9 @@ body {
   background: var(--surface);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
   animation: achievement-enter 0.35s ease-out;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: none;
 }
 
 .achievement-banner--leaving {
