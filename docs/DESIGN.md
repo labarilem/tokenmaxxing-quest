@@ -307,6 +307,12 @@ Open `http://localhost:8080`.
   untouched. Added `.cursor/rules/responsive-layout.mdc` requiring both layouts be
   preserved going forward.
 
+### 2026-07-21 — Ending cutscene readability, toolbar tweaks, About credit
+
+- **Ending cutscenes** are now rendered as structured HTML (section headers, prose paragraphs, command blocks, dialogue, achievement badge) instead of a monospace `<pre>` wall of text — easier to scan on mobile and desktop.
+- **Reset toolbar chip** uses `btn--chip-fit` so it only takes the width of its label, leaving more room for Achievements.
+- **About modal** credits **Andrea Gargaro** (link text; GitHub URL unchanged).
+
 ### 2026-07-21 — Ending cutscenes + run summary, pinnable prompt, About page, scheduler nerf
 
 - **Ending flow is now two-phase:** each capstone shows a longer text-only cutscene that narrates *how we got there* for that path, then a **Continue** button reveals a **Run summary** modal view with **total tokens produced**, **prompts clicked**, and **time in focus**.

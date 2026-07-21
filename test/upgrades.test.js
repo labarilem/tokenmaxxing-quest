@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { Game } from "../js/game.js";
 import { GameState } from "../js/state.js";
 import { ManualClock } from "../js/clock.js";
-import { getEndingDef, ENDING_DEFS } from "../js/endings.js";
+import { getEndingDef, ENDING_DEFS, formatEndingCutscene } from "../js/endings.js";
 import { getModelCertificationCost, getNextModel } from "../js/resources.js";
 import {
   ALL_CATALOG,
@@ -248,4 +248,20 @@ test("each ending has a unique cutscene", () => {
     assert.ok(def.cutscene.includes("[ACHIEVEMENT:"));
     assert.notEqual(def.cutscene, def.headline);
   }
+});
+
+test("formatEndingCutscene renders structured readable HTML", () => {
+  const html = formatEndingCutscene(getEndingDef("oops").cutscene);
+
+  assert.ok(html.includes('class="ending-cutscene__section"'));
+  assert.ok(html.includes("HOW WE GOT HERE"));
+  assert.ok(html.includes('class="ending-cutscene__para"'));
+  assert.ok(html.includes('class="ending-cutscene__command"'));
+  assert.ok(html.includes("orchestrate.sh"));
+  assert.ok(html.includes('class="ending-cutscene__dialogue"'));
+  assert.ok(html.includes('class="ending-cutscene__speaker"'));
+  assert.ok(html.includes("AGENT"));
+  assert.ok(html.includes('class="ending-cutscene__achievement"'));
+  assert.ok(html.includes("ACHIEVEMENT: Universe Deleted"));
+  assert.ok(!html.includes("<script"));
 });
