@@ -252,6 +252,7 @@ body {
 }
 
 .btn--chip-accent {
+  position: relative;
   color: var(--accent);
   border-color: var(--accent-dim);
 }
@@ -292,6 +293,12 @@ body {
   background: rgba(138, 180, 248, 0.15);
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
+}
+
+.btn--chip-accent .btn__badge {
+  position: absolute;
+  right: 10px;
+  margin-left: 0;
 }
 
 .btn--buy {
