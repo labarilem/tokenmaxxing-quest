@@ -41,6 +41,7 @@ import {
 
 const TOAST_VISIBLE_MS = 4000;
 const TOAST_EXIT_MS = 300;
+const TOAST_SWIPE_THRESHOLD_PX = 40;
 
 /** localStorage key for the Send Prompt pin preference (UI-only, survives resets). */
 const PIN_PREF_KEY = "tokenmaxxing-quest.pinPrompt";
@@ -903,13 +904,90 @@ export class UI {
     content.append(label, title);
     banner.append(icon, content);
     this.achievementOverlay.appendChild(banner);
+    this.setupAchievementBannerDismiss(banner);
 
-    window.setTimeout(() => {
-      banner.classList.add("achievement-banner--leaving");
-      window.setTimeout(() => {
-        banner.remove();
-      }, TOAST_EXIT_MS);
+    /** @type {number} */
+    banner._dismissTimer = window.setTimeout(() => {
+      this.dismissAchievementBanner(banner);
     }, TOAST_VISIBLE_MS);
+  }
+
+  /**
+   * @param {HTMLElement} banner
+   */
+  setupAchievementBannerDismiss(banner) {
+    banner.addEventListener("click", () => {
+      if (banner.dataset.suppressClick === "true") {
+        delete banner.dataset.suppressClick;
+        return;
+      }
+      this.dismissAchievementBanner(banner);
+    });
+
+    if (!window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
+
+    let startX = 0;
+    let startY = 0;
+    let tracking = false;
+
+    banner.addEventListener(
+      "touchstart",
+      (event) => {
+        if (event.touches.length !== 1) {
+          return;
+        }
+        tracking = true;
+        startX = event.touches[0].clientX;
+        startY = event.touches[0].clientY;
+      },
+      { passive: true },
+    );
+
+    banner.addEventListener("touchend", (event) => {
+      if (!tracking) {
+        return;
+      }
+      tracking = false;
+
+      const touch = event.changedTouches[0];
+      const deltaX = touch.clientX - startX;
+      const deltaY = touch.clientY - startY;
+      if (
+        Math.abs(deltaX) < TOAST_SWIPE_THRESHOLD_PX &&
+        Math.abs(deltaY) < TOAST_SWIPE_THRESHOLD_PX
+      ) {
+        return;
+      }
+
+      banner.dataset.suppressClick = "true";
+      this.dismissAchievementBanner(banner);
+    });
+  }
+
+  /**
+   * @param {HTMLElement} banner
+   */
+  dismissAchievementBanner(banner) {
+    if (banner.dataset.dismissing === "true") {
+      return;
+    }
+    banner.dataset.dismissing = "true";
+
+    if (banner._dismissTimer !== undefined) {
+      window.clearTimeout(banner._dismissTimer);
+      banner._dismissTimer = undefined;
+    }
+    if (banner._exitTimer !== undefined) {
+      window.clearTimeout(banner._exitTimer);
+      banner._exitTimer = undefined;
+    }
+
+    banner.classList.add("achievement-banner--leaving");
+    banner._exitTimer = window.setTimeout(() => {
+      banner.remove();
+    }, TOAST_EXIT_MS);
   }
 
   updateAchievementsList() {

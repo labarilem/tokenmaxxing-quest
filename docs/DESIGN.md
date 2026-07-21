@@ -175,7 +175,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **LLM model certification** | Prestige-style upgrade panel; costs tokens + requires agent gate; **+15% all token income per tier** (×1.15, ×1.30, …); **resets agents to 0** on certify (**rules kept**); persists across new game; certification costs scaled by **MODEL_COST_SCALE (1.75×)** |
 | **Model ladder** | Clair 3.5 (start) → Vif 4.0 (12 agents, 5k) → Sage 4.2 (25, 40k) → Grand 4.5 (38, 70k) → Noir 4.8 (52, 300k) → Fort 5.0 (65, 1.2M) |
 | **Model Citizen** | Achievement: certify first model upgrade |
-| **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn; toolbar shows earned count |
+| **Achievements** | Milestones that unlock from gameplay; persisted in save; top overlay banner on earn (tap/click to dismiss; swipe to dismiss on mobile); toolbar shows earned count |
 | **First Prompt** | Achievement: send your first prompt |
 | **Rules of Engagement** | Achievement: buy first Agent Rule |
 | **Headcount Approved** | Achievement: buy first Background Agent |
@@ -306,6 +306,10 @@ Open `http://localhost:8080`.
 - CSS-only change — no HTML/JS edits, so the engine, save format, and gameplay are
   untouched. Added `.cursor/rules/responsive-layout.mdc` requiring both layouts be
   preserved going forward.
+
+### 2026-07-21 — Achievement banner dismiss on interaction
+
+- Achievement unlock banners dismiss immediately when tapped or clicked; on mobile (coarse pointer), swiping a banner also dismisses it.
 
 ### 2026-07-21 — Ending cutscene readability, toolbar tweaks, About credit
 
