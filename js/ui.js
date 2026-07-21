@@ -22,7 +22,8 @@ import {
 import {
   ALIGNMENT_REVEAL_TOKENS,
   ALL_CATALOG,
-  CAPSTONE_REVEAL_TOKENS,
+  CAPSTONE_BENEVOLENCE_MIN,
+  CAPSTONE_PURGE_MIN,
   CAPSTONES,
   formatCatalogBenefit,
   formatCatalogMilestone,
@@ -159,6 +160,12 @@ export class UI {
     this.alignmentPurge = document.getElementById("alignment-purge");
 
     /** @type {HTMLElement | null} */
+    this.alignmentBenevolenceTarget = document.getElementById("alignment-benevolence-target");
+
+    /** @type {HTMLElement | null} */
+    this.alignmentPurgeTarget = document.getElementById("alignment-purge-target");
+
+    /** @type {HTMLElement | null} */
     this.catalogUpgrades = document.getElementById("catalog-upgrades");
 
     /** @type {HTMLElement | null} */
@@ -242,6 +249,13 @@ export class UI {
 
     this.cachedAlignmentKey = "";
     this.cachedRunComplete = null;
+
+    if (this.alignmentBenevolenceTarget) {
+      this.alignmentBenevolenceTarget.textContent = ` / ${CAPSTONE_BENEVOLENCE_MIN}`;
+    }
+    if (this.alignmentPurgeTarget) {
+      this.alignmentPurgeTarget.textContent = ` / ${CAPSTONE_PURGE_MIN}`;
+    }
 
     this.handleKeydown = this.handleKeydown.bind(this);
 
@@ -518,7 +532,7 @@ export class UI {
 
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `btn btn--secondary btn--buy btn--capstone-${capstone.path}`;
+    button.className = "btn btn--secondary btn--buy";
     button.textContent = `Buy · ${formatNumber(capstone.cost)} tokens`;
 
     row.append(button);
@@ -600,30 +614,33 @@ export class UI {
       return;
     }
 
-    const show =
-      this.game.testMode ||
-      this.game.state.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS ||
-      this.game.isRunComplete;
-    this.capstoneSection.hidden = !show;
+    // Only reveal a board strategy once its own requirements (benevolence, purge,
+    // orbital prep, etc.) are met, so alternative endings stay hidden. The section
+    // itself only appears when at least one strategy is available or committed.
+    let anyVisible = false;
 
     for (const capstone of CAPSTONES) {
-      this.ensureCapstonePanel(capstone);
+      const panel = this.ensureCapstonePanel(capstone);
       const cache = this.capstoneCache.get(capstone.id);
-      if (!cache) {
+      const committed = this.game.state.strategyPath === capstone.path;
+      const visible = this.game.isCapstoneGateMet(capstone) || committed;
+
+      if (panel) {
+        panel.hidden = !visible;
+      }
+      if (!visible || !cache) {
         continue;
       }
+      anyVisible = true;
+
       const canBuy = this.game.canBuyCapstone(capstone);
-      const gateMet = this.game.isCapstoneGateMet(capstone);
       if (cache.goal) {
         if (this.game.state.strategyPath) {
-          cache.goal.textContent =
-            this.game.state.strategyPath === capstone.path
-              ? "Strategy committed for this run."
-              : "Another strategy was chosen.";
+          cache.goal.textContent = committed
+            ? "Strategy committed for this run."
+            : "Another strategy was chosen.";
         } else if (canBuy) {
           cache.goal.textContent = "Ready to present to the Board.";
-        } else if (!gateMet) {
-          cache.goal.textContent = capstone.gateHint;
         } else {
           cache.goal.textContent = this.formatUpgradeGoal(capstone.cost, false);
         }
@@ -633,6 +650,8 @@ export class UI {
         cache.button.classList.toggle("btn--ready", canBuy);
       }
     }
+
+    this.capstoneSection.hidden = !anyVisible;
   }
 
   updateAlignmentPanel() {
