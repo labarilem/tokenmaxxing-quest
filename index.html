@@ -18,6 +18,9 @@
             <span>Achievements</span>
             <span class="btn__badge" id="achievements-count" aria-label="Achievements earned">0/18</span>
           </button>
+          <button type="button" class="btn btn--chip btn--chip-muted" id="about-open-btn">
+            <span>About</span>
+          </button>
           <button type="button" class="btn btn--chip btn--chip-muted" id="reset-open-btn">
             <span>Reset</span>
           </button>
@@ -31,8 +34,18 @@
       </section>
     </div>
 
-    <section class="panel panel--actions">
-      <button type="button" class="btn btn--primary" id="send-prompt-btn">Send Prompt (+1 token)</button>
+    <section class="panel panel--actions" id="actions-panel">
+      <div class="actions__row">
+        <button type="button" class="btn btn--primary" id="send-prompt-btn">Send Prompt (+1 token)</button>
+        <button
+          type="button"
+          class="btn btn--pin"
+          id="pin-prompt-btn"
+          aria-pressed="true"
+          aria-label="Unpin Send Prompt"
+          title="Unpin Send Prompt"
+        >Unpin</button>
+      </div>
     </section>
 
     <section class="panel panel--upgrade">
@@ -171,10 +184,65 @@
         <button type="button" class="modal__close" data-modal-close aria-label="Close ending">×</button>
       </header>
       <div class="modal__body">
-        <p class="ending__headline" id="ending-headline"></p>
-        <pre class="ending__cutscene" id="ending-cutscene"></pre>
-        <p class="ending__epilogue" id="ending-epilogue"></p>
-        <button type="button" class="btn btn--secondary" data-modal-close id="ending-close-btn">Close</button>
+        <div id="ending-cutscene-view">
+          <p class="ending__headline" id="ending-headline"></p>
+          <pre class="ending__cutscene" id="ending-cutscene"></pre>
+          <button type="button" class="btn btn--secondary" id="ending-continue-btn">Continue to run summary →</button>
+        </div>
+        <div id="ending-stats-view" hidden>
+          <h3 class="ending__stats-title">Run summary</h3>
+          <dl class="run-stats">
+            <div class="run-stats__row">
+              <dt class="run-stats__label">Total tokens produced</dt>
+              <dd class="run-stats__value" id="stat-tokens">0</dd>
+            </div>
+            <div class="run-stats__row">
+              <dt class="run-stats__label">Prompts clicked</dt>
+              <dd class="run-stats__value" id="stat-clicks">0</dd>
+            </div>
+            <div class="run-stats__row">
+              <dt class="run-stats__label">Time in focus</dt>
+              <dd class="run-stats__value" id="stat-playtime">0s</dd>
+            </div>
+          </dl>
+          <p class="ending__epilogue" id="ending-epilogue"></p>
+          <button type="button" class="btn btn--secondary" data-modal-close id="ending-close-btn">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="about-modal" hidden>
+    <div class="modal__backdrop" data-modal-close tabindex="-1"></div>
+    <div
+      class="modal__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="about-modal-title"
+    >
+      <header class="modal__header">
+        <h2 class="modal__title" id="about-modal-title">About</h2>
+        <button type="button" class="modal__close" data-modal-close aria-label="Close about">×</button>
+      </header>
+      <div class="modal__body">
+        <p class="about__text">
+          <strong>Tokenmaxxing Quest</strong> is a satirical incremental game about a
+          software engineer at a big tech company that rewards burning LLM tokens as a
+          proxy for productivity. Send prompts, automate agents, certify pricier models,
+          and shape your org's alignment until one of three board strategies ends the run.
+        </p>
+        <p class="about__text">
+          It runs entirely in your browser — plain HTML, CSS, and vanilla JavaScript, no
+          game engine and no backend. Progress saves locally.
+        </p>
+        <p class="about__text about__credit">
+          Made by
+          <a
+            href="https://marcolabarile.me"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Marco Labarile</a>.
+        </p>
       </div>
     </div>
   </div>

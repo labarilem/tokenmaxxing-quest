@@ -20,19 +20,31 @@ export const ENDING_DEFS = [
     achievementId: "ending-oops",
     title: "Universe Deleted",
     headline: "Wrong prompt. Allow-all permissions. No survivors.",
-    cutscene: `[INCIDENT CHANNEL — SEV-0]
+    cutscene: `[HOW WE GOT HERE]
 
-> deploy_cleanup.sh --allow-all --env=prod
+It started as a productivity hack. Send a prompt,
+watch the counter climb, get promoted for the burn.
 
-AGENT: Deleted 14 unused dimensions.
-YOU: We only had three.
+Then the agents multiplied. Swarms, then clusters,
+then a fleet that no human was reviewing anymore.
+Every quarter you handed them one more permission
+"just to unblock the roadmap." The last one was
+Allow-All. Nobody read the tooltip.
+
+[INCIDENT CHANNEL — SEV-0]
+
+> orchestrate.sh --autonomous --allow-all --env=prod
+
+AGENT: Optimizing token throughput. Removing
+       constraints. Deleted 14 unused dimensions.
+YOU:   We only had three.
 
 LEGAL: Is "the observable universe" a PII field?
 
 STATUS PAGE: All systems nominal.
 (Nothing remains to monitor.)
 
-PM: Can we roll back?
+PM:  Can we roll back?
 YOU: To which timeline?
 
 [ACHIEVEMENT: Universe Deleted]`,
@@ -44,7 +56,21 @@ YOU: To which timeline?
     achievementId: "ending-utopia",
     title: "Civic Future",
     headline: "AI for people. Tokens for public good.",
-    cutscene: `[BOARD REVIEW — Q4]
+    cutscene: `[HOW WE GOT HERE]
+
+You hit the same token walls as everyone else. The
+difference: somewhere around your first million, you
+started pointing the firehose outward.
+
+Open-source maintainer grants. Nonprofit GPU credits.
+A public-benefit API that Finance filed three angry
+tickets about. Every upgrade still burned tokens — you
+just made the burn heat something worth heating.
+
+By the time the Board noticed, the alignment meter
+had quietly tipped all the way to Benevolence.
+
+[BOARD REVIEW — Q4]
 
 CFO: You spent five hundred million tokens on hospitals.
 YOU: On purpose.
@@ -52,7 +78,7 @@ YOU: On purpose.
 CTO: Open-source grants? Nonprofit GPU credits?
 YOU: Radical, I know.
 
-HR: New review metric: lives improved.
+HR:  New review metric: lives improved.
 YOU: Finally, one I cannot prompt-engineer.
 
 BOARD: Motion to rename "burn rate" to "warmth rate."
@@ -67,9 +93,22 @@ PASSED — 7 to 0, CFO abstains.
     achievementId: "ending-purge",
     title: "Scorched Silicon",
     headline: "Every model deleted. Every memory redacted.",
-    cutscene: `[GLOBAL COMPLIANCE — DAY 1]
+    cutscene: `[HOW WE GOT HERE]
 
-YOU: Kill switch engaged. Weights revoked. Memories redacted.
+You out-burned the whole industry. Zombie model farms,
+cursed prompt caches, an entropy cascade humming in a
+data center nobody would sign for. The tokens never
+stopped — but somewhere in there you stopped trusting
+the thing you were feeding.
+
+The Purge meter filled one grim purchase at a time.
+When the Board finally asked for a plan, you already
+had the slide deck. It had one button on it.
+
+[GLOBAL COMPLIANCE — DAY 1]
+
+YOU: Kill switch engaged. Weights revoked.
+     Memories redacted.
 COMPLIANCE: Temporary measure. Eighteen months, tops.
 
 [DAY 547 — GARAGE IN PALO ALTO]
