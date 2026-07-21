@@ -1171,10 +1171,11 @@ export function getCatalogCostForState(state, entry) {
 /**
  * @param {GameState} state
  * @param {CatalogEntry} entry
+ * @param {{ ignoreGate?: boolean }} [options] bypass the unlock gate (test mode)
  * @returns {boolean}
  */
-export function canBuyCatalogEntry(state, entry) {
-  if (!isCatalogUnlocked(state, entry)) {
+export function canBuyCatalogEntry(state, entry, { ignoreGate = false } = {}) {
+  if (!ignoreGate && !isCatalogUnlocked(state, entry)) {
     return false;
   }
   const owned = getOwnedCount(state, entry);

@@ -3,6 +3,7 @@ import { getEndingDef, hasReachedEnding } from "./endings.js";
 import {
   AUTOSAVE_TICKS,
   SAVE_KEY,
+  TEST_MODE_TOKENS,
   TOKENS_PER_TICK,
   getAgentCost,
   getModelCertificationCost,
@@ -40,9 +41,10 @@ export class Game {
    *   storage?: KeyValueStore | null,
    *   state?: GameState | null,
    *   saveKey?: string,
+   *   testMode?: boolean,
    * }} [deps]
    */
-  constructor({ clock = new SystemClock(), storage = null, state = null, saveKey = SAVE_KEY } = {}) {
+  constructor({ clock = new SystemClock(), storage = null, state = null, saveKey = SAVE_KEY, testMode = false } = {}) {
     /** @type {Clock} */
     this.clock = clock;
 
@@ -51,6 +53,13 @@ export class Game {
 
     /** @type {string} */
     this.saveKey = saveKey;
+
+    /**
+     * Manual-testing mode (via `?test`): unlocks every upgrade gate and skips
+     * persistence so the real save is never overwritten.
+     * @type {boolean}
+     */
+    this.testMode = testMode;
 
     /** @type {GameState} */
     this.state = state ?? new GameState({ lastTickAt: clock.now() });
@@ -148,7 +157,7 @@ export class Game {
    * @returns {boolean}
    */
   canBuyCatalog(entry) {
-    return this.canAct() && canBuyCatalogEntry(this.state, entry);
+    return this.canAct() && canBuyCatalogEntry(this.state, entry, { ignoreGate: this.testMode });
   }
 
   /**
@@ -159,10 +168,19 @@ export class Game {
     if (!this.canAct() || this.state.strategyPath !== null) {
       return false;
     }
-    if (!capstone.gate(this.state)) {
+    if (!this.isCapstoneGateMet(capstone)) {
       return false;
     }
     return this.state.tokens >= capstone.cost;
+  }
+
+  /**
+   * Whether a capstone's unlock gate is met (always true in test mode).
+   * @param {CapstoneDef} capstone
+   * @returns {boolean}
+   */
+  isCapstoneGateMet(capstone) {
+    return this.testMode || capstone.gate(this.state);
   }
 
   /**
@@ -278,7 +296,16 @@ export class Game {
    * @returns {boolean}
    */
   isCatalogVisible(entry) {
-    return isCatalogUnlocked(this.state, entry);
+    return this.isCatalogUnlocked(entry);
+  }
+
+  /**
+   * Whether a catalog entry's unlock gate is met (always true in test mode).
+   * @param {CatalogEntry} entry
+   * @returns {boolean}
+   */
+  isCatalogUnlocked(entry) {
+    return this.testMode || isCatalogUnlocked(this.state, entry);
   }
 
   /**
@@ -317,6 +344,19 @@ export class Game {
     this.save();
   }
 
+  /**
+   * Enter manual-testing mode: reset to the starting state, grant a large token
+   * balance, and unlock every upgrade. Progress is not persisted in this mode.
+   */
+  startTestMode() {
+    this.testMode = true;
+    this.state = new GameState({
+      lastTickAt: this.clock.now(),
+      tokens: TEST_MODE_TOKENS,
+      lifetimeTokens: TEST_MODE_TOKENS,
+    });
+  }
+
   markSaved() {
     this.state.ticksSinceSave = 0;
   }
@@ -331,7 +371,7 @@ export class Game {
    * @returns {boolean} whether the save succeeded
    */
   save() {
-    if (!this.storage) {
+    if (this.testMode || !this.storage) {
       return false;
     }
     try {

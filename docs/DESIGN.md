@@ -187,6 +187,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **One-line flavor copy** | Satirical upgrade/achievement descriptions stay short; no CSS ellipsis truncation |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
 | **Reset progress** | New game (keep achievements + model tier) or full reset (clear achievements + model tier); modal confirmation required |
+| **Test mode (`?test`)** | Manual-testing flag in the URL query string: resets to the starting state, grants **100B tokens**, and unlocks every upgrade/capstone gate. Progress is **not persisted** in this mode, so the real save is preserved. Parsed in `main.js`; engine gate bypass lives in `Game.testMode` |
 | **Parallel Agent Swarm** | +5 tokens/s each; base 500, ×1.16; gate 30 agents; milestones 20/50 |
 | **Speculative Decoding Rig** | +3% all income per owned; base 2k; gate 10 swarms |
 | **Context Window Expander** | +8 tokens/click per owned; base 3.5k; gate 50 rules; milestones 15/40 |
@@ -273,6 +274,13 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-21 — Manual test mode via `?test` query flag
+
+- Added a `?test` URL query flag that starts the game in **test mode** for manual QA: resets to the starting state, grants **100B tokens**, and unlocks every catalog upgrade and board capstone gate
+- Test mode **skips persistence** (`Game.save()` is a no-op and the flag never loads the existing save), so a player's real `localStorage` progress is left untouched
+- Engine: `Game` now takes a `testMode` option and exposes `startTestMode()`, `isCatalogUnlocked(entry)`, and `isCapstoneGateMet(capstone)`; `canBuyCatalogEntry` accepts an `ignoreGate` option
+- `main.js` (composition root) parses the flag from `window.location.search`; UI reveals the capstone section and buy affordances in test mode
 
 ### 2026-07-20 — Token-positive upgrade plot rule
 

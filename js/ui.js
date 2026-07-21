@@ -28,7 +28,6 @@ import {
   formatCatalogMilestone,
   getCatalogCostForState,
   getOwnedCount,
-  isCatalogUnlocked,
 } from "./upgrades.js";
 
 /** @typedef {import("./achievements.js").AchievementDef} AchievementDef */
@@ -576,7 +575,7 @@ export class UI {
       if (cache.goal) {
         cache.goal.textContent = canBuy
           ? "Ready to buy."
-          : isCatalogUnlocked(this.game.state, entry)
+          : this.game.isCatalogUnlocked(entry)
             ? this.formatUpgradeGoal(cost, false)
             : entry.gateHint;
       }
@@ -601,7 +600,10 @@ export class UI {
       return;
     }
 
-    const show = this.game.state.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS || this.game.isRunComplete;
+    const show =
+      this.game.testMode ||
+      this.game.state.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS ||
+      this.game.isRunComplete;
     this.capstoneSection.hidden = !show;
 
     for (const capstone of CAPSTONES) {
@@ -611,7 +613,7 @@ export class UI {
         continue;
       }
       const canBuy = this.game.canBuyCapstone(capstone);
-      const gateMet = capstone.gate(this.game.state);
+      const gateMet = this.game.isCapstoneGateMet(capstone);
       if (cache.goal) {
         if (this.game.state.strategyPath) {
           cache.goal.textContent =
