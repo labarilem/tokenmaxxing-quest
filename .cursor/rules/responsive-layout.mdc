@@ -1,0 +1,45 @@
+---
+description: Keep separate mobile and desktop layouts for Tokenmaxxing Quest
+globs:
+  - css/main.css
+  - index.html
+  - js/ui.js
+alwaysApply: false
+---
+
+# Two layouts: mobile vs desktop
+
+Tokenmaxxing Quest ships **two distinct layouts** and both must be preserved:
+
+- **Mobile / touch (default, mobile-first):** a single vertical column of cards,
+  `max-width: 480px`, scrolled top-to-bottom. This is the baseline styling in
+  `css/main.css` outside of any wide-viewport media query.
+- **Desktop (mouse/trackpad, wide viewport):** a wider, space-filling **grid**
+  where upgrades render as cells in a table-like layout instead of one tall
+  column. Implemented in the desktop media query at the bottom of `css/main.css`.
+
+## Rules
+
+- **Never change the mobile layout when adjusting the desktop layout, and vice
+  versa.** Desktop-only styling must live inside the desktop media query;
+  mobile-only styling must stay outside it.
+- The desktop layout is gated on
+  `@media (min-width: 720px) and (not (pointer: coarse))`. Excluding a coarse
+  primary pointer keeps phones and tablets on the single-column layout even in
+  landscape or on large screens, while still matching real desktops (fine mouse
+  pointer) and ambiguous environments that report no pointer. Do not weaken this
+  gate to a bare `min-width` query — that would leak the desktop grid onto
+  mobile/tablet in landscape.
+- Prefer implementing the desktop layout with **CSS only** (grid/flex on
+  existing elements). Avoid JS user-agent/viewport sniffing to swap layouts.
+- Keep the hard requirements intact for **both** layouts: 44×44px touch targets,
+  readable text, no game engine, static-file deploy, snappy performance.
+- When adding new upgrade panels or sections, verify they flow correctly in
+  **both** the single-column (mobile) and grid (desktop) layouts.
+
+## Verifying
+
+Serve the site (`python3 -m http.server 8080`) and check:
+
+- A **narrow / mobile-emulated** viewport → single column, unchanged from before.
+- A **wide desktop** viewport → multi-column grid that uses the available width.

@@ -812,3 +812,69 @@ body.prompt-pinned .game {
 .about__text a:hover {
   color: var(--accent-hover);
 }
+
+/*
+ * Desktop layout (mouse/trackpad devices on wide viewports).
+ *
+ * Mobile/touch devices keep the mobile-first single-column layout above,
+ * unchanged. This block targets wide viewports whose primary pointer is NOT
+ * coarse — i.e. real desktops/laptops (fine mouse pointer) — while excluding
+ * phones and tablets (coarse touch pointer) even when they are large or in
+ * landscape. Excluding `pointer: coarse` (rather than requiring `pointer: fine`
+ * or `hover: hover`) also keeps the grid working in environments that report an
+ * ambiguous/absent pointer. See `.cursor/rules/responsive-layout.mdc` for the
+ * two-layout requirement.
+ */
+@media (min-width: 720px) and (not (pointer: coarse)) {
+  .game {
+    max-width: min(96vw, 1180px);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  /* Full-width bands: header/tokens, actions, catalog, capstones, banner. */
+  .game > .game__sticky-top,
+  .game > .panel--actions,
+  .game > #catalog-upgrades,
+  .game > #capstone-section,
+  .game > .run-complete {
+    grid-column: 1 / -1;
+  }
+
+  /* Grid gap handles spacing between cards, so drop per-panel margins. */
+  .game > .panel,
+  .game__sticky-top {
+    margin-bottom: 0;
+  }
+
+  /* Turn the catalog + capstone stacks into table-like grids of cells. */
+  .upgrade-stack {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  /*
+   * Lay each upgrade card out as a flex column so cards in the same row can
+   * share a height while their Buy row stays anchored to the bottom.
+   */
+  .game > .panel--upgrade,
+  .game > .panel--alignment,
+  .upgrade-stack .panel--upgrade {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .game > .panel--upgrade .upgrade__row,
+  .upgrade-stack .panel--upgrade .upgrade__row {
+    margin-top: auto;
+  }
+
+  /* Keep the pinned Send Prompt bar readable rather than stretched full width. */
+  .panel--actions-pinned {
+    width: min(100%, 620px);
+  }
+}
