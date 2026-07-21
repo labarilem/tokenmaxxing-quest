@@ -203,8 +203,8 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Public Benefit API** | +40 benevolence, +2% income; base 72k |
 | **Zombie Model Farm** | +12 purge, +2 token/s; base 18k |
 | **Total Recall Mandate** | +20 purge, +5 token/s; base 52k |
-| **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at **25M** lifetime tokens |
-| **Board strategy capstones** | Mutually exclusive **12B-token** commits at **500M** lifetime; require **Capstone Briefing Suite** (orbital prep chain). Utopia also needs **Ethics Summit** + **Stewardship Covenant** and **150+** benevolence; Purge needs **120+** purge alignment |
+| **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at **25M** lifetime tokens or first alignment shift. Benevolence and Purge meters also show progress toward their capstone thresholds (e.g. `45 / 150`) as a spoiler-free tracker |
+| **Board strategy capstones** | Mutually exclusive **12B-token** commits at **500M** lifetime; require **Capstone Briefing Suite** (orbital prep chain). Utopia also needs **Ethics Summit** + **Stewardship Covenant** and **150+** benevolence; Purge needs **120+** purge alignment. Each capstone panel only appears once **its own gate is met**, so alternative endings stay hidden; buy buttons use the standard upgrade color (no path-specific tint) |
 | **Enterprise ops** | 8 corporate mid-game upgrades (Perf Review Automator through Antitrust Distraction Taskforce); gates ~3M–280M lifetime; costs scaled by **ENTERPRISE_COST_SCALE (2×)** |
 | **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime; costs scaled by **MID_GAME_COST_SCALE (1.38×)** |
 | **Orbital infrastructure** | 8 endgame prep upgrades (Orbital Manifest Ledger through Capstone Briefing Suite); gates ~340M–560M lifetime; costs scaled by **ORBITAL_COST_SCALE (3.5×)**; required before capstones |
@@ -274,6 +274,13 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-21 — Spoiler-free board strategies + alignment tracker
+
+- Each **Board strategy** capstone panel now appears only once **its own gate is met** (lifetime tokens + orbital prep + benevolence/purge thresholds), so players pursuing one path no longer see the names/descriptions of alternative endings. The section stays hidden until at least one strategy is available (or one is committed).
+- Capstone **Buy** buttons now use the same color as every other upgrade button (removed the path-specific red/green/orange `btn--capstone-*` tint that hinted at which ending each led to).
+- Added a minimal **alignment tracker**: the Benevolence and Purge meters show progress toward their capstone thresholds (`value / 150`, `value / 120`), driven by `CAPSTONE_BENEVOLENCE_MIN` / `CAPSTONE_PURGE_MIN`. Recklessness (no alignment gate) is unchanged.
+- UI-only change: engine, economy, save format, gates, and pacing are untouched.
 
 ### 2026-07-21 — Manual test mode via `?test` query flag
 

@@ -85,18 +85,22 @@
 
     <section class="panel panel--alignment" id="alignment-panel" hidden aria-live="polite">
       <h2 class="panel__label">Org alignment</h2>
-      <p class="alignment__hint">Purchases shift your strategy. Capstones lock a path at 100M tokens.</p>
+      <p class="alignment__hint">Purchases shift your strategy. Reach a threshold to unlock its board strategy.</p>
       <div class="alignment__meter">
         <span class="alignment__label">Recklessness</span>
         <span class="alignment__value" id="alignment-recklessness">0</span>
       </div>
       <div class="alignment__meter">
         <span class="alignment__label">Benevolence</span>
-        <span class="alignment__value alignment__value--good" id="alignment-benevolence">0</span>
+        <span class="alignment__value alignment__value--good">
+          <span id="alignment-benevolence">0</span><span class="alignment__target" id="alignment-benevolence-target"></span>
+        </span>
       </div>
       <div class="alignment__meter">
         <span class="alignment__label">Purge</span>
-        <span class="alignment__value alignment__value--purge" id="alignment-purge">0</span>
+        <span class="alignment__value alignment__value--purge">
+          <span id="alignment-purge">0</span><span class="alignment__target" id="alignment-purge-target"></span>
+        </span>
       </div>
     </section>
 

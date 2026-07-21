@@ -649,6 +649,12 @@ body.modal-open {
   color: #e8a87c;
 }
 
+.alignment__target {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
 .run-complete {
   margin: 0 0 10px;
   padding: 10px 12px;
@@ -695,22 +701,4 @@ body.modal-open {
 
 .modal__dialog--ending .btn {
   width: 100%;
-}
-
-.btn--capstone-oops.btn--ready:not(:disabled) {
-  border-color: #e06c75;
-  color: #e06c75;
-  background: rgba(224, 108, 117, 0.12);
-}
-
-.btn--capstone-utopia.btn--ready:not(:disabled) {
-  border-color: var(--success);
-  color: var(--success);
-  background: rgba(129, 201, 149, 0.12);
-}
-
-.btn--capstone-purge.btn--ready:not(:disabled) {
-  border-color: #e8a87c;
-  color: #e8a87c;
-  background: rgba(232, 168, 124, 0.12);
 }
