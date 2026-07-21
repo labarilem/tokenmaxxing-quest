@@ -294,6 +294,10 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.btn--chip-accent .btn__badge {
+  margin-left: 0;
+}
+
 .btn--buy {
   gap: 0.35em;
 }
