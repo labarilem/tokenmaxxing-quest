@@ -817,12 +817,15 @@ body.prompt-pinned .game {
  * Desktop layout (mouse/trackpad devices on wide viewports).
  *
  * Mobile/touch devices keep the mobile-first single-column layout above,
- * unchanged. This block only applies to devices with a fine pointer + hover
- * (i.e. real desktops/laptops) on wide viewports, so phones and tablets — even
- * large ones in landscape — never switch to the desktop grid. See
- * `.cursor/rules/responsive-layout.mdc` for the two-layout requirement.
+ * unchanged. This block targets wide viewports whose primary pointer is NOT
+ * coarse — i.e. real desktops/laptops (fine mouse pointer) — while excluding
+ * phones and tablets (coarse touch pointer) even when they are large or in
+ * landscape. Excluding `pointer: coarse` (rather than requiring `pointer: fine`
+ * or `hover: hover`) also keeps the grid working in environments that report an
+ * ambiguous/absent pointer. See `.cursor/rules/responsive-layout.mdc` for the
+ * two-layout requirement.
  */
-@media (min-width: 720px) and (hover: hover) and (pointer: fine) {
+@media (min-width: 720px) and (not (pointer: coarse)) {
   .game {
     max-width: min(96vw, 1180px);
     display: grid;
