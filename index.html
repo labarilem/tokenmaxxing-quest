@@ -18,11 +18,21 @@
             <span>Achievements</span>
             <span class="btn__badge" id="achievements-count" aria-label="Achievements earned">0/18</span>
           </button>
-          <button type="button" class="btn btn--chip btn--chip-muted" id="about-open-btn">
-            <span>About</span>
-          </button>
           <button type="button" class="btn btn--chip btn--chip-muted" id="reset-open-btn">
             <span>Reset</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn--chip btn--chip-muted btn--chip-icon"
+            id="about-open-btn"
+            aria-label="About"
+            title="About"
+          >
+            <svg class="btn__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="12" cy="8" r="1" fill="currentColor"/>
+            </svg>
           </button>
         </div>
       </header>
@@ -242,6 +252,15 @@
             target="_blank"
             rel="noopener noreferrer"
           >Marco Labarile</a>.
+        </p>
+        <p class="about__text about__credit">
+          Thanks to
+          <a
+            href="https://github.com/agargaro"
+            target="_blank"
+            rel="noopener noreferrer"
+          >agargaro</a>
+          for testing and giving precious feedback.
         </p>
       </div>
     </div>

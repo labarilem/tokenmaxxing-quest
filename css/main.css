@@ -270,6 +270,17 @@ body {
   color: var(--text);
 }
 
+.btn--chip-icon {
+  flex: 0 0 auto;
+  min-width: var(--touch-min);
+  padding: 10px;
+}
+
+.btn__icon {
+  display: block;
+  flex-shrink: 0;
+}
+
 .btn__badge {
   margin-left: auto;
   padding: 2px 8px;
