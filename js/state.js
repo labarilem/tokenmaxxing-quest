@@ -15,6 +15,8 @@ export class GameState {
    *   lastTickAt?: number,
    *   achievements?: string[],
    *   lifetimeTokens?: number,
+   *   totalClicks?: number,
+   *   playTimeMs?: number,
    *   swarms?: number,
    *   decoders?: number,
    *   contexts?: number,
@@ -97,6 +99,8 @@ export class GameState {
     lastTickAt = 0,
     achievements = [],
     lifetimeTokens = 0,
+    totalClicks = 0,
+    playTimeMs = 0,
     swarms = 0,
     decoders = 0,
     contexts = 0,
@@ -193,6 +197,12 @@ export class GameState {
 
     /** @type {number} cumulative tokens earned across the run */
     this.lifetimeTokens = lifetimeTokens;
+
+    /** @type {number} manual prompts sent (Send Prompt clicks) this run */
+    this.totalClicks = totalClicks;
+
+    /** @type {number} ms the game tab was visible + focused this run */
+    this.playTimeMs = playTimeMs;
 
     /** @type {number} */
     this.swarms = swarms;
@@ -384,6 +394,8 @@ export class GameState {
       lastTickAt: this.lastTickAt,
       achievements: [...this.achievements],
       lifetimeTokens: this.lifetimeTokens,
+      totalClicks: this.totalClicks,
+      playTimeMs: this.playTimeMs,
       swarms: this.swarms,
       decoders: this.decoders,
       contexts: this.contexts,
@@ -509,6 +521,8 @@ export class GameState {
     }
 
     state.lifetimeTokens = GameState.readCount(record.lifetimeTokens, state.tokens);
+    state.totalClicks = GameState.readCount(record.totalClicks);
+    state.playTimeMs = GameState.readCount(record.playTimeMs);
     state.swarms = GameState.readCount(record.swarms);
     state.decoders = GameState.readCount(record.decoders);
     state.contexts = GameState.readCount(record.contexts);

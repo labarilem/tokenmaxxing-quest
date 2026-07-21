@@ -129,6 +129,26 @@ export function formatRate(rate) {
 }
 
 /**
+ * Human-readable elapsed time (e.g. "1h 03m 12s", "4m 09s", "12s").
+ * @param {number} ms
+ * @returns {string}
+ */
+export function formatPlayTime(ms) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+  if (hours > 0) {
+    return `${hours}h ${pad(minutes)}m ${pad(seconds)}s`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${pad(seconds)}s`;
+  }
+  return `${seconds}s`;
+}
+
+/**
  * @param {UpgradeDef} upgrade
  * @param {number} owned
  * @returns {number}
