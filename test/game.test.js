@@ -46,6 +46,38 @@ test("sendPrompt adds base tokens and unlocks first-prompt once", () => {
   assert.equal(game.tokens, 2);
 });
 
+test("sendPrompt counts manual clicks for run stats", () => {
+  const game = new Game({ clock: new ManualClock(0) });
+  game.sendPrompt();
+  game.sendPrompt();
+  assert.equal(game.state.totalClicks, 2);
+});
+
+test("clicks are not counted once the run is complete", () => {
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({ tokens: 100, strategyPath: "purge", lastTickAt: 0 }),
+  });
+  game.sendPrompt();
+  assert.equal(game.state.totalClicks, 0);
+});
+
+test("ticks accrue focused play time but ignore large away gaps", () => {
+  const clock = new ManualClock(0);
+  const game = new Game({ clock, state: new GameState({ lastTickAt: 0 }) });
+
+  runSeconds(game, clock, 2);
+  assert.equal(game.state.playTimeMs, 2000);
+
+  // Simulate returning after being away: the reference is synced, so the gap
+  // is not credited as play time.
+  clock.setTime(clock.now() + 60_000);
+  game.syncLastTickAt();
+  clock.advance(200);
+  game.tick();
+  assert.equal(game.state.playTimeMs, 2200);
+});
+
 test("sendPrompt scales with owned rules", () => {
   const game = new Game({
     clock: new ManualClock(0),

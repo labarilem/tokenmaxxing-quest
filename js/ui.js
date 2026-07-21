@@ -10,6 +10,7 @@ import {
   formatModelPanelLabel,
   formatNumber,
   formatPassiveBenefit,
+  formatPlayTime,
   formatRate,
   getCurrentModel,
   getMarginalClickGain,
@@ -40,6 +41,9 @@ import {
 const TOAST_VISIBLE_MS = 4000;
 const TOAST_EXIT_MS = 300;
 
+/** localStorage key for the Send Prompt pin preference (UI-only, survives resets). */
+const PIN_PREF_KEY = "tokenmaxxing-quest.pinPrompt";
+
 export class UI {
   /** @param {Game} game */
   constructor(game) {
@@ -53,6 +57,12 @@ export class UI {
 
     /** @type {HTMLButtonElement | null} */
     this.sendPromptBtn = document.getElementById("send-prompt-btn");
+
+    /** @type {HTMLElement | null} */
+    this.actionsPanel = document.getElementById("actions-panel");
+
+    /** @type {HTMLButtonElement | null} */
+    this.pinPromptBtn = document.getElementById("pin-prompt-btn");
 
     /** @type {HTMLButtonElement | null} */
     this.buyRuleBtn = document.getElementById("buy-rule-btn");
@@ -136,6 +146,12 @@ export class UI {
     this.achievementOverlay = document.getElementById("achievement-overlay");
 
     /** @type {HTMLButtonElement | null} */
+    this.aboutOpenBtn = document.getElementById("about-open-btn");
+
+    /** @type {HTMLElement | null} */
+    this.aboutModal = document.getElementById("about-modal");
+
+    /** @type {HTMLButtonElement | null} */
     this.resetOpenBtn = document.getElementById("reset-open-btn");
 
     /** @type {HTMLElement | null} */
@@ -191,6 +207,27 @@ export class UI {
 
     /** @type {HTMLElement | null} */
     this.endingEpilogue = document.getElementById("ending-epilogue");
+
+    /** @type {HTMLElement | null} */
+    this.endingCutsceneView = document.getElementById("ending-cutscene-view");
+
+    /** @type {HTMLElement | null} */
+    this.endingStatsView = document.getElementById("ending-stats-view");
+
+    /** @type {HTMLButtonElement | null} */
+    this.endingContinueBtn = document.getElementById("ending-continue-btn");
+
+    /** @type {HTMLButtonElement | null} */
+    this.endingCloseBtn = document.getElementById("ending-close-btn");
+
+    /** @type {HTMLElement | null} */
+    this.statTokensDisplay = document.getElementById("stat-tokens");
+
+    /** @type {HTMLElement | null} */
+    this.statClicksDisplay = document.getElementById("stat-clicks");
+
+    /** @type {HTMLElement | null} */
+    this.statPlaytimeDisplay = document.getElementById("stat-playtime");
 
     /** @type {HTMLElement | null} */
     this.activeModal = null;
@@ -257,9 +294,56 @@ export class UI {
       this.alignmentPurgeTarget.textContent = ` / ${CAPSTONE_PURGE_MIN}`;
     }
 
+    /** @type {boolean} Send Prompt pinned to the bottom of the screen (default on). */
+    this.pinned = true;
+
     this.handleKeydown = this.handleKeydown.bind(this);
 
     this.bindEvents();
+    this.initPinPreference();
+  }
+
+  /**
+   * Read the saved pin preference (defaulting to pinned) and apply it.
+   */
+  initPinPreference() {
+    let pinned = true;
+    try {
+      const stored = globalThis.localStorage?.getItem(PIN_PREF_KEY);
+      if (stored === "0") {
+        pinned = false;
+      }
+    } catch {
+      pinned = true;
+    }
+    this.setPinned(pinned);
+  }
+
+  /**
+   * @param {boolean} pinned
+   */
+  setPinned(pinned) {
+    this.pinned = pinned;
+
+    if (this.actionsPanel) {
+      this.actionsPanel.classList.toggle("panel--actions-pinned", pinned);
+    }
+    document.body.classList.toggle("prompt-pinned", pinned);
+
+    if (this.pinPromptBtn) {
+      const label = pinned ? "Unpin" : "Pin";
+      const aria = pinned ? "Unpin Send Prompt" : "Pin Send Prompt to the bottom";
+      this.pinPromptBtn.textContent = label;
+      this.pinPromptBtn.setAttribute("aria-pressed", pinned ? "true" : "false");
+      this.pinPromptBtn.setAttribute("aria-label", aria);
+      this.pinPromptBtn.title = aria;
+    }
+
+    try {
+      globalThis.localStorage?.setItem(PIN_PREF_KEY, pinned ? "1" : "0");
+    } catch {
+      // Ignore storage failures — pinning is a best-effort UI preference.
+    }
   }
 
   bindEvents() {
@@ -297,6 +381,18 @@ export class UI {
       this.openAchievementsModal();
     });
 
+    this.aboutOpenBtn?.addEventListener("click", () => {
+      this.openAboutModal();
+    });
+
+    this.pinPromptBtn?.addEventListener("click", () => {
+      this.setPinned(!this.pinned);
+    });
+
+    this.endingContinueBtn?.addEventListener("click", () => {
+      this.showEndingStatsView();
+    });
+
     this.resetOpenBtn?.addEventListener("click", () => {
       this.openResetModal();
     });
@@ -313,7 +409,7 @@ export class UI {
       this.onProgressReset();
     });
 
-    for (const modal of [this.achievementsModal, this.resetModal, this.endingModal]) {
+    for (const modal of [this.achievementsModal, this.resetModal, this.endingModal, this.aboutModal]) {
       if (!modal) {
         continue;
       }
@@ -397,6 +493,20 @@ export class UI {
     this.closeModal(this.achievementsModal);
   }
 
+  openAboutModal() {
+    if (!this.aboutModal) {
+      return;
+    }
+    this.openModal(this.aboutModal, this.aboutOpenBtn);
+  }
+
+  closeAboutModal() {
+    if (!this.aboutModal) {
+      return;
+    }
+    this.closeModal(this.aboutModal);
+  }
+
   openResetModal() {
     if (!this.resetModal) {
       return;
@@ -430,7 +540,48 @@ export class UI {
     if (this.endingEpilogue) {
       this.endingEpilogue.textContent = ending.epilogue;
     }
+    this.updateRunStats();
+    this.showEndingCutsceneView();
     this.openModal(this.endingModal, null);
+  }
+
+  /**
+   * Fill the run-summary stats from the current game state.
+   */
+  updateRunStats() {
+    const { state } = this.game;
+    if (this.statTokensDisplay) {
+      this.statTokensDisplay.textContent = formatNumber(state.lifetimeTokens);
+    }
+    if (this.statClicksDisplay) {
+      this.statClicksDisplay.textContent = formatNumber(state.totalClicks);
+    }
+    if (this.statPlaytimeDisplay) {
+      this.statPlaytimeDisplay.textContent = formatPlayTime(state.playTimeMs);
+    }
+  }
+
+  /** Show the cutscene (first) phase of the ending modal. */
+  showEndingCutsceneView() {
+    if (this.endingCutsceneView) {
+      this.endingCutsceneView.hidden = false;
+    }
+    if (this.endingStatsView) {
+      this.endingStatsView.hidden = true;
+    }
+  }
+
+  /** Reveal the run-summary stats after the cutscene. */
+  showEndingStatsView() {
+    if (this.endingCutsceneView) {
+      this.endingCutsceneView.hidden = true;
+    }
+    if (this.endingStatsView) {
+      this.endingStatsView.hidden = false;
+    }
+    if (this.endingCloseBtn instanceof HTMLElement) {
+      this.endingCloseBtn.focus();
+    }
   }
 
   /**

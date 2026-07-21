@@ -17,6 +17,27 @@ test("toSaveData emits the save shape", () => {
   assert.equal(save.alignmentBenevolence, 0);
 });
 
+test("toSaveData and fromSaveData roundtrip run stats", () => {
+  const state = new GameState({ totalClicks: 42, playTimeMs: 61_000, lastTickAt: 1 });
+  const save = state.toSaveData();
+  assert.equal(save.totalClicks, 42);
+  assert.equal(save.playTimeMs, 61_000);
+
+  const restored = GameState.fromSaveData(save);
+  assert.equal(restored.totalClicks, 42);
+  assert.equal(restored.playTimeMs, 61_000);
+});
+
+test("fromSaveData defaults run stats and rejects invalid values", () => {
+  const missing = GameState.fromSaveData({ tokens: 5 });
+  assert.equal(missing.totalClicks, 0);
+  assert.equal(missing.playTimeMs, 0);
+
+  const invalid = GameState.fromSaveData({ totalClicks: -3, playTimeMs: "nope" });
+  assert.equal(invalid.totalClicks, 0);
+  assert.equal(invalid.playTimeMs, 0);
+});
+
 test("fromSaveData restores modelTier", () => {
   const state = GameState.fromSaveData({ modelTier: 2 });
   assert.equal(state.modelTier, 2);

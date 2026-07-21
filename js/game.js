@@ -4,6 +4,7 @@ import {
   AUTOSAVE_TICKS,
   SAVE_KEY,
   TEST_MODE_TOKENS,
+  TICK_MS,
   TOKENS_PER_TICK,
   getAgentCost,
   getModelCertificationCost,
@@ -191,6 +192,7 @@ export class Game {
     if (!this.canAct()) {
       return [];
     }
+    this.state.totalClicks += 1;
     this.state.creditTokens(this.tokensPerClick);
     return evaluateAchievements(this.state, "sendPrompt");
   }
@@ -313,10 +315,19 @@ export class Game {
    * @returns {import("./achievements.js").AchievementDef[]} newly unlocked achievements
    */
   tick() {
+    const now = this.clock.now();
+    // Accrue focused play time. Ticks only run while the tab is visible and
+    // focused, and `syncLastTickAt` resets the reference on resume, so the gap
+    // between ticks is ~one interval. Cap the delta to ignore any anomalous
+    // jump (e.g. a stale timestamp) so idle/away time is never counted.
+    const delta = now - this.state.lastTickAt;
+    if (delta > 0 && delta <= TICK_MS * 5) {
+      this.state.playTimeMs += delta;
+    }
     if (this.tokensPerSecond > 0) {
       this.state.creditTokens(this.tokensPerSecond * TOKENS_PER_TICK);
     }
-    this.state.lastTickAt = this.clock.now();
+    this.state.lastTickAt = now;
     this.state.ticksSinceSave += 1;
     return evaluateAchievements(this.state, "tick");
   }
