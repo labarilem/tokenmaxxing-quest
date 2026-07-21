@@ -690,16 +690,89 @@ body.modal-open {
 
 .ending__cutscene {
   margin: 0 0 12px;
-  padding: 12px;
+  padding: 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: rgba(0, 0, 0, 0.25);
   color: var(--text);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.ending-cutscene__section {
+  margin: 1.1rem 0 0.6rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.ending-cutscene__section:first-child {
+  margin-top: 0;
+}
+
+.ending-cutscene__para {
+  margin: 0 0 0.85rem;
+}
+
+.ending-cutscene__para:last-child {
+  margin-bottom: 0;
+}
+
+.ending-cutscene__command {
+  margin: 0.5rem 0 0.85rem;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent-dim);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--accent);
   font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
   font-size: 0.8125rem;
+  line-height: 1.45;
+  overflow-x: auto;
+}
+
+.ending-cutscene__dialogue {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0.5rem 0 0.85rem;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.ending-cutscene__line {
+  margin: 0;
+  font-size: 0.875rem;
   line-height: 1.5;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+}
+
+.ending-cutscene__speaker {
+  display: inline-block;
+  min-width: 4.5rem;
+  margin-right: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  vertical-align: baseline;
+}
+
+.ending-cutscene__achievement {
+  margin: 1rem 0 0;
+  padding: 8px 12px;
+  border: 1px solid var(--success);
+  border-radius: var(--radius);
+  background: rgba(129, 201, 149, 0.1);
+  color: var(--success);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
 }
 
 .ending__epilogue {

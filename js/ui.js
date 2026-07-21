@@ -1,4 +1,5 @@
 import { ACHIEVEMENT_DEFS, getAchievementDisplay, getJobSubtitle } from "./achievements.js";
+import { formatEndingCutscene } from "./endings.js";
 import {
   AGENT,
   RULE,
@@ -535,7 +536,7 @@ export class UI {
       this.endingHeadline.textContent = ending.headline;
     }
     if (this.endingCutscene) {
-      this.endingCutscene.textContent = ending.cutscene;
+      this.endingCutscene.innerHTML = formatEndingCutscene(ending.cutscene);
     }
     if (this.endingEpilogue) {
       this.endingEpilogue.textContent = ending.epilogue;

@@ -127,6 +127,151 @@ YOU: We deleted the variance.
 /** @type {Map<EndingPath, EndingDef>} */
 const ENDING_BY_PATH = new Map(ENDING_DEFS.map((def) => [def.path, def]));
 
+const SECTION_RE = /^\[([^\]]+)\]$/;
+const DIALOGUE_RE = /^([A-Z][A-Z0-9 /()—.\-™]*):\s*(.*)$/;
+const COMMAND_RE = /^>\s*(.+)$/;
+
+/**
+ * @param {string} text
+ * @returns {string}
+ */
+function escapeHtml(text) {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+/**
+ * @param {string[]} lines
+ * @returns {string[][]}
+ */
+function splitParagraphs(lines) {
+  /** @type {string[][]} */
+  const paragraphs = [];
+  /** @type {string[]} */
+  let current = [];
+
+  for (const line of lines) {
+    if (!line.trim()) {
+      if (current.length > 0) {
+        paragraphs.push(current);
+        current = [];
+      }
+      continue;
+    }
+    current.push(line);
+  }
+
+  if (current.length > 0) {
+    paragraphs.push(current);
+  }
+
+  return paragraphs;
+}
+
+/**
+ * @param {string[]} lines
+ * @returns {boolean}
+ */
+function isDialogueBlock(lines) {
+  return lines.some((line) => DIALOGUE_RE.test(line.trim()));
+}
+
+/**
+ * @param {string[]} lines
+ * @returns {string}
+ */
+function formatDialogueBlock(lines) {
+  /** @type {{ speaker: string, text: string }[]} */
+  const entries = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    const match = trimmed.match(DIALOGUE_RE);
+    if (match) {
+      entries.push({ speaker: match[1], text: match[2] });
+      continue;
+    }
+
+    if (entries.length > 0) {
+      const last = entries[entries.length - 1];
+      last.text = last.text ? `${last.text} ${trimmed}` : trimmed;
+    }
+  }
+
+  const linesHtml = entries.map(
+    (entry) =>
+      `<p class="ending-cutscene__line"><span class="ending-cutscene__speaker">${escapeHtml(entry.speaker)}</span> ${escapeHtml(entry.text)}</p>`,
+  );
+
+  return `<div class="ending-cutscene__dialogue">${linesHtml.join("")}</div>`;
+}
+
+/**
+ * Turn a plain-text ending cutscene into structured, readable HTML.
+ * @param {string} cutscene
+ * @returns {string}
+ */
+export function formatEndingCutscene(cutscene) {
+  const blocks = cutscene.trim().split(/\n\n+/);
+  /** @type {string[]} */
+  const html = [];
+
+  for (const block of blocks) {
+    const rawLines = block.split("\n");
+    let start = 0;
+    const firstTrimmed = rawLines[0].trim();
+
+    if (SECTION_RE.test(firstTrimmed)) {
+      const label = firstTrimmed.slice(1, -1);
+      if (label.startsWith("ACHIEVEMENT:")) {
+        html.push(
+          `<p class="ending-cutscene__achievement">${escapeHtml(label)}</p>`,
+        );
+      } else {
+        html.push(
+          `<h3 class="ending-cutscene__section">${escapeHtml(label)}</h3>`,
+        );
+      }
+      start = 1;
+    }
+
+    const contentLines = rawLines.slice(start);
+    const paragraphs = splitParagraphs(contentLines);
+
+    for (const paragraphLines of paragraphs) {
+      if (paragraphLines.length === 1) {
+        const trimmed = paragraphLines[0].trim();
+        const commandMatch = trimmed.match(COMMAND_RE);
+        if (commandMatch) {
+          html.push(
+            `<p class="ending-cutscene__command">${escapeHtml(commandMatch[1])}</p>`,
+          );
+          continue;
+        }
+      }
+
+      if (isDialogueBlock(paragraphLines)) {
+        html.push(formatDialogueBlock(paragraphLines));
+        continue;
+      }
+
+      const text = paragraphLines.map((line) => line.trim()).join(" ");
+      if (text) {
+        html.push(`<p class="ending-cutscene__para">${escapeHtml(text)}</p>`);
+      }
+    }
+  }
+
+  return html.join("");
+}
+
 /**
  * @param {EndingPath} path
  * @returns {EndingDef | undefined}
