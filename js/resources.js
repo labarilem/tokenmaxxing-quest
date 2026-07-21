@@ -19,6 +19,9 @@ import {
 
 export const SAVE_KEY = "tokenmaxxing-quest.save";
 
+/** Starting token balance granted by the `?test` manual-testing mode. */
+export const TEST_MODE_TOKENS = 100_000_000_000;
+
 export const TICKS_PER_SECOND = 5;
 export const TICK_MS = 1000 / TICKS_PER_SECOND;
 export const TOKENS_PER_TICK = 1 / TICKS_PER_SECOND;

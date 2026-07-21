@@ -9,6 +9,7 @@ import {
   AGENT,
   AUTOSAVE_TICKS,
   RULE,
+  TEST_MODE_TOKENS,
   TICKS_PER_SECOND,
   getAgentCost,
   getModelCertificationCost,
@@ -16,6 +17,7 @@ import {
   getNextModel,
   getRuleCost,
 } from "../js/resources.js";
+import { ALL_CATALOG, CAPSTONES } from "../js/upgrades.js";
 
 /**
  * @param {Game} game
@@ -310,6 +312,60 @@ test("resetProgress clears resources and optionally keeps achievements", () => {
   assert.equal(reloaded.load(), true);
   assert.equal(reloaded.tokens, 0);
   assert.equal(reloaded.state.hasAchievement("first-prompt"), false);
+});
+
+test("startTestMode resets to starting state with 100B tokens", () => {
+  const clock = new ManualClock(7000);
+  const game = new Game({
+    clock,
+    state: new GameState({ tokens: 5, rules: 9, agents: 4, modelTier: 3, lastTickAt: 1000 }),
+  });
+
+  game.startTestMode();
+
+  assert.equal(game.testMode, true);
+  assert.equal(game.tokens, TEST_MODE_TOKENS);
+  assert.equal(game.state.lifetimeTokens, TEST_MODE_TOKENS);
+  assert.equal(game.rules, 0);
+  assert.equal(game.agents, 0);
+  assert.equal(game.modelTier, 0);
+  assert.equal(game.state.lastTickAt, 7000);
+});
+
+test("test mode unlocks every catalog upgrade and capstone gate", () => {
+  const game = new Game({ clock: new ManualClock(0), testMode: true });
+  game.startTestMode();
+
+  for (const entry of ALL_CATALOG) {
+    assert.equal(game.isCatalogVisible(entry), true, `${entry.id} should be visible`);
+    assert.equal(game.isCatalogUnlocked(entry), true, `${entry.id} should be unlocked`);
+    assert.equal(game.canBuyCatalog(entry), true, `${entry.id} should be buyable`);
+  }
+
+  for (const capstone of CAPSTONES) {
+    assert.equal(game.isCapstoneGateMet(capstone), true, `${capstone.id} gate should pass`);
+    assert.equal(game.canBuyCapstone(capstone), true, `${capstone.id} should be buyable`);
+  }
+});
+
+test("test mode does not persist progress to storage", () => {
+  const storage = new MemoryStorage();
+  const game = new Game({ clock: new ManualClock(0), storage, testMode: true });
+  game.startTestMode();
+
+  assert.equal(game.save(), false);
+  assert.equal(storage.getItem(game.saveKey), null);
+});
+
+test("gates still apply when test mode is off", () => {
+  const game = new Game({
+    clock: new ManualClock(0),
+    state: new GameState({ tokens: TEST_MODE_TOKENS, lastTickAt: 0 }),
+  });
+  const gated = ALL_CATALOG.find((entry) => entry.id === "swarm");
+  assert.ok(gated);
+  assert.equal(game.isCatalogVisible(gated), false);
+  assert.equal(game.canBuyCatalog(gated), false);
 });
 
 test("load returns false when there is no save", () => {

@@ -4,9 +4,12 @@ import { LocalStorageAdapter } from "./storage.js";
 import { TICK_MS } from "./resources.js";
 import { UI } from "./ui.js";
 
+const testMode = new URLSearchParams(window.location.search).has("test");
+
 const game = new Game({
   clock: new SystemClock(),
   storage: new LocalStorageAdapter(),
+  testMode,
 });
 const ui = new UI(game);
 
@@ -59,7 +62,11 @@ function onGameActivityChange() {
   startTickLoop();
 }
 
-game.load();
+if (testMode) {
+  game.startTestMode();
+} else {
+  game.load();
+}
 ui.update();
 
 if (isGameActive()) {
