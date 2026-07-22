@@ -222,6 +222,24 @@ test("event token losses may go negative; alignment clamps at zero", () => {
   assert.equal(game.state.alignmentBenevolence, 0);
 });
 
+test("percent token losses deepen purge debt instead of shrinking it", () => {
+  const event = getEventDef("manager-review-surprise");
+  assert.ok(event);
+  const game = new Game({
+    state: new GameState({
+      lastTickAt: 0,
+      tokens: -30_000_000,
+      lifetimeTokens: 100_000_000,
+      activeEventId: event.id,
+      playTimeMs: 60_000,
+    }),
+  });
+
+  // honest-burn applies tokensPercent: -0.2 — must deepen debt, not reduce it.
+  game.resolveEventChoice("honest-burn");
+  assert.equal(game.state.tokens, -36_000_000);
+});
+
 test("time acceleration processes N ticks of income once", () => {
   const game = new Game({
     random: () => 0.5,

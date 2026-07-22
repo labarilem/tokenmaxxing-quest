@@ -238,6 +238,17 @@ test("buyModel works after new-game reset following an ending", () => {
   assert.equal(game.modelTier, 1);
 });
 
+test("catalog gate hints use current upgrade display names", () => {
+  const seriesZ = ALL_CATALOG.find((entry) => entry.id === "series-z-round");
+  const galactic = ALL_CATALOG.find((entry) => entry.id === "galactic-mesh");
+  assert.ok(seriesZ);
+  assert.ok(galactic);
+  assert.match(seriesZ.gateHint, /Procurement Fast Lane/);
+  assert.doesNotMatch(seriesZ.gateHint, /Procurement Black Hole/);
+  assert.match(galactic.gateHint, /Accretion Disk Forge/);
+  assert.doesNotMatch(galactic.gateHint, /Black Hole Sink/);
+});
+
 test("no catalog upgrade describes destroying or reducing tokens (plot rule)", () => {
   // Plot rule (docs/DESIGN.md): every upgrade must be framed as increasing LLM
   // token generation. Names/descriptions must not describe destroying, disposing,

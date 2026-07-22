@@ -572,7 +572,9 @@ export function applyEventOutcomeBase(state, outcome) {
     state.applyTokenDelta(outcome.tokensAbsolute);
   }
   if (outcome.tokensPercent) {
-    state.applyTokenDelta(state.tokens * outcome.tokensPercent);
+    // Percent losses/gains apply to magnitude so debt deepens on a loss
+    // (tokens * negativePercent would otherwise move debt toward zero).
+    state.applyTokenDelta(Math.abs(state.tokens) * outcome.tokensPercent);
   }
   if (outcome.alignment) {
     applyEventAlignment(outcome.alignment, state);

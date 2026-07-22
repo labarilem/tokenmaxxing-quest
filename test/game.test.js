@@ -78,6 +78,22 @@ test("ticks accrue focused play time but ignore large away gaps", () => {
   assert.equal(game.state.playTimeMs, 2200);
 });
 
+test("anomalous tick gaps skip income as well as play time", () => {
+  const clock = new ManualClock(0);
+  const game = new Game({
+    clock,
+    state: new GameState({ agents: 10, tokens: 0, lifetimeTokens: 0, lastTickAt: 0 }),
+  });
+
+  // Jump far past the focused-tick cap without syncing — neither play time
+  // nor passive income should apply for that stale gap.
+  clock.setTime(60_000);
+  game.tick();
+  assert.equal(game.state.playTimeMs, 0);
+  assert.equal(game.state.tokens, 0);
+  assert.equal(game.state.lastTickAt, 60_000);
+});
+
 test("sendPrompt scales with owned rules", () => {
   const game = new Game({
     clock: new ManualClock(0),

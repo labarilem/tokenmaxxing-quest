@@ -462,12 +462,15 @@ export class Game {
     // between ticks is ~one interval. Cap the delta to ignore any anomalous
     // jump (e.g. a stale timestamp) so idle/away time is never counted.
     const delta = now - this.state.lastTickAt;
-    if (delta > 0 && delta <= TICK_MS * 5) {
+    // Cap the delta to ignore anomalous jumps (stale timestamps). Skip both
+    // play time and income for oversized gaps so capstone clocks stay aligned.
+    const focusedTick = delta > 0 && delta <= TICK_MS * 5;
+    if (focusedTick) {
       this.state.playTimeMs += delta;
-    }
-    const rate = sampleTokensPerSecondForState(this.state, this.random);
-    if (rate !== 0) {
-      this.state.applyTokenDelta(rate * TOKENS_PER_TICK);
+      const rate = sampleTokensPerSecondForState(this.state, this.random);
+      if (rate !== 0) {
+        this.state.applyTokenDelta(rate * TOKENS_PER_TICK);
+      }
     }
     this.state.lastTickAt = now;
     this.state.ticksSinceSave += 1;

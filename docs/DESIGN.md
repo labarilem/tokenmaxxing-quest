@@ -223,7 +223,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime; costs scaled by **MID_GAME_COST_SCALE (1.38×)** |
 | **Orbital infrastructure** | 8 endgame prep upgrades (Orbital Manifest Ledger through Capstone Briefing Suite); gates ~340M–560M lifetime; costs scaled by **ORBITAL_COST_SCALE (3.8×)**; required before capstones |
 | **White magic spend** | 12 supernatural good-path upgrades (Sanctuary Ward through Stewardship Covenant); flat grants are random token/s, % grants are fixed, and alignment-only prep (Celestial Goodwill Council, Dawn Conscience Observatory, Ethics Summit, Stewardship Covenant) grant **higher good** with no token bonus; gates from 500K–420M lifetime; **BENEVOLENCE_COST_SCALE (1.72×)** |
-| **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Harvest Cascade); each grants token/s or % income plus purge; gates from 250K–300M lifetime |
+| **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Harvest Cascade); each **hoards** tokens via negative passive income + purchase vault (no positive `%` income) plus resist alignment; gates from 250K–300M lifetime |
 | **Token-positive upgrades** | Every purchasable upgrade is framed as something that makes LLMs generate/consume **more** tokens; no upgrade name or description describes destroying, disposing, deprecating, wiping, or blocking tokens, models, prompts, or their data (enforced by `test/upgrades.test.js`). Endings/capstones are exempt (the purge ending is deliberately destructive) |
 | **Catalog upgrade list** | All catalog upgrades render as individual panels (no section grouping headers) |
 | **Catalog achievements** | First purchase of each catalog upgrade unlocks a milestone achievement (68 total) |
@@ -300,6 +300,14 @@ Open `http://localhost:8080`.
 
 ## Changelog
 
+### 2026-07-22 — Remaining bugfixes (events, modals, labels)
+
+- **Event % losses in debt:** percent token losses apply to balance *magnitude*, so a loss while in purge debt deepens debt instead of shrinking it toward zero.
+- **Mandatory event soft-lock:** opening Achievements / Reset / About no longer closes an active board-event modal (keyboard tab-through under the overlay).
+- **Anomalous ticks:** oversized tick gaps skip passive income as well as play time so capstone clocks stay aligned.
+- **UI copy:** purge capstone Buy label shows debt requirement; max-owned / run-complete goals no longer say “Ready to buy” or `0 tokens · ~Infinity prompts`; purge debt progress uses true balance (no `Math.floor` toward −∞); stale gate hints updated to Procurement Fast Lane / Accretion Disk Forge.
+- **DESIGN.md:** black magic mechanics row corrected to drain/hoard (not positive `%` income).
+
 ### 2026-07-22 — Bugfix audit (freeze, events, save, test mode, labels)
 
 - **Ending freeze:** `Game.tick()` is a no-op after a capstone commits (`strategyPath` set) — no passive income, play time, events, or achievement checks; `lastTickAt` still advances.
@@ -344,7 +352,7 @@ Open `http://localhost:8080`.
 - **Purge debt + playtime:** waiting for the playtime floor no longer credits income, so debt cannot be cancelled by idle generation (sim + intended player wait).
 - **Recklessness surplus bonus:** `RECKLESSNESS_SURPLUS_BONUS` grants all-income from surplus R−B−P so specializing in recklessness uniquely accelerates the oops path; power-line generators further buffed.
 - **Benevolence:** remaining `%` grants converted to `randomIncomePercentPerOwned`; benefit labels show true scaled averages; rate display prefixes `~` when random sources are owned.
-- **Purge:** stripped all positive `%` income; deeper drain + **40M** debt target; purchase hoard uses `PURGE_PURCHASE_HOARD_SCALE` and **35%** of current balance; copy reframed as vaulting/hoarding generated tokens.
+- **Purge:** stripped all positive `%` income; deeper drain + **40M** debt target; purchase hoard uses `PURGE_PURCHASE_HOARD_SCALE` and **55%** of current balance; copy reframed as vaulting/hoarding generated tokens.
 - **UI:** tighter single-line alignment row; purge capstone goal shows debt progress.
 - **Plot rule:** documented purge vaulting exception (generation continues; spendable balance drains).
 - Simulated optimal play (5 prompts/s, tab focused): **oops ~1h 1m**, **utopia ~1h 32m**, **purge ~2h 0m**.
@@ -356,7 +364,7 @@ Open `http://localhost:8080`.
 - **Path-specific upgrade mechanics:**
   - **Recklessness (oops):** power-line income buffed (swarm, cluster, dashboard, allow-all, roadmap); fastest ending; **1h+** focused play required.
   - **Benevolence (utopia):** token/s grants use **random** payouts (uniform `0…2×` mean per tick) to simulate bursty community usage; higher benevolence-line costs; **1h30m+** focused play required.
-  - **Purge:** hoarding upgrades apply **negative passive income** plus an immediate **token hoard** on purchase; capstone requires **25M token debt** (negative balance) instead of spending 15B tokens; hardest path; **2h+** focused play required.
+  - **Purge:** hoarding upgrades apply **negative passive income** plus an immediate **token hoard** on purchase; capstone requires **40M token debt** (negative balance) instead of spending 15B tokens; hardest path; **2h+** focused play required.
 - Balance sim (`npm run balance:endings`) now accrues `playTimeMs` during simulated earning and enforces the play-time gates. Baseline greedy play: **oops ~1h10m**, **utopia ~1h30m**, **purge ~3h15m**.
 
 ### 2026-07-21 — Desktop wide grid layout (mobile unchanged)
