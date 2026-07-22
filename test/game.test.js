@@ -346,6 +346,64 @@ test("resetProgress clears resources and optionally keeps achievements", () => {
   assert.equal(reloaded.state.hasAchievement("first-prompt"), false);
 });
 
+test("new-game reset clears catalog upgrades but keeps model click multiplier", () => {
+  const game = new Game({
+    clock: new ManualClock(0),
+    storage: new MemoryStorage(),
+    state: new GameState({
+      tokens: 1_000_000,
+      rules: 12,
+      agents: 40,
+      modelTier: 2,
+      contexts: 5,
+      swarms: 8,
+      bloats: 3,
+      alignmentRecklessness: 40,
+      strategyPath: "oops",
+      achievements: ["first-prompt", "model-citizen"],
+      lastTickAt: 0,
+    }),
+  });
+
+  game.resetProgress({ keepAchievements: true });
+
+  assert.equal(game.rules, 0);
+  assert.equal(game.agents, 0);
+  assert.equal(game.state.contexts, 0);
+  assert.equal(game.state.swarms, 0);
+  assert.equal(game.state.bloats, 0);
+  assert.equal(game.state.alignmentRecklessness, 0);
+  assert.equal(game.state.strategyPath, null);
+  assert.equal(game.modelTier, 2);
+  assert.equal(game.tokensPerClick, getModelMultiplier(2));
+
+  game.sendPrompt();
+  assert.equal(game.tokens, getModelMultiplier(2));
+});
+
+test("full reset restores base +1 token per prompt", () => {
+  const game = new Game({
+    clock: new ManualClock(0),
+    storage: new MemoryStorage(),
+    state: new GameState({
+      tokens: 50_000,
+      rules: 4,
+      agents: 10,
+      modelTier: 3,
+      contexts: 2,
+      achievements: ["first-prompt"],
+      lastTickAt: 0,
+    }),
+  });
+
+  game.resetProgress({ keepAchievements: false });
+
+  assert.equal(game.modelTier, 0);
+  assert.equal(game.tokensPerClick, 1);
+  game.sendPrompt();
+  assert.equal(game.tokens, 1);
+});
+
 test("startTestMode resets to starting state with 100B tokens", () => {
   const clock = new ManualClock(7000);
   const game = new Game({

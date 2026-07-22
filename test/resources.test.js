@@ -30,6 +30,15 @@ test("formatNumber always shows full digits with grouping", () => {
   assert.equal(formatNumber(1_234_567), "1,234,567");
 });
 
+test("formatNumber keeps fractional tokens so display cannot skip integers", () => {
+  assert.equal(formatNumber(1.15), "1.15");
+  assert.equal(formatNumber(6.9), "6.9");
+  assert.equal(formatNumber(8.05), "8.05");
+  assert.equal(formatNumber(1_000.25), "1,000.25");
+  // Float noise snaps to 2 decimals instead of flooring away.
+  assert.equal(formatNumber(1.1500000002), "1.15");
+});
+
 test("getRuleCost grows exponentially and stays cheaper than agents early", () => {
   assert.equal(getRuleCost(0), RULE.baseCost);
   assert.ok(getRuleCost(0) < getAgentCost(0));
