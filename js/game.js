@@ -13,11 +13,16 @@ import {
   getRuleCost,
   getTokensPerClickForState,
   getTokensPerSecondForState,
+  sampleTokensPerSecondForState,
 } from "./resources.js";
 import { GameState } from "./state.js";
 import { SystemClock } from "./clock.js";
 import {
   CAPSTONES,
+  CAPSTONE_PURGE_MIN,
+  CAPSTONE_PURGE_TOKEN_MAX,
+  PURGE_PURCHASE_BALANCE_FRACTION,
+  PURGE_PURCHASE_HOARD_SCALE,
   canBuyCatalogEntry,
   getCatalogCostForState,
   getOwnedCount,
@@ -172,6 +177,9 @@ export class Game {
     if (!this.isCapstoneGateMet(capstone)) {
       return false;
     }
+    if (capstone.path === "purge" && !this.testMode) {
+      return this.state.tokens <= CAPSTONE_PURGE_TOKEN_MAX;
+    }
     return this.state.tokens >= capstone.cost;
   }
 
@@ -259,10 +267,23 @@ export class Game {
     }
     const owned = getOwnedCount(this.state, entry);
     const cost = getCatalogCostForState(this.state, entry);
+    const tokensBeforePurchase = this.state.tokens;
     this.state.tokens -= cost;
     this.state[/** @type {keyof GameState} */ (entry.stateKey)] = owned + 1;
     if (entry.alignment) {
       applyAlignmentDelta(entry.alignment, this.state);
+    }
+    if (entry.passivePerOwned && entry.passivePerOwned < 0) {
+      const baseHoard = Math.abs(entry.passivePerOwned) * PURGE_PURCHASE_HOARD_SCALE;
+      // Siphon from the pre-purchase balance so paying the cost cannot zero out
+      // the vault amount. Endgame debt phase only (alignment + briefing).
+      const endgameDebtPhase =
+        this.state.alignmentPurge >= CAPSTONE_PURGE_MIN &&
+        this.state.capstoneBriefingSuites >= 1;
+      const balanceHoard = endgameDebtPhase
+        ? Math.max(0, tokensBeforePurchase) * PURGE_PURCHASE_BALANCE_FRACTION
+        : 0;
+      this.state.applyTokenDelta(-(baseHoard + balanceHoard));
     }
     return {
       purchased: true,
@@ -278,7 +299,9 @@ export class Game {
     if (!this.canBuyCapstone(capstone)) {
       return { purchased: false, ending: null, unlocked: [] };
     }
-    this.state.tokens -= capstone.cost;
+    if (capstone.path !== "purge") {
+      this.state.tokens -= capstone.cost;
+    }
     this.state.strategyPath = capstone.path;
     const ending = getEndingDef(capstone.path) ?? null;
     const unlocked = evaluateAchievements(this.state, "buyCapstone");
@@ -324,8 +347,9 @@ export class Game {
     if (delta > 0 && delta <= TICK_MS * 5) {
       this.state.playTimeMs += delta;
     }
-    if (this.tokensPerSecond > 0) {
-      this.state.creditTokens(this.tokensPerSecond * TOKENS_PER_TICK);
+    const rate = sampleTokensPerSecondForState(this.state);
+    if (rate !== 0) {
+      this.state.applyTokenDelta(rate * TOKENS_PER_TICK);
     }
     this.state.lastTickAt = now;
     this.state.ticksSinceSave += 1;

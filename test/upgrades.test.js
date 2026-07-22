@@ -10,6 +10,7 @@ import {
   ALL_CATALOG,
   BENEVOLENCE_UPGRADES,
   CAPSTONE_REVEAL_TOKENS,
+  CAPSTONE_UTOPIA_PLAYTIME_MS,
   CAPSTONES,
   getCatalogCost,
   POWER_UPGRADES,
@@ -124,10 +125,11 @@ test("buyCapstone commits utopia ending when benevolence gate is met", () => {
     state: new GameState({
       tokens: utopia.cost,
       lifetimeTokens: CAPSTONE_REVEAL_TOKENS,
-      alignmentBenevolence: 160,
+      alignmentBenevolence: 420,
       capstoneBriefingSuites: 1,
       ethicsSummits: 1,
       stewardshipCovenants: 1,
+      playTimeMs: CAPSTONE_UTOPIA_PLAYTIME_MS,
       lastTickAt: 0,
     }),
   });
@@ -238,6 +240,40 @@ test("no catalog upgrade describes destroying or reducing tokens (plot rule)", (
         `Upgrade "${entry.id}" violates the token-positive plot rule (matched ${pattern}): "${text}"`,
       );
     }
+  }
+});
+
+test("purge upgrades drain tokens and never grant positive percent income", () => {
+  for (const entry of PURGE_UPGRADES) {
+    assert.ok(
+      (entry.passivePerOwned ?? 0) < 0,
+      `${entry.id} should have negative passivePerOwned`,
+    );
+    assert.equal(
+      entry.incomePercentPerOwned,
+      undefined,
+      `${entry.id} must not have incomePercentPerOwned`,
+    );
+    assert.equal(
+      entry.randomIncomePercentPerOwned,
+      undefined,
+      `${entry.id} must not have randomIncomePercentPerOwned`,
+    );
+  }
+});
+
+test("benevolence income grants are random (flat or percent)", () => {
+  for (const entry of BENEVOLENCE_UPGRADES) {
+    const hasRandom =
+      (entry.randomPassivePerOwned ?? 0) > 0 ||
+      (entry.randomIncomePercentPerOwned ?? 0) > 0;
+    const hasDeterministicIncome =
+      (entry.passivePerOwned ?? 0) > 0 || (entry.incomePercentPerOwned ?? 0) > 0;
+    assert.ok(hasRandom, `${entry.id} should grant random income`);
+    assert.ok(
+      !hasDeterministicIncome,
+      `${entry.id} should not use deterministic passive/% income`,
+    );
   }
 });
 

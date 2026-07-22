@@ -24,7 +24,7 @@ Always update the **Mechanics** table and **Changelog** section with a dated ent
 
 ## Hard requirements (never violate)
 
-- **Token-positive upgrades:** every purchasable upgrade must be framed as something that increases the number of tokens LLMs generate. No upgrade name or description may describe destroying, disposing, deprecating, wiping, blocking, or otherwise reducing tokens, models, prompts, or their data. Dark "purge" upgrades may be ruthless/ominous but must still drive token output upward. Endings/capstones are exempt (the purge capstone deliberately ends the run). Enforced by `test/upgrades.test.js`.
+- **Token-positive upgrades:** every purchasable upgrade must be framed as something that increases the number of tokens LLMs generate. No upgrade name or description may describe destroying, disposing, deprecating, wiping, blocking, or otherwise reducing tokens, models, prompts, or their data. Dark "purge" upgrades may hoard generated tokens into sealed vaults (spendable balance drains) but copy must still describe generation/emission. Endings/capstones are exempt (the purge capstone deliberately ends the run). Enforced by `test/upgrades.test.js`.
 - HTML, CSS, and vanilla JS only — **no game engine** (Phaser, Pixi, Unity, etc.)
 - Must run in a browser and work on mobile (touch targets, readable layout)
 - Must remain deployable as static files on **GitHub Pages** (no required build step unless explicitly approved in DESIGN.md)

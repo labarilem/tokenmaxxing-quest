@@ -20,12 +20,14 @@ import {
   getNextAgentMilestone,
   getNextModel,
   getNextRuleMilestone,
+  hasRandomBenevolenceIncome,
 } from "./resources.js";
 import {
   ALIGNMENT_REVEAL_TOKENS,
   ALL_CATALOG,
   CAPSTONE_BENEVOLENCE_MIN,
   CAPSTONE_PURGE_MIN,
+  CAPSTONE_PURGE_TOKEN_MAX,
   CAPSTONES,
   formatCatalogBenefit,
   formatCatalogMilestone,
@@ -166,7 +168,7 @@ export class UI {
     this.resetFullBtn = document.getElementById("reset-full-btn");
 
     /** @type {HTMLElement | null} */
-    this.alignmentPanel = document.getElementById("alignment-panel");
+    this.resourceAlignment = document.getElementById("resource-alignment");
 
     /** @type {HTMLElement | null} */
     this.alignmentRecklessness = document.getElementById("alignment-recklessness");
@@ -794,8 +796,12 @@ export class UI {
             : "Another strategy was chosen.";
         } else if (canBuy) {
           cache.goal.textContent = "Ready to present to the Board.";
+        } else if (capstone.path === "purge") {
+          cache.goal.textContent = this.formatPurgeCapstoneGoal(capstone);
         } else {
-          cache.goal.textContent = this.formatUpgradeGoal(capstone.cost, false);
+          cache.goal.textContent = this.game.isCapstoneGateMet(capstone)
+            ? this.formatUpgradeGoal(capstone.cost, false)
+            : capstone.gateHint;
         }
       }
       if (cache.button) {
@@ -807,6 +813,33 @@ export class UI {
     this.capstoneSection.hidden = !anyVisible;
   }
 
+  /**
+   * @param {CapstoneDef} capstone
+   * @returns {string}
+   */
+  formatPurgeCapstoneGoal(capstone) {
+    const { state } = this.game;
+    if (!this.game.isCapstoneGateMet(capstone)) {
+      const parts = [];
+      if (state.alignmentPurge < CAPSTONE_PURGE_MIN) {
+        parts.push(`Purge ${state.alignmentPurge} / ${CAPSTONE_PURGE_MIN}`);
+      }
+      if (state.tokens > CAPSTONE_PURGE_TOKEN_MAX) {
+        parts.push(
+          `Debt ${formatNumber(Math.floor(state.tokens))} / ${formatNumber(CAPSTONE_PURGE_TOKEN_MAX)}`,
+        );
+      }
+      if (parts.length > 0) {
+        return parts.join(" · ");
+      }
+      return capstone.gateHint;
+    }
+    if (state.tokens > CAPSTONE_PURGE_TOKEN_MAX) {
+      return `Debt ${formatNumber(Math.floor(state.tokens))} / ${formatNumber(CAPSTONE_PURGE_TOKEN_MAX)}`;
+    }
+    return "Ready to present to the Board.";
+  }
+
   updateAlignmentPanel() {
     const { state } = this.game;
     const show =
@@ -816,8 +849,8 @@ export class UI {
       state.alignmentPurge > 0 ||
       state.strategyPath !== null;
 
-    if (this.alignmentPanel) {
-      this.alignmentPanel.hidden = !show;
+    if (this.resourceAlignment) {
+      this.resourceAlignment.hidden = !show;
     }
 
     const key = `${state.alignmentRecklessness}|${state.alignmentBenevolence}|${state.alignmentPurge}`;
@@ -1089,7 +1122,9 @@ export class UI {
   update() {
     const { game } = this;
     const tokensText = formatNumber(game.tokens);
-    const rateText = formatRate(game.tokensPerSecond);
+    const rateText = formatRate(game.tokensPerSecond, {
+      approximate: hasRandomBenevolenceIncome(game.state),
+    });
     const promptLabel = `Send Prompt (+${formatNumber(game.tokensPerClick)} tokens)`;
     const ruleBenefitText = formatClickBenefit(getMarginalClickGain(game.rules));
     const ruleCostText = formatNumber(game.ruleCost);
@@ -1133,6 +1168,7 @@ export class UI {
       this.cachedTokens = tokensText;
       if (this.tokensDisplay) {
         this.tokensDisplay.textContent = tokensText;
+        this.tokensDisplay.classList.toggle("resource__value--debt", game.tokens < 0);
       }
     }
 
@@ -1140,6 +1176,7 @@ export class UI {
       this.cachedRate = rateText;
       if (this.rateDisplay) {
         this.rateDisplay.textContent = rateText;
+        this.rateDisplay.classList.toggle("resource__rate--drain", game.tokensPerSecond < 0);
       }
     }
 

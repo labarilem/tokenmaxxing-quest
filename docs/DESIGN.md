@@ -12,7 +12,11 @@ Tone: dry corporate satire. Player-facing copy should sound like internal toolin
 
 ### Plot rule: token-positive upgrades
 
-The entire fiction is about making LLMs generate/consume **ever more** tokens. To keep that plot consistent, **every purchasable upgrade must be framed as something that increases the number of tokens LLMs generate.** No upgrade name or description may describe *destroying, disposing, deprecating, wiping, blocking, or otherwise reducing* tokens, models, prompts, or the data that produces them. Dark "purge"-aligned upgrades may be ruthless or ominous (hoarding, forcing, cursing, surveilling), but must still drive token output upward. When adding an upgrade, state how it drives more token generation. Endings/capstones are the only exception — the purge capstone is deliberately destructive because it *ends* the run.
+The entire fiction is about making LLMs generate/consume **ever more** tokens. To keep that plot consistent, **every purchasable upgrade must be framed as something that increases the number of tokens LLMs generate.** No upgrade name or description may describe *destroying, disposing, deprecating, wiping, blocking, or otherwise reducing* tokens, models, prompts, or the data that produces them.
+
+**Purge exception (mechanics):** dark "purge"-aligned upgrades may **hoard** generated tokens into sealed vaults / off-books ledgers so the *spendable company balance* drains (negative passive income + purchase hoards). Copy must still describe models generating/emitting tokens — the ruthlessness is *where* those tokens go (vaulted away from payroll), not that generation stops. Endings/capstones remain fully exempt (the purge capstone deliberately ends the run).
+
+Enforced by `test/upgrades.test.js` (name/description language) plus catalog checks that purge lines use drain mechanics rather than positive `%` income.
 
 ## Development status: Alpha
 
@@ -200,13 +204,15 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Executive Token Dashboard** | +10% all income per owned; base 80k; gate Noir 4.8 |
 | **Allow-All Permissions Profile** | +30% all income per owned; +8 recklessness; base 200k; gate Fort 5.0 + 1M lifetime |
 | **AGI Roadmap Deck** | ×2 all income per deck (max 3); base 1M; gate 100M lifetime |
-| **Open Source Maintainer Grant** | +15 benevolence, +2 token/s; base 9.5k; ×1.26 cost growth |
-| **Nonprofit Compute Credit** | +25 benevolence, +4 token/s; base 30k |
-| **Public Benefit API** | +40 benevolence, +2% income; base 72k |
-| **Zombie Model Farm** | +12 purge, +2 token/s; base 18k |
-| **Total Recall Mandate** | +20 purge, +5 token/s; base 52k |
-| **Org alignment meters** | Recklessness / Benevolence / Purge tracked from purchases; panel reveals at **25M** lifetime tokens or first alignment shift. Benevolence and Purge meters also show progress toward their capstone thresholds (e.g. `45 / 150`) as a spoiler-free tracker |
-| **Board strategy capstones** | Mutually exclusive **12B-token** commits at **500M** lifetime; require **Capstone Briefing Suite** (orbital prep chain). Utopia also needs **Ethics Summit** + **Stewardship Covenant** and **150+** benevolence; Purge needs **120+** purge alignment. Each capstone panel only appears once **its own gate is met**, so alternative endings stay hidden; buy buttons use the standard upgrade color (no path-specific tint) |
+| **Open Source Maintainer Grant** | +15 benevolence, random token/s (community usage bursts) |
+| **Nonprofit Compute Credit** | +25 benevolence, random token/s |
+| **Public Benefit API** | +40 benevolence, random % income |
+| **Zombie Model Farm** | +12 purge; hoards tokens (−passive + purchase vault) |
+| **Total Recall Mandate** | +20 purge; hoards tokens (−passive + purchase vault) |
+| **Org alignment meters** | Recklessness / Benevolence / Purge in a compact single-line row inside **Tokens Consumed** (reveals at **25M** lifetime or first alignment shift). Benevolence / Purge show `value / 400` and `value / 255` |
+| **Board strategy capstones** | Mutually exclusive commits at **500M** lifetime + Capstone Briefing Suite + focused playtime floors (oops **1h**, utopia **1h30m**, purge **2h**). Utopia: Ethics Summit + Stewardship Covenant + **400+** benevolence + **15B** tokens. Purge: **255+** purge + **40M token debt** (no token purchase). Recklessness specialists get a surplus R−B−P all-income bonus |
+| **Benevolence random income** | Benevolence token/s and % grants sample uniform `[0, 2×mean]` per tick (mean scaled by **BENEVOLENCE_RANDOM_SCALE 0.55×**); rate label uses `~` when random sources are owned |
+| **Purge token hoarding** | Purge upgrades apply negative `passivePerOwned` and on purchase vault `baseHoard + (endgame ? balance×0.55 : 0)` tokens (endgame = purge alignment met + briefing owned); no positive `%` income on the purge line |
 | **Enterprise ops** | 8 corporate mid-game upgrades (Perf Review Automator through Antitrust Distraction Taskforce); gates ~3M–280M lifetime; costs scaled by **ENTERPRISE_COST_SCALE (2×)** |
 | **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime; costs scaled by **MID_GAME_COST_SCALE (1.38×)** |
 | **Orbital infrastructure** | 8 endgame prep upgrades (Orbital Manifest Ledger through Capstone Briefing Suite); gates ~340M–560M lifetime; costs scaled by **ORBITAL_COST_SCALE (3.5×)**; required before capstones |
@@ -287,6 +293,26 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-22 — Spec review fixes (debt freeze, path power, full random benevolence)
+
+- **Purge debt + playtime:** waiting for the playtime floor no longer credits income, so debt cannot be cancelled by idle generation (sim + intended player wait).
+- **Recklessness surplus bonus:** `RECKLESSNESS_SURPLUS_BONUS` grants all-income from surplus R−B−P so specializing in recklessness uniquely accelerates the oops path; power-line generators further buffed.
+- **Benevolence:** remaining `%` grants converted to `randomIncomePercentPerOwned`; benefit labels show true scaled averages; rate display prefixes `~` when random sources are owned.
+- **Purge:** stripped all positive `%` income; deeper drain + **40M** debt target; purchase hoard uses `PURGE_PURCHASE_HOARD_SCALE` and **35%** of current balance; copy reframed as vaulting/hoarding generated tokens.
+- **UI:** tighter single-line alignment row; purge capstone goal shows debt progress.
+- **Plot rule:** documented purge vaulting exception (generation continues; spendable balance drains).
+- Simulated optimal play (5 prompts/s, tab focused): **oops ~1h 1m**, **utopia ~1h 32m**, **purge ~2h 0m**.
+
+### 2026-07-21 — Alignment panel merge, path-specific ending pacing, purge debt
+
+- **Alignment meters** moved into the **Tokens Consumed** sticky panel as a compact three-column row (no separate Org alignment section). Mobile layout stays single-height-friendly.
+- **Raised capstone alignment gates:** benevolence **400+** (was 150), purge **255+** (was 120).
+- **Path-specific upgrade mechanics:**
+  - **Recklessness (oops):** power-line income buffed (swarm, cluster, dashboard, allow-all, roadmap); fastest ending; **1h+** focused play required.
+  - **Benevolence (utopia):** token/s grants use **random** payouts (uniform `0…2×` mean per tick) to simulate bursty community usage; higher benevolence-line costs; **1h30m+** focused play required.
+  - **Purge:** hoarding upgrades apply **negative passive income** plus an immediate **token hoard** on purchase; capstone requires **25M token debt** (negative balance) instead of spending 15B tokens; hardest path; **2h+** focused play required.
+- Balance sim (`npm run balance:endings`) now accrues `playTimeMs` during simulated earning and enforces the play-time gates. Baseline greedy play: **oops ~1h10m**, **utopia ~1h30m**, **purge ~3h15m**.
 
 ### 2026-07-21 — Desktop wide grid layout (mobile unchanged)
 
