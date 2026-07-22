@@ -217,8 +217,8 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Org alignment meters** | **Chaos / Good / Resist** (was Recklessness / Benevolence / Purge) in a compact single-line row inside **Tokens Consumed** (reveals at **25M** lifetime or first alignment shift). Chaos / Good / Resist show `value / 400`, `value / 400`, and `value / 255`. Label and value stay on the same line |
 | **Board strategy capstones** | Mutually exclusive commits at **500M** lifetime + Capstone Briefing Suite + focused playtime floors (oops **1h**, utopia **1h30m**, purge **2h**). Utopia: Ethics Summit + Stewardship Covenant + **400+** good + **15B** tokens. Purge: **255+** resist + **40M token debt** (no token purchase). Oops / universe destruction: **400+** chaos + **15B** tokens. Chaos specialists get a surplus C−G−R all-income bonus |
 | **Board decision events** | Random modal events after **25k** lifetime tokens; title + description + **3 choices**; at most one choice is marked positive (some events have zero). Outcomes: absolute/% token deltas (may go negative), alignment deltas (clamped ≥0), gain/lose upgrades, time acceleration (N ticks of income instantly). Only one event at a time; cooldown shrinks with chaos (base **3 min** → floor **45s**). Higher chaos also skews random token samples toward min/max edges |
+| **Purge token hoarding** | Purge upgrades apply negative `passivePerOwned` and on purchase vault `baseHoard + (endgame ? balance×0.55 : 0)` tokens (endgame = resist alignment met + briefing owned); no positive `%` income on the purge line. Net tokens/s is an **algebraic sum**: `(positive production × income multipliers) + absolute drains` — model/% multipliers never amplify vault drains |
 | **Benevolence random income** | Flat token/s grants sample a **wide** mixture each tick (spikes up to **BENEVOLENCE_RANDOM_SPAN 4×** mean; E = mean scaled by **BENEVOLENCE_RANDOM_SCALE 0.55×**); **% grants are fixed** (not random); rate label uses `~` when random sources are owned; benefit labels show `~0–max token/s (random)` with no avg; chaos skews loud samples toward range edges |
-| **Purge token hoarding** | Purge upgrades apply negative `passivePerOwned` and on purchase vault `baseHoard + (endgame ? balance×0.55 : 0)` tokens (endgame = resist alignment met + briefing owned); no positive `%` income on the purge line |
 | **Enterprise ops** | 8 corporate mid-game upgrades (Perf Review Automator through Antitrust Distraction Taskforce); gates ~3M–280M lifetime; costs scaled by **ENTERPRISE_COST_SCALE (2×)** |
 | **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime; costs scaled by **MID_GAME_COST_SCALE (1.38×)** |
 | **Orbital infrastructure** | 8 endgame prep upgrades (Orbital Manifest Ledger through Capstone Briefing Suite); gates ~340M–560M lifetime; costs scaled by **ORBITAL_COST_SCALE (3.5×)**; required before capstones |
@@ -299,6 +299,12 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-22 — Net tokens/s algebraic sum (drains not amplified)
+
+- Fixed passive rate math so purge vault drains are an **absolute** offset: `net = (positive production × income multipliers) + drains`.
+- Previously the whole base (including negative `passivePerOwned`) was multiplied by model/%/stacking bonuses, so drains were amplified above their listed −N token/s and benefit labels lied.
+- Tick application, rate display (`−X.X tokens/s`), lifetime accounting (drains never inflate lifetime), and ending-pace balance verified. Regression tests cover mixed positive/negative catalogs under multipliers.
 
 ### 2026-07-22 — Chaos gates, board events, random edge skew
 
