@@ -822,7 +822,7 @@ export class UI {
     if (!this.game.isCapstoneGateMet(capstone)) {
       const parts = [];
       if (state.alignmentPurge < CAPSTONE_PURGE_MIN) {
-        parts.push(`Purge ${state.alignmentPurge} / ${CAPSTONE_PURGE_MIN}`);
+        parts.push(`Resist ${state.alignmentPurge} / ${CAPSTONE_PURGE_MIN}`);
       }
       if (state.tokens > CAPSTONE_PURGE_TOKEN_MAX) {
         parts.push(

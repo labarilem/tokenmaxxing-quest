@@ -53,7 +53,7 @@ for (const result of results) {
     `${label}: ${formatDuration(result.elapsedMs)} (${Math.round(result.elapsedMs / 1000)}s raw, ${result.steps} decisions)`,
   );
   console.log(
-    `  lifetime ${result.lifetimeTokens.toLocaleString("en-US")} · alignment R${result.alignment.recklessness} / B${result.alignment.benevolence} / P${result.alignment.purge}`,
+    `  lifetime ${result.lifetimeTokens.toLocaleString("en-US")} · alignment C${result.alignment.recklessness} / G${result.alignment.benevolence} / R${result.alignment.purge}`,
   );
 }
 

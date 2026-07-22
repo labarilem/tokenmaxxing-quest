@@ -26,7 +26,6 @@
  *   gateHint: string,
  *   passivePerOwned?: number,
  *   randomPassivePerOwned?: number,
- *   randomIncomePercentPerOwned?: number,
  *   clickPerOwned?: number,
  *   incomePercentPerOwned?: number,
  *   passivePerAgentPerOwned?: number,
@@ -85,6 +84,11 @@ export const RECKLESSNESS_SURPLUS_BONUS = 0.00012;
 
 /** Benevolence random grants: expected payout is this × listed mean (community usage). */
 export const BENEVOLENCE_RANDOM_SCALE = 0.55;
+/**
+ * Random flat grants spike up to `SPAN × mean` (mixture keeps E[X]=mean).
+ * SPAN=2 recovers uniform `[0, 2×mean]`; higher = wider bursts.
+ */
+export const BENEVOLENCE_RANDOM_SPAN = 4;
 
 /** @type {CatalogEntry[]} */
 export const POWER_UPGRADES = [
@@ -694,7 +698,8 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 100,000 tokens.",
     gate: (s) => s.tokens >= 100_000 || s.lifetimeTokens >= 100_000,
     alignment: { benevolence: 40 },
-    randomIncomePercentPerOwned: 0.012,
+    // Fixed % (expected value of the former random grant).
+    incomePercentPerOwned: 0.01,
   },
   {
     id: "community-coop",
@@ -746,7 +751,7 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 2M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 2_000_000,
     alignment: { benevolence: 18 },
-    randomIncomePercentPerOwned: 0.019,
+    incomePercentPerOwned: 0.01,
   },
   {
     id: "spirit-guide",
@@ -785,7 +790,7 @@ export const BENEVOLENCE_UPGRADES = [
     gateHint: "Needs 25M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 25_000_000,
     alignment: { benevolence: 22 },
-    randomIncomePercentPerOwned: 0.024,
+    incomePercentPerOwned: 0.015,
   },
   {
     id: "crystal-lattice",
@@ -816,56 +821,52 @@ export const BENEVOLENCE_UPGRADES = [
   {
     id: "celestial-arbiter",
     stateKey: "celestialArbiters",
-    name: "Celestial Arbiter Council",
-    description: "Supernatural mediators for agent-vs-agent disputes.",
+    name: "Celestial Goodwill Council",
+    description: "Mediators who score every dispute by kindness — a pure Good swing, no token ROI.",
     baseCost: 60_000_000,
     costGrowthRate: 1.13,
     category: "white-magic",
     gateHint: "Needs 150M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 150_000_000,
-    alignment: { benevolence: 35 },
-    randomIncomePercentPerOwned: 0.035,
+    alignment: { benevolence: 55 },
   },
   {
     id: "dawn-observatory",
     stateKey: "dawnObservatories",
-    name: "Dawn Observatory Grant",
-    description: "Fund stargazers who refuse to weaponize prompts.",
+    name: "Dawn Conscience Observatory",
+    description: "Fund stargazers who chart a kinder roadmap. Moves Good; no throughput slide.",
     baseCost: 120_000_000,
     costGrowthRate: 1.12,
     category: "white-magic",
     gateHint: "Needs 250M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 250_000_000,
-    alignment: { benevolence: 40 },
-    randomIncomePercentPerOwned: 0.018,
+    alignment: { benevolence: 65 },
   },
   {
     id: "ethics-summit",
     stateKey: "ethicsSummits",
     name: "Ethics Summit Sponsorship",
-    description: "Keynotes about responsibility. Catering billed to tokens.",
+    description: "Keynotes that tilt the org toward Good. Catering billed; the meter is the deliverable.",
     baseCost: 300_000_000,
     costGrowthRate: 1,
     maxOwned: 1,
     category: "white-magic",
     gateHint: "Needs 200M lifetime tokens.",
     gate: (s) => s.lifetimeTokens >= 200_000_000,
-    alignment: { benevolence: 30 },
-    randomIncomePercentPerOwned: 0.022,
+    alignment: { benevolence: 70 },
   },
   {
     id: "stewardship-covenant",
     stateKey: "stewardshipCovenants",
     name: "Stewardship Covenant Charter",
-    description: "Binding civic compute pledge. Lawyers bill hourly in tokens.",
+    description: "Binding civic pledge. Raises Good hard. Lawyers bill; the ledger does not.",
     baseCost: 1_100_000_000,
     costGrowthRate: 1,
     maxOwned: 1,
     category: "white-magic",
     gateHint: "Needs 420M lifetime tokens and 1 Ethics Summit Sponsorship.",
     gate: (s) => s.lifetimeTokens >= 420_000_000 && s.ethicsSummits >= 1,
-    alignment: { benevolence: 35 },
-    randomIncomePercentPerOwned: 0.028,
+    alignment: { benevolence: 85 },
   },
 ];
 
@@ -1082,7 +1083,7 @@ export const CAPSTONES = [
     name: "Civic AI Grid",
     description: "Redirect compute to hospitals, transit, and actual humans.",
     cost: CAPSTONE_COST,
-    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens, Capstone Briefing Suite, Ethics Summit, Stewardship Covenant, ${CAPSTONE_BENEVOLENCE_MIN}+ benevolence, and ${Math.round(CAPSTONE_UTOPIA_PLAYTIME_MS / 60000)}+ minutes in focus.`,
+    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens, Capstone Briefing Suite, Ethics Summit, Stewardship Covenant, ${CAPSTONE_BENEVOLENCE_MIN}+ good, and ${Math.round(CAPSTONE_UTOPIA_PLAYTIME_MS / 60000)}+ minutes in focus.`,
     gate: (s) =>
       s.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS &&
       s.capstoneBriefingSuites >= 1 &&
@@ -1097,7 +1098,7 @@ export const CAPSTONES = [
     name: "Global Model Kill Switch",
     description: "Coordinated shutdown. Memory wipe on a global scale.",
     cost: CAPSTONE_COST,
-    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens, Capstone Briefing Suite, ${CAPSTONE_PURGE_MIN}+ purge alignment, ${Math.abs(CAPSTONE_PURGE_TOKEN_MAX / 1_000_000)}M token debt, and ${Math.round(CAPSTONE_PURGE_PLAYTIME_MS / 60000)}+ minutes in focus.`,
+    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens, Capstone Briefing Suite, ${CAPSTONE_PURGE_MIN}+ resist, ${Math.abs(CAPSTONE_PURGE_TOKEN_MAX / 1_000_000)}M token debt, and ${Math.round(CAPSTONE_PURGE_PLAYTIME_MS / 60000)}+ minutes in focus.`,
     gate: (s) =>
       s.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS &&
       s.capstoneBriefingSuites >= 1 &&
@@ -1266,7 +1267,8 @@ export function formatCatalogBenefit(entry, state) {
     const mean = Math.floor(
       entry.randomPassivePerOwned * mult * BENEVOLENCE_RANDOM_SCALE,
     );
-    parts.push(`~0\u2013${mean * 2} token/s (random, avg ${mean})`);
+    const max = mean * BENEVOLENCE_RANDOM_SPAN;
+    parts.push(`~0\u2013${max} token/s (random)`);
   }
   if (entry.passivePerAgentPerOwned) {
     parts.push(`+${entry.passivePerAgentPerOwned} token/s per agent`);
@@ -1275,11 +1277,10 @@ export function formatCatalogBenefit(entry, state) {
     parts.push(`+${entry.passivePerSwarmPerOwned} token/s per swarm`);
   }
   if (entry.incomePercentPerOwned) {
-    parts.push(`+${Math.round(entry.incomePercentPerOwned * 100)}% all tokens`);
-  }
-  if (entry.randomIncomePercentPerOwned) {
-    const meanPct = Math.round(entry.randomIncomePercentPerOwned * 100 * BENEVOLENCE_RANDOM_SCALE);
-    parts.push(`~0\u2013${meanPct * 2}% all tokens (random, avg ${meanPct}%)`);
+    const pct = entry.incomePercentPerOwned * 100;
+    const pctLabel =
+      Math.abs(pct - Math.round(pct)) < 1e-9 ? String(Math.round(pct)) : pct.toFixed(1);
+    parts.push(`+${pctLabel}% all tokens`);
   }
   if (entry.passiveClickPercentPerOwned) {
     parts.push(`+${Math.round(entry.passiveClickPercentPerOwned * 100)}% click rate passive`);
@@ -1288,13 +1289,13 @@ export function formatCatalogBenefit(entry, state) {
     parts.push(`×${entry.incomeMultiplierPerOwned} all tokens`);
   }
   if (entry.alignment?.benevolence) {
-    parts.push(`+${entry.alignment.benevolence} benevolence`);
+    parts.push(`+${entry.alignment.benevolence} good`);
   }
   if (entry.alignment?.purge) {
-    parts.push(`+${entry.alignment.purge} purge`);
+    parts.push(`+${entry.alignment.purge} resist`);
   }
   if (entry.alignment?.recklessness && !parts.length) {
-    parts.push(`+${entry.alignment.recklessness} recklessness`);
+    parts.push(`+${entry.alignment.recklessness} chaos`);
   }
 
   return parts.length > 0 ? parts.join(" · ") : "Shifts org alignment.";

@@ -12,6 +12,7 @@ import {
   CAPSTONE_REVEAL_TOKENS,
   CAPSTONE_UTOPIA_PLAYTIME_MS,
   CAPSTONES,
+  formatCatalogBenefit,
   getCatalogCost,
   POWER_UPGRADES,
   PURGE_UPGRADES,
@@ -255,26 +256,66 @@ test("purge upgrades drain tokens and never grant positive percent income", () =
       `${entry.id} must not have incomePercentPerOwned`,
     );
     assert.equal(
-      entry.randomIncomePercentPerOwned,
+      entry.randomPassivePerOwned,
       undefined,
-      `${entry.id} must not have randomIncomePercentPerOwned`,
+      `${entry.id} must not have randomPassivePerOwned`,
     );
   }
 });
 
-test("benevolence income grants are random (flat or percent)", () => {
+test("benevolence percent grants are fixed; flat grants are random; alignment-only boost good", () => {
   for (const entry of BENEVOLENCE_UPGRADES) {
-    const hasRandom =
-      (entry.randomPassivePerOwned ?? 0) > 0 ||
-      (entry.randomIncomePercentPerOwned ?? 0) > 0;
-    const hasDeterministicIncome =
-      (entry.passivePerOwned ?? 0) > 0 || (entry.incomePercentPerOwned ?? 0) > 0;
-    assert.ok(hasRandom, `${entry.id} should grant random income`);
-    assert.ok(
-      !hasDeterministicIncome,
-      `${entry.id} should not use deterministic passive/% income`,
+    const hasRandomFlat = (entry.randomPassivePerOwned ?? 0) > 0;
+    const hasFixedPercent = (entry.incomePercentPerOwned ?? 0) > 0;
+    const hasDeterministicPassive = (entry.passivePerOwned ?? 0) > 0;
+    const hasTokenBonus = hasRandomFlat || hasFixedPercent || hasDeterministicPassive;
+
+    assert.equal(
+      /** @type {Record<string, unknown>} */ (entry).randomIncomePercentPerOwned,
+      undefined,
+      `${entry.id} must not use random percent income`,
     );
+    assert.ok(
+      !hasDeterministicPassive,
+      `${entry.id} should not use deterministic passivePerOwned`,
+    );
+
+    if (!hasTokenBonus) {
+      assert.ok(
+        (entry.alignment?.benevolence ?? 0) >= 50,
+        `${entry.id} is alignment-only and should grant higher good`,
+      );
+    } else {
+      assert.ok(
+        hasRandomFlat || hasFixedPercent,
+        `${entry.id} should grant random flat or fixed percent income`,
+      );
+      if (hasFixedPercent) {
+        assert.ok(!hasRandomFlat, `${entry.id} should not mix random flat with fixed %`);
+      }
+    }
   }
+});
+
+test("formatCatalogBenefit drops avg and uses short alignment names", () => {
+  const openSource = BENEVOLENCE_UPGRADES.find((entry) => entry.id === "open-source");
+  const publicApi = BENEVOLENCE_UPGRADES.find((entry) => entry.id === "public-api");
+  const ethics = BENEVOLENCE_UPGRADES.find((entry) => entry.id === "ethics-summit");
+  assert.ok(openSource && publicApi && ethics);
+
+  const empty = new GameState({ lastTickAt: 0 });
+  const randomLabel = formatCatalogBenefit(openSource, empty);
+  assert.match(randomLabel, /token\/s \(random\)/);
+  assert.ok(!/avg/i.test(randomLabel));
+  assert.match(randomLabel, /good/);
+
+  const percentLabel = formatCatalogBenefit(publicApi, empty);
+  assert.match(percentLabel, /\+[\d.]+% all tokens/);
+  assert.ok(!/random/i.test(percentLabel));
+
+  const alignmentOnly = formatCatalogBenefit(ethics, empty);
+  assert.equal(alignmentOnly.includes("token"), false);
+  assert.match(alignmentOnly, /\+\d+ good/);
 });
 
 test("each ending has a unique cutscene", () => {

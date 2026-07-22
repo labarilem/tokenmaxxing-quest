@@ -156,13 +156,14 @@ body {
 .resource__alignment-meter {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: baseline;
   gap: 0 4px;
   min-width: 0;
   font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
+  white-space: nowrap;
 }
 
 .resource__alignment-label {
@@ -171,20 +172,20 @@ body {
   letter-spacing: 0.02em;
   text-transform: uppercase;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .resource__alignment-value {
   font-size: 0.75rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .resource__alignment-value--good {
   color: var(--success);
 }
 
-.resource__alignment-value--purge {
+.resource__alignment-value--resist {
   color: #e8a87c;
 }
 
