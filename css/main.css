@@ -147,20 +147,22 @@ body {
 .resource__alignment {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px 8px;
-  margin-top: 8px;
-  padding-top: 8px;
+  gap: 2px 6px;
+  margin-top: 6px;
+  padding-top: 6px;
   border-top: 1px solid var(--border);
 }
 
 .resource__alignment-meter {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 4px;
   min-width: 0;
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .resource__alignment-label {
@@ -174,7 +176,7 @@ body {
 }
 
 .resource__alignment-value {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 

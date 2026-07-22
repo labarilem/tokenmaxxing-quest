@@ -20,12 +20,14 @@ import {
   getNextAgentMilestone,
   getNextModel,
   getNextRuleMilestone,
+  hasRandomBenevolenceIncome,
 } from "./resources.js";
 import {
   ALIGNMENT_REVEAL_TOKENS,
   ALL_CATALOG,
   CAPSTONE_BENEVOLENCE_MIN,
   CAPSTONE_PURGE_MIN,
+  CAPSTONE_PURGE_TOKEN_MAX,
   CAPSTONES,
   formatCatalogBenefit,
   formatCatalogMilestone,
@@ -795,11 +797,11 @@ export class UI {
         } else if (canBuy) {
           cache.goal.textContent = "Ready to present to the Board.";
         } else if (capstone.path === "purge") {
-          cache.goal.textContent = this.game.isCapstoneGateMet(capstone)
-            ? "Ready to present to the Board."
-            : capstone.gateHint;
+          cache.goal.textContent = this.formatPurgeCapstoneGoal(capstone);
         } else {
-          cache.goal.textContent = this.formatUpgradeGoal(capstone.cost, false);
+          cache.goal.textContent = this.game.isCapstoneGateMet(capstone)
+            ? this.formatUpgradeGoal(capstone.cost, false)
+            : capstone.gateHint;
         }
       }
       if (cache.button) {
@@ -809,6 +811,33 @@ export class UI {
     }
 
     this.capstoneSection.hidden = !anyVisible;
+  }
+
+  /**
+   * @param {CapstoneDef} capstone
+   * @returns {string}
+   */
+  formatPurgeCapstoneGoal(capstone) {
+    const { state } = this.game;
+    if (!this.game.isCapstoneGateMet(capstone)) {
+      const parts = [];
+      if (state.alignmentPurge < CAPSTONE_PURGE_MIN) {
+        parts.push(`Purge ${state.alignmentPurge} / ${CAPSTONE_PURGE_MIN}`);
+      }
+      if (state.tokens > CAPSTONE_PURGE_TOKEN_MAX) {
+        parts.push(
+          `Debt ${formatNumber(Math.floor(state.tokens))} / ${formatNumber(CAPSTONE_PURGE_TOKEN_MAX)}`,
+        );
+      }
+      if (parts.length > 0) {
+        return parts.join(" · ");
+      }
+      return capstone.gateHint;
+    }
+    if (state.tokens > CAPSTONE_PURGE_TOKEN_MAX) {
+      return `Debt ${formatNumber(Math.floor(state.tokens))} / ${formatNumber(CAPSTONE_PURGE_TOKEN_MAX)}`;
+    }
+    return "Ready to present to the Board.";
   }
 
   updateAlignmentPanel() {
@@ -1093,7 +1122,9 @@ export class UI {
   update() {
     const { game } = this;
     const tokensText = formatNumber(game.tokens);
-    const rateText = formatRate(game.tokensPerSecond);
+    const rateText = formatRate(game.tokensPerSecond, {
+      approximate: hasRandomBenevolenceIncome(game.state),
+    });
     const promptLabel = `Send Prompt (+${formatNumber(game.tokensPerClick)} tokens)`;
     const ruleBenefitText = formatClickBenefit(getMarginalClickGain(game.rules));
     const ruleCostText = formatNumber(game.ruleCost);

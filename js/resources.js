@@ -2,7 +2,9 @@
 
 import {
   ALL_CATALOG,
+  BENEVOLENCE_RANDOM_SCALE,
   getCatalogMultiplier,
+  RECKLESSNESS_SURPLUS_BONUS,
 } from "./upgrades.js";
 
 /** @typedef {{ at: number, multiplier: number, label: string }} UpgradeMilestone */
@@ -122,13 +124,14 @@ export function formatNumber(n) {
 
 /**
  * @param {number} rate
+ * @param {{ approximate?: boolean }} [options]
  * @returns {string}
  */
-export function formatRate(rate) {
+export function formatRate(rate, { approximate = false } = {}) {
   if (rate < 0) {
-    return `\u2212${Math.abs(rate).toFixed(1)} tokens/s`;
+    return `${approximate ? "~" : ""}\u2212${Math.abs(rate).toFixed(1)} tokens/s`;
   }
-  return `+${rate.toFixed(1)} tokens/s`;
+  return `${approximate ? "~" : "+"}${rate.toFixed(1)} tokens/s`;
 }
 
 /**
@@ -422,18 +425,48 @@ export function formatModelGateHint(modelTier, agents) {
 /**
  * Percent-based income bonuses from catalog upgrades.
  * @param {GameState} state
+ * @param {(entry: import("./upgrades.js").CatalogEntry, owned: number) => number} [resolveRandomPercent]
  * @returns {number}
  */
-export function getPercentIncomeBonus(state) {
+export function getPercentIncomeBonus(state, resolveRandomPercent = meanRandomPercent) {
   let bonus = 0;
   for (const entry of ALL_CATALOG) {
-    if (!entry.incomePercentPerOwned) {
+    const owned = state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
+    if (owned <= 0) {
       continue;
     }
-    const owned = state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
-    bonus += owned * entry.incomePercentPerOwned;
+    if (entry.incomePercentPerOwned) {
+      bonus += owned * entry.incomePercentPerOwned;
+    }
+    if (entry.randomIncomePercentPerOwned) {
+      bonus += resolveRandomPercent(entry, owned);
+    }
   }
   return bonus;
+}
+
+/** Expected contribution of a random benevolence % upgrade (its mean). */
+function meanRandomPercent(entry, owned) {
+  return (
+    owned *
+    (entry.randomIncomePercentPerOwned ?? 0) *
+    (entry.category === "benevolence" || entry.category === "white-magic"
+      ? BENEVOLENCE_RANDOM_SCALE
+      : 1)
+  );
+}
+
+/**
+ * Surplus recklessness (R − B − P) uniquely accelerates income for oops specialists.
+ * @param {GameState} state
+ * @returns {number} additive bonus (e.g. 0.5 = +50%)
+ */
+export function getRecklessnessSurplusBonus(state) {
+  const surplus = Math.max(
+    0,
+    state.alignmentRecklessness - state.alignmentBenevolence - state.alignmentPurge,
+  );
+  return surplus * RECKLESSNESS_SURPLUS_BONUS;
 }
 
 /**
@@ -457,10 +490,15 @@ export function getStackingIncomeMultiplier(state) {
 
 /**
  * @param {GameState} state
+ * @param {(entry: import("./upgrades.js").CatalogEntry, owned: number) => number} [resolveRandomPercent]
  * @returns {number}
  */
-export function getIncomeMultiplier(state) {
-  return getModelMultiplier(state.modelTier) * (1 + getPercentIncomeBonus(state)) * getStackingIncomeMultiplier(state);
+export function getIncomeMultiplier(state, resolveRandomPercent = meanRandomPercent) {
+  return (
+    getModelMultiplier(state.modelTier) *
+    (1 + getPercentIncomeBonus(state, resolveRandomPercent) + getRecklessnessSurplusBonus(state)) *
+    getStackingIncomeMultiplier(state)
+  );
 }
 
 /**
@@ -526,7 +564,7 @@ function computePassiveBase(state, resolveRandom) {
   const clickBeforeMultiplier =
     getBaseClickIncome(state) *
     getModelMultiplier(state.modelTier) *
-    (1 + getPercentIncomeBonus(state)) *
+    (1 + getPercentIncomeBonus(state) + getRecklessnessSurplusBonus(state)) *
     getStackingIncomeMultiplier(state);
 
   for (const entry of ALL_CATALOG) {
@@ -539,9 +577,6 @@ function computePassiveBase(state, resolveRandom) {
   return passive;
 }
 
-/** Benevolence random grants are burstier and lower on average (community usage). */
-const BENEVOLENCE_RANDOM_SCALE = 0.55;
-
 /** Expected contribution of a random benevolence upgrade (its mean). */
 const meanRandomPassive = (entry, owned, milestoneMult) =>
   owned *
@@ -550,6 +585,30 @@ const meanRandomPassive = (entry, owned, milestoneMult) =>
   (entry.category === "benevolence" || entry.category === "white-magic"
     ? BENEVOLENCE_RANDOM_SCALE
     : 1);
+
+/**
+ * Whether the state has any random benevolence income sources.
+ * @param {GameState} state
+ * @returns {boolean}
+ */
+export function hasRandomBenevolenceIncome(state) {
+  for (const entry of ALL_CATALOG) {
+    if (
+      entry.category !== "benevolence" &&
+      entry.category !== "white-magic"
+    ) {
+      continue;
+    }
+    if (!entry.randomPassivePerOwned && !entry.randomIncomePercentPerOwned) {
+      continue;
+    }
+    const owned = state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
+    if (owned > 0) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Expected passive income per second (mean of random benevolence upgrades).
@@ -580,5 +639,13 @@ export function sampleTokensPerSecondForState(state, random = Math.random) {
     const mean = owned * (entry.randomPassivePerOwned ?? 0) * milestoneMult * scale;
     return random() * 2 * mean;
   };
-  return computePassiveBase(state, sampleRandom) * getIncomeMultiplier(state);
+  const samplePercent = (entry, owned) => {
+    const scale =
+      entry.category === "benevolence" || entry.category === "white-magic"
+        ? BENEVOLENCE_RANDOM_SCALE
+        : 1;
+    const mean = owned * (entry.randomIncomePercentPerOwned ?? 0) * scale;
+    return random() * 2 * mean;
+  };
+  return computePassiveBase(state, sampleRandom) * getIncomeMultiplier(state, samplePercent);
 }

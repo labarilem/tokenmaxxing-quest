@@ -141,6 +141,23 @@ export function creditHybridIncome(game, clock, durationMs, clicksPerSecond) {
 }
 
 /**
+ * Advance focused play time without changing the token balance.
+ * Used when other capstone gates are met and only the playtime floor remains —
+ * especially important for purge so waiting cannot exit debt.
+ * @param {Game} game
+ * @param {ManualClock} clock
+ * @param {number} durationMs
+ */
+export function advanceFocusedPlaytime(game, clock, durationMs) {
+  if (durationMs <= 0) {
+    return;
+  }
+  game.state.playTimeMs += durationMs;
+  clock.advance(durationMs);
+  game.state.lastTickAt = clock.now();
+}
+
+/**
  * @param {EndingPath} path
  * @param {import("./state.js").GameState} state
  * @returns {boolean}
@@ -221,8 +238,10 @@ function tryAdvancePurgeDebt(game, clock, path, clicksPerSecond) {
     .sort((a, b) => a.cost - b.cost)[0];
 
   if (nextDrain) {
+    // When already in debt (negative balance) but not deep enough, earning up to
+    // the next drain cost is fine — purchase hoards stack base + balance fraction.
     earnUntil(game, clock, nextDrain.cost, clicksPerSecond);
-    return true;
+    return game.tokens + 1e-9 >= nextDrain.cost;
   }
 
   return false;
@@ -625,6 +644,16 @@ export function simulateEnding(path, { clicksPerSecond = DEFAULT_CLICKS_PER_SECO
       continue;
     }
 
+    // Reach purge debt before buying more positive-income upgrades.
+    if (needsPurgeDebtForPath(path, game.state)) {
+      if (tryAdvancePurgeDebt(game, clock, path, clicksPerSecond)) {
+        continue;
+      }
+      throw new Error(
+        `Simulation stalled on purge debt at ${clock.now()}ms with ${game.state.tokens} tokens`,
+      );
+    }
+
     const affordable = getAffordableActions(game, path);
     if (affordable.length > 0) {
       let best = affordable[0];
@@ -641,7 +670,6 @@ export function simulateEnding(path, { clicksPerSecond = DEFAULT_CLICKS_PER_SECO
       if (
         bestScore > 0 ||
         (best.kind === "catalog" && best.entry && needsAlignmentForPath(path, game.state)) ||
-        (best.kind === "catalog" && best.entry && needsPurgeDebtForPath(path, game.state)) ||
         isEndingPrepPurchase(game, best, path)
       ) {
         applyAction(game, best);
@@ -649,26 +677,14 @@ export function simulateEnding(path, { clicksPerSecond = DEFAULT_CLICKS_PER_SECO
       }
     }
 
-    if (needsPurgeDebtForPath(path, game.state)) {
-      if (tryAdvancePurgeDebt(game, clock, path, clicksPerSecond)) {
-        continue;
-      }
-      throw new Error(
-        `Simulation stalled on purge debt at ${clock.now()}ms with ${game.state.tokens} tokens`,
-      );
-    }
-
     const playtimeTarget = getCapstonePlaytimeTarget(path);
     if (
       game.state.playTimeMs < playtimeTarget &&
       isCapstoneReadyExceptPlaytime(game, path)
     ) {
-      creditHybridIncome(
-        game,
-        clock,
-        playtimeTarget - game.state.playTimeMs,
-        clicksPerSecond,
-      );
+      // Freeze the token balance while meeting the playtime floor so purge debt
+      // (and other spendable-token gates) cannot be undone by idle income.
+      advanceFocusedPlaytime(game, clock, playtimeTarget - game.state.playTimeMs);
       continue;
     }
 

@@ -2,12 +2,17 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  advanceFocusedPlaytime,
   formatDuration,
   getCatalogForPath,
   simulateAllEndings,
   simulateEnding,
 } from "../js/balance-sim.js";
-import { CAPSTONE_COST, CAPSTONE_REVEAL_TOKENS } from "../js/upgrades.js";
+import { Game } from "../js/game.js";
+import { GameState } from "../js/state.js";
+import { ManualClock } from "../js/clock.js";
+import { CAPSTONE_COST, CAPSTONE_PURGE_TOKEN_MAX, CAPSTONE_REVEAL_TOKENS } from "../js/upgrades.js";
+import { getRecklessnessSurplusBonus } from "../js/resources.js";
 
 test("getCatalogForPath includes alignment lines per ending", () => {
   const oops = getCatalogForPath("oops");
@@ -76,4 +81,28 @@ test("simulateAllEndings reaches each ending in at least one hour of optimal pla
   assert.ok(purge.elapsedMs >= TWO_HOURS_MS);
   assert.ok(oops.elapsedMs < utopia.elapsedMs);
   assert.ok(utopia.elapsedMs < purge.elapsedMs);
+});
+
+test("advanceFocusedPlaytime freezes tokens while accruing play time", () => {
+  const clock = new ManualClock(0);
+  const game = new Game({
+    clock,
+    state: new GameState({ tokens: CAPSTONE_PURGE_TOKEN_MAX, lastTickAt: 0 }),
+  });
+  const before = game.tokens;
+  advanceFocusedPlaytime(game, clock, 60_000);
+  assert.equal(game.tokens, before);
+  assert.equal(game.state.playTimeMs, 60_000);
+  assert.equal(clock.now(), 60_000);
+});
+
+test("recklessness surplus bonus rewards specializing in R over B/P", () => {
+  const specialized = getRecklessnessSurplusBonus(
+    new GameState({ alignmentRecklessness: 1000, alignmentBenevolence: 0, alignmentPurge: 0 }),
+  );
+  const mixed = getRecklessnessSurplusBonus(
+    new GameState({ alignmentRecklessness: 1000, alignmentBenevolence: 800, alignmentPurge: 100 }),
+  );
+  assert.ok(specialized > mixed);
+  assert.ok(specialized > 0);
 });

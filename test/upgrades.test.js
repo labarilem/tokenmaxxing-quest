@@ -243,6 +243,40 @@ test("no catalog upgrade describes destroying or reducing tokens (plot rule)", (
   }
 });
 
+test("purge upgrades drain tokens and never grant positive percent income", () => {
+  for (const entry of PURGE_UPGRADES) {
+    assert.ok(
+      (entry.passivePerOwned ?? 0) < 0,
+      `${entry.id} should have negative passivePerOwned`,
+    );
+    assert.equal(
+      entry.incomePercentPerOwned,
+      undefined,
+      `${entry.id} must not have incomePercentPerOwned`,
+    );
+    assert.equal(
+      entry.randomIncomePercentPerOwned,
+      undefined,
+      `${entry.id} must not have randomIncomePercentPerOwned`,
+    );
+  }
+});
+
+test("benevolence income grants are random (flat or percent)", () => {
+  for (const entry of BENEVOLENCE_UPGRADES) {
+    const hasRandom =
+      (entry.randomPassivePerOwned ?? 0) > 0 ||
+      (entry.randomIncomePercentPerOwned ?? 0) > 0;
+    const hasDeterministicIncome =
+      (entry.passivePerOwned ?? 0) > 0 || (entry.incomePercentPerOwned ?? 0) > 0;
+    assert.ok(hasRandom, `${entry.id} should grant random income`);
+    assert.ok(
+      !hasDeterministicIncome,
+      `${entry.id} should not use deterministic passive/% income`,
+    );
+  }
+});
+
 test("each ending has a unique cutscene", () => {
   const cutscenes = ENDING_DEFS.map((def) => def.cutscene);
   assert.equal(new Set(cutscenes).size, cutscenes.length);
