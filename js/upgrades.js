@@ -1264,10 +1264,8 @@ export function formatCatalogBenefit(entry, state) {
   }
   if (entry.randomPassivePerOwned) {
     const mult = getCatalogMultiplier(entry, owned + 1);
-    const mean = Math.floor(
-      entry.randomPassivePerOwned * mult * BENEVOLENCE_RANDOM_SCALE,
-    );
-    const max = mean * BENEVOLENCE_RANDOM_SPAN;
+    const mean = entry.randomPassivePerOwned * mult * BENEVOLENCE_RANDOM_SCALE;
+    const max = Math.max(1, Math.round(mean * BENEVOLENCE_RANDOM_SPAN));
     parts.push(`~0\u2013${max} token/s (random)`);
   }
   if (entry.passivePerAgentPerOwned) {

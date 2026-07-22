@@ -305,7 +305,7 @@ test("formatCatalogBenefit drops avg and uses short alignment names", () => {
 
   const empty = new GameState({ lastTickAt: 0 });
   const randomLabel = formatCatalogBenefit(openSource, empty);
-  assert.match(randomLabel, /token\/s \(random\)/);
+  assert.match(randomLabel, /~0\u2013[1-9]\d* token\/s \(random\)/);
   assert.ok(!/avg/i.test(randomLabel));
   assert.match(randomLabel, /good/);
 
