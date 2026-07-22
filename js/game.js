@@ -13,11 +13,13 @@ import {
   getRuleCost,
   getTokensPerClickForState,
   getTokensPerSecondForState,
+  sampleTokensPerSecondForState,
 } from "./resources.js";
 import { GameState } from "./state.js";
 import { SystemClock } from "./clock.js";
 import {
   CAPSTONES,
+  CAPSTONE_PURGE_TOKEN_MAX,
   canBuyCatalogEntry,
   getCatalogCostForState,
   getOwnedCount,
@@ -172,6 +174,9 @@ export class Game {
     if (!this.isCapstoneGateMet(capstone)) {
       return false;
     }
+    if (capstone.path === "purge" && !this.testMode) {
+      return this.state.tokens <= CAPSTONE_PURGE_TOKEN_MAX;
+    }
     return this.state.tokens >= capstone.cost;
   }
 
@@ -264,6 +269,10 @@ export class Game {
     if (entry.alignment) {
       applyAlignmentDelta(entry.alignment, this.state);
     }
+    if (entry.passivePerOwned && entry.passivePerOwned < 0) {
+      const hoard = Math.abs(entry.passivePerOwned) * 60_000;
+      this.state.applyTokenDelta(-hoard);
+    }
     return {
       purchased: true,
       unlocked: evaluateAchievements(this.state, "buyCatalog", { catalogId: entry.id }),
@@ -278,7 +287,9 @@ export class Game {
     if (!this.canBuyCapstone(capstone)) {
       return { purchased: false, ending: null, unlocked: [] };
     }
-    this.state.tokens -= capstone.cost;
+    if (capstone.path !== "purge") {
+      this.state.tokens -= capstone.cost;
+    }
     this.state.strategyPath = capstone.path;
     const ending = getEndingDef(capstone.path) ?? null;
     const unlocked = evaluateAchievements(this.state, "buyCapstone");
@@ -324,8 +335,9 @@ export class Game {
     if (delta > 0 && delta <= TICK_MS * 5) {
       this.state.playTimeMs += delta;
     }
-    if (this.tokensPerSecond > 0) {
-      this.state.creditTokens(this.tokensPerSecond * TOKENS_PER_TICK);
+    const rate = sampleTokensPerSecondForState(this.state);
+    if (rate !== 0) {
+      this.state.applyTokenDelta(rate * TOKENS_PER_TICK);
     }
     this.state.lastTickAt = now;
     this.state.ticksSinceSave += 1;

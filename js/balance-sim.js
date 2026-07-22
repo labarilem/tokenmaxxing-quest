@@ -11,8 +11,12 @@ import {
 import {
   BENEVOLENCE_UPGRADES,
   CAPSTONE_BENEVOLENCE_MIN,
+  CAPSTONE_OOPS_PLAYTIME_MS,
   CAPSTONE_PURGE_MIN,
+  CAPSTONE_PURGE_PLAYTIME_MS,
+  CAPSTONE_PURGE_TOKEN_MAX,
   CAPSTONE_REVEAL_TOKENS,
+  CAPSTONE_UTOPIA_PLAYTIME_MS,
   CAPSTONES,
   ENTERPRISE_UPGRADES,
   getCatalogCostForState,
@@ -28,7 +32,7 @@ import {
 export const DEFAULT_CLICKS_PER_SECOND = 5;
 
 /** Safety valve for runaway simulations after bad balance changes. */
-export const MAX_SIMULATION_STEPS = 500_000;
+export const MAX_SIMULATION_STEPS = 150_000;
 
 /**
  * @param {EndingPath} path
@@ -78,14 +82,30 @@ export function getEffectiveIncomeRate(game, clicksPerSecond) {
  * @param {number} clicksPerSecond
  */
 export function earnUntil(game, clock, targetTokens, clicksPerSecond) {
+  if (targetTokens < 0) {
+    if (game.tokens <= targetTokens) {
+      return;
+    }
+    const rate = getEffectiveIncomeRate(game, clicksPerSecond);
+    if (rate >= 0) {
+      return;
+    }
+    const excess = game.tokens - targetTokens;
+    const durationMs = (excess / Math.abs(rate)) * 1000;
+    creditHybridIncome(game, clock, durationMs, clicksPerSecond);
+    return;
+  }
+
   if (game.tokens >= targetTokens) {
     return;
   }
 
   const rate = getEffectiveIncomeRate(game, clicksPerSecond);
   if (rate <= 0) {
-    while (game.tokens < targetTokens) {
+    let guard = 0;
+    while (game.tokens + 1e-9 < targetTokens && guard < 50_000) {
       game.sendPrompt();
+      guard += 1;
     }
     return;
   }
@@ -94,8 +114,10 @@ export function earnUntil(game, clock, targetTokens, clicksPerSecond) {
   const durationMs = (shortfall / rate) * 1000;
   creditHybridIncome(game, clock, durationMs, clicksPerSecond);
 
-  while (game.tokens + 1e-9 < targetTokens) {
+  let guard = 0;
+  while (game.tokens + 1e-9 < targetTokens && guard < 50_000) {
     game.sendPrompt();
+    guard += 1;
   }
 }
 
@@ -112,7 +134,8 @@ export function creditHybridIncome(game, clock, durationMs, clicksPerSecond) {
   const seconds = durationMs / 1000;
   const income =
     (game.tokensPerSecond + clicksPerSecond * game.tokensPerClick) * seconds;
-  game.state.creditTokens(income);
+  game.state.applyTokenDelta(income);
+  game.state.playTimeMs += durationMs;
   clock.advance(durationMs);
   game.state.lastTickAt = clock.now();
 }
@@ -130,6 +153,116 @@ export function needsAlignmentForPath(path, state) {
     return state.alignmentPurge < CAPSTONE_PURGE_MIN;
   }
   return false;
+}
+
+/**
+ * @param {EndingPath} path
+ * @param {import("./state.js").GameState} state
+ * @returns {boolean}
+ */
+export function needsPurgeDebtForPath(path, state) {
+  return (
+    path === "purge" &&
+    state.capstoneBriefingSuites >= 1 &&
+    state.alignmentPurge >= CAPSTONE_PURGE_MIN &&
+    state.tokens > CAPSTONE_PURGE_TOKEN_MAX
+  );
+}
+
+/**
+ * @param {Game} game
+ * @param {ManualClock} clock
+ * @param {EndingPath} path
+ * @param {number} clicksPerSecond
+ * @returns {boolean}
+ */
+function tryAdvancePurgeDebt(game, clock, path, clicksPerSecond) {
+  if (!needsPurgeDebtForPath(path, game.state)) {
+    return false;
+  }
+
+  const rate = getEffectiveIncomeRate(game, clicksPerSecond);
+  if (rate < 0) {
+    earnUntil(game, clock, CAPSTONE_PURGE_TOKEN_MAX, clicksPerSecond);
+    return true;
+  }
+
+  const drainEntries = getCatalogForPath(path).filter(
+    (entry) => entry.passivePerOwned && entry.passivePerOwned < 0,
+  );
+
+  const affordableDrains = drainEntries.filter((entry) => game.canBuyCatalog(entry));
+  if (affordableDrains.length > 0) {
+    affordableDrains.sort(
+      (a, b) => (a.passivePerOwned ?? 0) - (b.passivePerOwned ?? 0),
+    );
+    game.buyCatalog(affordableDrains[0]);
+    return true;
+  }
+
+  const nextDrain = drainEntries
+    .map((entry) => ({
+      entry,
+      cost: getCatalogCostForState(game.state, entry),
+      owned: game.state[/** @type {keyof import("./state.js").GameState} */ (entry.stateKey)] ?? 0,
+    }))
+    .filter(({ entry, cost, owned }) => {
+      if (!Number.isFinite(cost)) {
+        return false;
+      }
+      if (entry.maxOwned !== undefined && owned >= entry.maxOwned) {
+        return false;
+      }
+      if (entry.gate && !entry.gate(game.state)) {
+        return false;
+      }
+      return cost > game.tokens;
+    })
+    .sort((a, b) => a.cost - b.cost)[0];
+
+  if (nextDrain) {
+    earnUntil(game, clock, nextDrain.cost, clicksPerSecond);
+    return true;
+  }
+
+  return false;
+}
+
+export function getCapstonePlaytimeTarget(path) {
+  switch (path) {
+    case "utopia":
+      return CAPSTONE_UTOPIA_PLAYTIME_MS;
+    case "purge":
+      return CAPSTONE_PURGE_PLAYTIME_MS;
+    default:
+      return CAPSTONE_OOPS_PLAYTIME_MS;
+  }
+}
+
+/**
+ * @param {Game} game
+ * @param {EndingPath} path
+ * @returns {boolean}
+ */
+export function isCapstoneReadyExceptPlaytime(game, path) {
+  const state = game.state;
+  if (state.lifetimeTokens < CAPSTONE_REVEAL_TOKENS || state.capstoneBriefingSuites < 1) {
+    return false;
+  }
+  if (path === "utopia") {
+    return (
+      state.ethicsSummits >= 1 &&
+      state.stewardshipCovenants >= 1 &&
+      state.alignmentBenevolence >= CAPSTONE_BENEVOLENCE_MIN
+    );
+  }
+  if (path === "purge") {
+    return (
+      state.alignmentPurge >= CAPSTONE_PURGE_MIN &&
+      state.tokens <= CAPSTONE_PURGE_TOKEN_MAX
+    );
+  }
+  return true;
 }
 
 /**
@@ -266,6 +399,12 @@ export function scorePurchase(game, action, path, clicksPerSecond) {
     if (needsAlignmentForPath(path, game.state) && alignmentGain > 0) {
       const alignmentWeight = beforeRate > 0 ? beforeRate * 0.5 : 1;
       return incomeGain / action.cost + (alignmentGain * alignmentWeight) / action.cost;
+    }
+
+    if (needsPurgeDebtForPath(path, game.state) && entry.passivePerOwned && entry.passivePerOwned < 0) {
+      const drainGain = Math.abs(entry.passivePerOwned);
+      const alignmentWeight = beforeRate > 0 ? beforeRate * 0.25 : 1;
+      return (drainGain * alignmentWeight) / action.cost;
     }
 
     return incomeGain / action.cost;
@@ -431,8 +570,12 @@ export function getNextPurchaseTargetCost(game, path) {
 
   const capstone = getTargetCapstone(path);
   if (capstone && !game.canBuyCapstone(capstone)) {
-    if (capstone.gate(game.state) && !needsAlignmentForPath(path, game.state)) {
-      costs.push(capstone.cost);
+    if (path === "purge" && needsPurgeDebtForPath(path, game.state)) {
+      // Debt target handled by tryAdvancePurgeDebt — not a purchase cost.
+    } else if (capstone.gate(game.state) && !needsAlignmentForPath(path, game.state)) {
+      if (path !== "purge") {
+        costs.push(capstone.cost);
+      }
     }
   }
 
@@ -498,11 +641,35 @@ export function simulateEnding(path, { clicksPerSecond = DEFAULT_CLICKS_PER_SECO
       if (
         bestScore > 0 ||
         (best.kind === "catalog" && best.entry && needsAlignmentForPath(path, game.state)) ||
+        (best.kind === "catalog" && best.entry && needsPurgeDebtForPath(path, game.state)) ||
         isEndingPrepPurchase(game, best, path)
       ) {
         applyAction(game, best);
         continue;
       }
+    }
+
+    if (needsPurgeDebtForPath(path, game.state)) {
+      if (tryAdvancePurgeDebt(game, clock, path, clicksPerSecond)) {
+        continue;
+      }
+      throw new Error(
+        `Simulation stalled on purge debt at ${clock.now()}ms with ${game.state.tokens} tokens`,
+      );
+    }
+
+    const playtimeTarget = getCapstonePlaytimeTarget(path);
+    if (
+      game.state.playTimeMs < playtimeTarget &&
+      isCapstoneReadyExceptPlaytime(game, path)
+    ) {
+      creditHybridIncome(
+        game,
+        clock,
+        playtimeTarget - game.state.playTimeMs,
+        clicksPerSecond,
+      );
+      continue;
     }
 
     const targetCost = getNextPurchaseTargetCost(game, path);

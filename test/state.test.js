@@ -63,12 +63,12 @@ test("fromSaveData restores valid fields", () => {
   assert.equal(state.hasAchievement("first-prompt"), true);
 });
 
-test("fromSaveData rejects invalid fields and uses fallbacks", () => {
+test("fromSaveData restores negative token balances for purge debt", () => {
   const state = GameState.fromSaveData(
     { tokens: -5, agents: 2.9, lastTickAt: "nope" },
     { lastTickAt: 555 },
   );
-  assert.equal(state.tokens, 0); // negative rejected -> default
+  assert.equal(state.tokens, -5);
   assert.equal(state.agents, 2); // fractional floored
   assert.equal(state.lastTickAt, 555); // non-number -> fallback
 });

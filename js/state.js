@@ -382,6 +382,21 @@ export class GameState {
   }
 
   /**
+   * Apply a signed token delta (used by passive ticks — may drain into debt).
+   * Only positive amounts count toward lifetime tokens.
+   * @param {number} amount
+   */
+  applyTokenDelta(amount) {
+    if (amount === 0) {
+      return;
+    }
+    this.tokens += amount;
+    if (amount > 0) {
+      this.lifetimeTokens += amount;
+    }
+  }
+
+  /**
    * Serialize to the save shape.
    * @returns {Record<string, unknown>}
    */
@@ -497,7 +512,7 @@ export class GameState {
       return state;
     }
     const record = /** @type {Record<string, unknown>} */ (data);
-    if (typeof record.tokens === "number" && record.tokens >= 0) {
+    if (typeof record.tokens === "number") {
       state.tokens = record.tokens;
     }
     if (typeof record.rules === "number" && record.rules >= 0) {

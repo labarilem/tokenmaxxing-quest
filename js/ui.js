@@ -166,7 +166,7 @@ export class UI {
     this.resetFullBtn = document.getElementById("reset-full-btn");
 
     /** @type {HTMLElement | null} */
-    this.alignmentPanel = document.getElementById("alignment-panel");
+    this.resourceAlignment = document.getElementById("resource-alignment");
 
     /** @type {HTMLElement | null} */
     this.alignmentRecklessness = document.getElementById("alignment-recklessness");
@@ -794,6 +794,10 @@ export class UI {
             : "Another strategy was chosen.";
         } else if (canBuy) {
           cache.goal.textContent = "Ready to present to the Board.";
+        } else if (capstone.path === "purge") {
+          cache.goal.textContent = this.game.isCapstoneGateMet(capstone)
+            ? "Ready to present to the Board."
+            : capstone.gateHint;
         } else {
           cache.goal.textContent = this.formatUpgradeGoal(capstone.cost, false);
         }
@@ -816,8 +820,8 @@ export class UI {
       state.alignmentPurge > 0 ||
       state.strategyPath !== null;
 
-    if (this.alignmentPanel) {
-      this.alignmentPanel.hidden = !show;
+    if (this.resourceAlignment) {
+      this.resourceAlignment.hidden = !show;
     }
 
     const key = `${state.alignmentRecklessness}|${state.alignmentBenevolence}|${state.alignmentPurge}`;
@@ -1133,6 +1137,7 @@ export class UI {
       this.cachedTokens = tokensText;
       if (this.tokensDisplay) {
         this.tokensDisplay.textContent = tokensText;
+        this.tokensDisplay.classList.toggle("resource__value--debt", game.tokens < 0);
       }
     }
 
@@ -1140,6 +1145,7 @@ export class UI {
       this.cachedRate = rateText;
       if (this.rateDisplay) {
         this.rateDisplay.textContent = rateText;
+        this.rateDisplay.classList.toggle("resource__rate--drain", game.tokensPerSecond < 0);
       }
     }
 

@@ -39,14 +39,16 @@ test("simulateEnding reaches oops capstone", () => {
 
 test("simulateEnding reaches utopia capstone with benevolence gate", () => {
   const result = simulateEnding("utopia");
-  assert.ok(result.alignment.benevolence >= 150);
+  assert.ok(result.alignment.benevolence >= 400);
   assert.ok(result.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS);
+  assert.ok(result.elapsedMs >= 90 * 60 * 1000);
 });
 
 test("simulateEnding reaches purge capstone with purge gate", () => {
   const result = simulateEnding("purge");
-  assert.ok(result.alignment.purge >= 120);
+  assert.ok(result.alignment.purge >= 255);
   assert.ok(result.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS);
+  assert.ok(result.elapsedMs >= 2 * 60 * 60 * 1000);
 });
 
 test("simulateAllEndings completes every path under step budget", () => {
@@ -60,11 +62,18 @@ test("simulateAllEndings completes every path under step budget", () => {
 
 test("simulateAllEndings reaches each ending in at least one hour of optimal play", () => {
   const ONE_HOUR_MS = 60 * 60 * 1000;
+  const ONE_AND_HALF_HOURS_MS = 90 * 60 * 1000;
+  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
   const results = simulateAllEndings();
-  for (const result of results) {
-    assert.ok(
-      result.elapsedMs >= ONE_HOUR_MS,
-      `${result.path} ended in ${result.elapsedMs}ms, expected >= ${ONE_HOUR_MS}ms`,
-    );
-  }
+  const oops = results.find((result) => result.path === "oops");
+  const utopia = results.find((result) => result.path === "utopia");
+  const purge = results.find((result) => result.path === "purge");
+  assert.ok(oops);
+  assert.ok(utopia);
+  assert.ok(purge);
+  assert.ok(oops.elapsedMs >= ONE_HOUR_MS);
+  assert.ok(utopia.elapsedMs >= ONE_AND_HALF_HOURS_MS);
+  assert.ok(purge.elapsedMs >= TWO_HOURS_MS);
+  assert.ok(oops.elapsedMs < utopia.elapsedMs);
+  assert.ok(utopia.elapsedMs < purge.elapsedMs);
 });

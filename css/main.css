@@ -136,6 +136,62 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.resource__rate--drain {
+  color: #e8a87c;
+}
+
+.resource__value--debt {
+  color: #e8a87c;
+}
+
+.resource__alignment {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.resource__alignment-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.resource__alignment-label {
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resource__alignment-value {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.resource__alignment-value--good {
+  color: var(--success);
+}
+
+.resource__alignment-value--purge {
+  color: #e8a87c;
+}
+
+.resource__alignment-target {
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  font-weight: 400;
+}
+
 .upgrade__benefit {
   margin: 2px 0 4px;
   color: var(--success);
@@ -643,38 +699,10 @@ body.modal-open {
   padding: 12px;
 }
 
-.alignment__hint,
 .capstone__hint {
   margin: 0 0 10px;
   color: var(--text-muted);
   font-size: 0.8125rem;
-}
-
-.alignment__meter {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-  font-size: 0.875rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.alignment__label {
-  color: var(--text-muted);
-}
-
-.alignment__value--good {
-  color: var(--success);
-}
-
-.alignment__value--purge {
-  color: #e8a87c;
-}
-
-.alignment__target {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
-  font-weight: 400;
 }
 
 .run-complete {
@@ -957,7 +985,6 @@ body.prompt-pinned .game {
    * share a height while their Buy row stays anchored to the bottom.
    */
   .game > .panel--upgrade,
-  .game > .panel--alignment,
   .upgrade-stack .panel--upgrade {
     display: flex;
     flex-direction: column;

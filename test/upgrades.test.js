@@ -10,6 +10,7 @@ import {
   ALL_CATALOG,
   BENEVOLENCE_UPGRADES,
   CAPSTONE_REVEAL_TOKENS,
+  CAPSTONE_UTOPIA_PLAYTIME_MS,
   CAPSTONES,
   getCatalogCost,
   POWER_UPGRADES,
@@ -124,10 +125,11 @@ test("buyCapstone commits utopia ending when benevolence gate is met", () => {
     state: new GameState({
       tokens: utopia.cost,
       lifetimeTokens: CAPSTONE_REVEAL_TOKENS,
-      alignmentBenevolence: 160,
+      alignmentBenevolence: 420,
       capstoneBriefingSuites: 1,
       ethicsSummits: 1,
       stewardshipCovenants: 1,
+      playTimeMs: CAPSTONE_UTOPIA_PLAYTIME_MS,
       lastTickAt: 0,
     }),
   });
