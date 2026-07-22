@@ -300,6 +300,7 @@ Open `http://localhost:8080`.
 - **Benevolence % grants are fixed** (`incomePercentPerOwned`); random percent income removed.
 - **Random flat grants** use a wider spike range (`BENEVOLENCE_RANDOM_SPAN = 4×` mean, mixture keeps the same expectation); benefit labels show `~0–max token/s (random)` with **no avg**.
 - **Alignment-only good prep** (Celestial Goodwill Council, Dawn Conscience Observatory, Ethics Summit, Stewardship Covenant): no token bonus, higher good grants, copy framed around the Good meter.
+- Simulated optimal play (5 prompts/s, tab focused): **oops ~1h 1m**, **utopia ~1h 32m**, **purge ~2h 0m**.
 
 ### 2026-07-22 — Spec review fixes (debt freeze, path power, full random benevolence)
 
