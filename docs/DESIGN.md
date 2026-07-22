@@ -189,7 +189,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Small Fleet** | Achievement: own 25 Background Agents |
 | **Next goal UI** | Each upgrade shows afford hint (prompts and/or passive ETA) and next milestone |
 | **Upgrade benefit labels** | Each upgrade shows marginal gain for the next purchase (e.g. +1 token/click, +1 token/s; scales at milestones) |
-| **Full token display** | Token counter always shows full digits with grouping (no K/M/B abbreviations) |
+| **Full token display** | Token counter always shows full digits with grouping (no K/M/B abbreviations); fractional balances (e.g. model-multiplied clicks) keep up to 2 decimals so floored UI cannot skip integers |
 | **One-line flavor copy** | Satirical upgrade/achievement descriptions stay short; no CSS ellipsis truncation |
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
 | **Reset progress** | New game (keep achievements + model tier) or full reset (clear achievements + model tier); modal confirmation required |
@@ -293,6 +293,12 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-22 — Reset click display (model multiplier vs floor)
+
+- Confirmed **New game** clears catalog upgrades/rules/agents and correctly **keeps model tier** (prestige); **Full reset** clears model tier too. Catalog leftovers were not the bug.
+- Bug: after New game with a certified model, Send Prompt awards `1 × modelMultiplier` (e.g. 1.15) while `formatNumber` **floored** the button and counter — so the label said `+1` and the counter sometimes jumped by **2** when the fractional part crossed an integer.
+- Fix: `formatNumber` preserves up to 2 decimal places for fractional amounts; regression tests cover reset click income and fractional display.
 
 ### 2026-07-22 — Alignment rename, fixed %, wider random, good-only prep
 

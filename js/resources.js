@@ -116,11 +116,23 @@ export const MODELS = [
 ];
 
 /**
+ * Format a token amount for display. Whole values stay integer; fractional
+ * values keep up to 2 decimals so floored UI cannot skip integers when a
+ * click awards a model-multiplied amount like 1.15 (e.g. 6.90 → 8.05).
  * @param {number} n
  * @returns {string}
  */
 export function formatNumber(n) {
-  return Math.floor(n).toLocaleString("en-US");
+  if (!Number.isFinite(n)) {
+    return "0";
+  }
+  // Snap float noise to cents-of-a-token so 1.1500000002 displays cleanly.
+  const rounded = Math.round(n * 100) / 100;
+  const isWhole = Math.abs(rounded - Math.trunc(rounded)) < 1e-9;
+  return rounded.toLocaleString("en-US", {
+    maximumFractionDigits: isWhole ? 0 : 2,
+    minimumFractionDigits: 0,
+  });
 }
 
 /**
