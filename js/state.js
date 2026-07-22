@@ -89,6 +89,9 @@ export class GameState {
    *   alignmentBenevolence?: number,
    *   alignmentPurge?: number,
    *   strategyPath?: string | null,
+   *   activeEventId?: string | null,
+   *   nextEventAtPlayTimeMs?: number,
+   *   recentEventIds?: string[],
    * }} [init]
    */
   constructor({
@@ -173,6 +176,9 @@ export class GameState {
     alignmentBenevolence = 0,
     alignmentPurge = 0,
     strategyPath = null,
+    activeEventId = null,
+    nextEventAtPlayTimeMs = 0,
+    recentEventIds = [],
   } = {}) {
     /** @type {number} total tokens consumed */
     this.tokens = tokens;
@@ -358,6 +364,15 @@ export class GameState {
 
     /** @type {string | null} committed ending path: oops | utopia | purge */
     this.strategyPath = strategyPath;
+
+    /** @type {string | null} pending random event id awaiting a player choice */
+    this.activeEventId = activeEventId;
+
+    /** @type {number} focused playTimeMs when the next event may fire */
+    this.nextEventAtPlayTimeMs = nextEventAtPlayTimeMs;
+
+    /** @type {string[]} recent event ids (avoid immediate repeats) */
+    this.recentEventIds = [...recentEventIds];
   }
 
   /** @param {string} id */
@@ -483,6 +498,9 @@ export class GameState {
       alignmentBenevolence: this.alignmentBenevolence,
       alignmentPurge: this.alignmentPurge,
       strategyPath: this.strategyPath,
+      activeEventId: this.activeEventId,
+      nextEventAtPlayTimeMs: this.nextEventAtPlayTimeMs,
+      recentEventIds: [...this.recentEventIds],
     };
   }
 
@@ -612,6 +630,16 @@ export class GameState {
 
     if (record.strategyPath === "oops" || record.strategyPath === "utopia" || record.strategyPath === "purge") {
       state.strategyPath = record.strategyPath;
+    }
+
+    if (typeof record.activeEventId === "string" && record.activeEventId.length > 0) {
+      state.activeEventId = record.activeEventId;
+    }
+    state.nextEventAtPlayTimeMs = GameState.readCount(record.nextEventAtPlayTimeMs);
+    if (Array.isArray(record.recentEventIds)) {
+      state.recentEventIds = record.recentEventIds.filter(
+        (id) => typeof id === "string" && id.length > 0,
+      );
     }
 
     return state;

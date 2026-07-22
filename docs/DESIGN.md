@@ -59,6 +59,7 @@ js/
   company.js        → header company name progression by theme
   upgrades.js       → power/benevolence/purge catalog + capstones + alignment
   endings.js        → ending narratives + resolution helpers
+  events.js         → random board-decision events + outcomes
   balance-sim.js    → headless ending-pace simulator (greedy optimal player)
   ui.js             → DOM bindings, update-on-change only
 test/
@@ -66,6 +67,7 @@ test/
   state.test.js     → save (de)serialization + validation
   achievements.test.js → achievement unlock rules
   upgrades.test.js     → catalog purchases, alignment, capstone endings
+  events.test.js       → events catalog, timing, outcomes, chaos random skew
   balance-sim.test.js  → ending simulations complete for all paths
 scripts/
   simulate-endings.js → CLI report for ending pace (`npm run balance:endings`)
@@ -162,7 +164,10 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
   "alignmentRecklessness": 0,
   "alignmentBenevolence": 0,
   "alignmentPurge": 0,
-  "strategyPath": null
+  "strategyPath": null,
+  "activeEventId": null,
+  "nextEventAtPlayTimeMs": 0,
+  "recentEventIds": []
 }
 ```
 
@@ -209,9 +214,10 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Public Benefit API** | +40 good, fixed % income |
 | **Zombie Model Farm** | +12 resist; hoards tokens (−passive + purchase vault) |
 | **Total Recall Mandate** | +20 resist; hoards tokens (−passive + purchase vault) |
-| **Org alignment meters** | **Chaos / Good / Resist** (was Recklessness / Benevolence / Purge) in a compact single-line row inside **Tokens Consumed** (reveals at **25M** lifetime or first alignment shift). Good / Resist show `value / 400` and `value / 255`. Label and value stay on the same line |
-| **Board strategy capstones** | Mutually exclusive commits at **500M** lifetime + Capstone Briefing Suite + focused playtime floors (oops **1h**, utopia **1h30m**, purge **2h**). Utopia: Ethics Summit + Stewardship Covenant + **400+** good + **15B** tokens. Purge: **255+** resist + **40M token debt** (no token purchase). Chaos specialists get a surplus C−G−R all-income bonus |
-| **Benevolence random income** | Flat token/s grants sample a **wide** mixture each tick (spikes up to **BENEVOLENCE_RANDOM_SPAN 4×** mean; E = mean scaled by **BENEVOLENCE_RANDOM_SCALE 0.55×**); **% grants are fixed** (not random); rate label uses `~` when random sources are owned; benefit labels show `~0–max token/s (random)` with no avg |
+| **Org alignment meters** | **Chaos / Good / Resist** (was Recklessness / Benevolence / Purge) in a compact single-line row inside **Tokens Consumed** (reveals at **25M** lifetime or first alignment shift). Chaos / Good / Resist show `value / 400`, `value / 400`, and `value / 255`. Label and value stay on the same line |
+| **Board strategy capstones** | Mutually exclusive commits at **500M** lifetime + Capstone Briefing Suite + focused playtime floors (oops **1h**, utopia **1h30m**, purge **2h**). Utopia: Ethics Summit + Stewardship Covenant + **400+** good + **15B** tokens. Purge: **255+** resist + **40M token debt** (no token purchase). Oops / universe destruction: **400+** chaos + **15B** tokens. Chaos specialists get a surplus C−G−R all-income bonus |
+| **Board decision events** | Random modal events after **25k** lifetime tokens; title + description + **3 choices**; at most one choice is marked positive (some events have zero). Outcomes: absolute/% token deltas (may go negative), alignment deltas (clamped ≥0), gain/lose upgrades, time acceleration (N ticks of income instantly). Only one event at a time; cooldown shrinks with chaos (base **3 min** → floor **45s**). Higher chaos also skews random token samples toward min/max edges |
+| **Benevolence random income** | Flat token/s grants sample a **wide** mixture each tick (spikes up to **BENEVOLENCE_RANDOM_SPAN 4×** mean; E = mean scaled by **BENEVOLENCE_RANDOM_SCALE 0.55×**); **% grants are fixed** (not random); rate label uses `~` when random sources are owned; benefit labels show `~0–max token/s (random)` with no avg; chaos skews loud samples toward range edges |
 | **Purge token hoarding** | Purge upgrades apply negative `passivePerOwned` and on purchase vault `baseHoard + (endgame ? balance×0.55 : 0)` tokens (endgame = resist alignment met + briefing owned); no positive `%` income on the purge line |
 | **Enterprise ops** | 8 corporate mid-game upgrades (Perf Review Automator through Antitrust Distraction Taskforce); gates ~3M–280M lifetime; costs scaled by **ENTERPRISE_COST_SCALE (2×)** |
 | **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime; costs scaled by **MID_GAME_COST_SCALE (1.38×)** |
@@ -233,7 +239,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 
 | Version | Mechanic | Notes |
 |---------|----------|-------|
-| V0.2 | Manager Review events | Random events; burnout debuff if over-tokenmaxxing |
+| V0.3 | Prestige / Promotion | Permanent multipliers across runs |
 
 ## Incremental design guidance
 
@@ -293,6 +299,15 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-22 — Chaos gates, board events, random edge skew
+
+- **Chaos ending gate:** Universe destruction (oops) now requires **400+** chaos, matching Good's capstone threshold. Chaos meter shows `value / 400`.
+- **Chaos on benefit labels:** power/enterprise/space/orbital upgrades always show `+N chaos` alongside income (previously hidden when other benefits existed).
+- **Board decision events:** new `js/events.js` layer — random modals with title, description, and 3 choices after **25k** lifetime tokens. At most one positive choice per event; some events have none. Outcomes include token absolute/% deltas (may go negative), alignment deltas (clamped ≥0), gain/lose upgrades, and time acceleration (N ticks instantly). One event at a time; cooldown shrinks with chaos (3 min → 45s floor).
+- **Chaos random skew:** higher chaos pulls benevolence random token samples toward the min/max edges of their range (more often ~0 or ~max instead of mid values); expectation preserved.
+- Alignment losses from events clamp at zero; token losses may enter debt.
+- Simulated optimal play unchanged in character (events are player-facing; balance sim skips them): **oops ~1h**, **utopia ~1h30m**, **purge ~2h**.
 
 ### 2026-07-22 — Reset click display (model multiplier vs floor)
 

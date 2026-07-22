@@ -620,15 +620,39 @@ export function getTokensPerSecondForState(state) {
 }
 
 /**
+ * How fast chaos pulls random samples toward the min/max edges.
+ * At chaos ≈ scale, ~50% of loud samples snap to an edge; higher → more extreme.
+ */
+export const CHAOS_RANDOM_EDGE_SCALE = 250;
+
+/**
+ * Sample a unit interval value, increasingly biased toward 0 or 1 as chaos rises.
+ * At 0 chaos this is uniform; at high chaos most draws are exact min or max.
+ * @param {number} chaos
+ * @param {() => number} random
+ * @returns {number} value in `[0, 1]`
+ */
+export function sampleChaosSkewedUnit(chaos, random = Math.random) {
+  const safeChaos = Math.max(0, chaos);
+  const edgeBias = safeChaos / (safeChaos + CHAOS_RANDOM_EDGE_SCALE);
+  if (random() < edgeBias) {
+    return random() < 0.5 ? 0 : 1;
+  }
+  return random();
+}
+
+/**
  * A single sampled realization of passive income per second. Benevolence
  * flat grants pay out randomly each tick with expectation equal to
  * {@link getTokensPerSecondForState}, but spikes up to
  * {@link BENEVOLENCE_RANDOM_SPAN}× mean (mixture: often quiet, sometimes loud).
+ * Higher chaos skews loud samples toward the range edges (min or max).
  * @param {GameState} state
  * @param {() => number} [random] injectable RNG in `[0, 1)` (defaults to Math.random)
  * @returns {number}
  */
 export function sampleTokensPerSecondForState(state, random = Math.random) {
+  const chaos = state.alignmentRecklessness;
   const sampleRandom = (entry, owned, milestoneMult) => {
     const scale =
       entry.category === "benevolence" || entry.category === "white-magic"
@@ -636,11 +660,12 @@ export function sampleTokensPerSecondForState(state, random = Math.random) {
         : 1;
     const mean = owned * (entry.randomPassivePerOwned ?? 0) * milestoneMult * scale;
     // Mixture keeps E[X]=mean while allowing spikes up to SPAN×mean.
-    // With probability 2/SPAN sample U(0, SPAN×mean); otherwise 0.
+    // With probability 2/SPAN sample [0, SPAN×mean]; otherwise 0.
     if (random() >= 2 / BENEVOLENCE_RANDOM_SPAN) {
       return 0;
     }
-    return random() * BENEVOLENCE_RANDOM_SPAN * mean;
+    const unit = sampleChaosSkewedUnit(chaos, random);
+    return unit * BENEVOLENCE_RANDOM_SPAN * mean;
   };
   return computePassiveBase(state, sampleRandom) * getIncomeMultiplier(state);
 }

@@ -1,6 +1,15 @@
 import { evaluateAchievements, getAchievementDef } from "./achievements.js";
 import { getEndingDef, hasReachedEnding } from "./endings.js";
 import {
+  EVENT_HISTORY_LIMIT,
+  applyEventOutcomeBase,
+  ensureEventSchedule,
+  getEventDef,
+  isEventDue,
+  pickNextEvent,
+  scheduleNextEvent,
+} from "./events.js";
+import {
   AUTOSAVE_TICKS,
   SAVE_KEY,
   TEST_MODE_TOKENS,
@@ -35,6 +44,8 @@ import {
 /** @typedef {import("./upgrades.js").CatalogEntry} CatalogEntry */
 /** @typedef {import("./upgrades.js").CapstoneDef} CapstoneDef */
 /** @typedef {import("./endings.js").EndingDef} EndingDef */
+/** @typedef {import("./events.js").GameEventDef} GameEventDef */
+/** @typedef {import("./events.js").EventChoice} EventChoice */
 
 /**
  * Game engine — owns the rules, tick progression, and persistence coordination
@@ -48,9 +59,17 @@ export class Game {
    *   state?: GameState | null,
    *   saveKey?: string,
    *   testMode?: boolean,
+   *   random?: () => number,
    * }} [deps]
    */
-  constructor({ clock = new SystemClock(), storage = null, state = null, saveKey = SAVE_KEY, testMode = false } = {}) {
+  constructor({
+    clock = new SystemClock(),
+    storage = null,
+    state = null,
+    saveKey = SAVE_KEY,
+    testMode = false,
+    random = Math.random,
+  } = {}) {
     /** @type {Clock} */
     this.clock = clock;
 
@@ -66,6 +85,9 @@ export class Game {
      * @type {boolean}
      */
     this.testMode = testMode;
+
+    /** @type {() => number} injectable RNG in `[0, 1)` */
+    this.random = random;
 
     /** @type {GameState} */
     this.state = state ?? new GameState({ lastTickAt: clock.now() });
@@ -334,8 +356,99 @@ export class Game {
   }
 
   /**
+   * @returns {GameEventDef | null}
+   */
+  getActiveEvent() {
+    if (!this.state.activeEventId) {
+      return null;
+    }
+    const event = getEventDef(this.state.activeEventId);
+    if (!event) {
+      this.state.activeEventId = null;
+      return null;
+    }
+    return event;
+  }
+
+  /**
+   * Try to start a random event when due. Returns the event if one started.
+   * @returns {GameEventDef | null}
+   */
+  maybeStartEvent() {
+    if (!this.canAct()) {
+      return null;
+    }
+    ensureEventSchedule(this.state);
+    if (!isEventDue(this.state)) {
+      return null;
+    }
+    const event = pickNextEvent(this.state, this.random);
+    if (!event) {
+      scheduleNextEvent(this.state);
+      return null;
+    }
+    this.state.activeEventId = event.id;
+    return event;
+  }
+
+  /**
+   * Resolve the active event with a choice id.
+   * @param {string} choiceId
+   * @returns {{
+   *   resolved: boolean,
+   *   choice: EventChoice | null,
+   *   event: GameEventDef | null,
+   *   unlocked: import("./achievements.js").AchievementDef[],
+   * }}
+   */
+  resolveEventChoice(choiceId) {
+    const event = this.getActiveEvent();
+    if (!event || !this.canAct()) {
+      return { resolved: false, choice: null, event: null, unlocked: [] };
+    }
+    const choice = event.choices.find((entry) => entry.id === choiceId) ?? null;
+    if (!choice) {
+      return { resolved: false, choice: null, event, unlocked: [] };
+    }
+
+    applyEventOutcomeBase(this.state, choice.outcome);
+
+    const accelTicks = choice.outcome.timeAccelerationTicks ?? 0;
+    if (accelTicks > 0) {
+      this.applyTimeAcceleration(accelTicks);
+    }
+
+    this.state.activeEventId = null;
+    this.state.recentEventIds = [...this.state.recentEventIds, event.id].slice(
+      -EVENT_HISTORY_LIMIT,
+    );
+    scheduleNextEvent(this.state);
+
+    const unlocked = evaluateAchievements(this.state, "resolveEvent");
+    this.save();
+    return { resolved: true, choice, event, unlocked };
+  }
+
+  /**
+   * Process N income ticks instantly (event time-acceleration outcome).
+   * @param {number} ticks
+   */
+  applyTimeAcceleration(ticks) {
+    const count = Math.max(0, Math.floor(ticks));
+    for (let i = 0; i < count; i += 1) {
+      const rate = sampleTokensPerSecondForState(this.state, this.random);
+      if (rate !== 0) {
+        this.state.applyTokenDelta(rate * TOKENS_PER_TICK);
+      }
+    }
+  }
+
+  /**
    * Advance the simulation by one tick.
-   * @returns {import("./achievements.js").AchievementDef[]} newly unlocked achievements
+   * @returns {{
+   *   unlocked: import("./achievements.js").AchievementDef[],
+   *   event: GameEventDef | null,
+   * }}
    */
   tick() {
     const now = this.clock.now();
@@ -347,13 +460,15 @@ export class Game {
     if (delta > 0 && delta <= TICK_MS * 5) {
       this.state.playTimeMs += delta;
     }
-    const rate = sampleTokensPerSecondForState(this.state);
+    const rate = sampleTokensPerSecondForState(this.state, this.random);
     if (rate !== 0) {
       this.state.applyTokenDelta(rate * TOKENS_PER_TICK);
     }
     this.state.lastTickAt = now;
     this.state.ticksSinceSave += 1;
-    return evaluateAchievements(this.state, "tick");
+    const unlocked = evaluateAchievements(this.state, "tick");
+    const event = this.maybeStartEvent();
+    return { unlocked, event };
   }
 
   /**

@@ -28,6 +28,7 @@ import {
   CAPSTONE_BENEVOLENCE_MIN,
   CAPSTONE_PURGE_MIN,
   CAPSTONE_PURGE_TOKEN_MAX,
+  CAPSTONE_RECKLESSNESS_MIN,
   CAPSTONES,
   formatCatalogBenefit,
   formatCatalogMilestone,
@@ -40,6 +41,7 @@ import {
 /** @typedef {import("./upgrades.js").CatalogEntry} CatalogEntry */
 /** @typedef {import("./upgrades.js").CapstoneDef} CapstoneDef */
 /** @typedef {import("./endings.js").EndingDef} EndingDef */
+/** @typedef {import("./events.js").GameEventDef} GameEventDef */
 
 const TOAST_VISIBLE_MS = 4000;
 const TOAST_EXIT_MS = 300;
@@ -180,6 +182,9 @@ export class UI {
     this.alignmentPurge = document.getElementById("alignment-purge");
 
     /** @type {HTMLElement | null} */
+    this.alignmentRecklessnessTarget = document.getElementById("alignment-recklessness-target");
+
+    /** @type {HTMLElement | null} */
     this.alignmentBenevolenceTarget = document.getElementById("alignment-benevolence-target");
 
     /** @type {HTMLElement | null} */
@@ -232,6 +237,18 @@ export class UI {
 
     /** @type {HTMLElement | null} */
     this.statPlaytimeDisplay = document.getElementById("stat-playtime");
+
+    /** @type {HTMLElement | null} */
+    this.eventModal = document.getElementById("event-modal");
+
+    /** @type {HTMLElement | null} */
+    this.eventTitle = document.getElementById("event-modal-title");
+
+    /** @type {HTMLElement | null} */
+    this.eventDescription = document.getElementById("event-description");
+
+    /** @type {HTMLElement | null} */
+    this.eventChoices = document.getElementById("event-choices");
 
     /** @type {HTMLElement | null} */
     this.activeModal = null;
@@ -291,6 +308,9 @@ export class UI {
     this.cachedAlignmentKey = "";
     this.cachedRunComplete = null;
 
+    if (this.alignmentRecklessnessTarget) {
+      this.alignmentRecklessnessTarget.textContent = ` / ${CAPSTONE_RECKLESSNESS_MIN}`;
+    }
     if (this.alignmentBenevolenceTarget) {
       this.alignmentBenevolenceTarget.textContent = ` / ${CAPSTONE_BENEVOLENCE_MIN}`;
     }
@@ -429,6 +449,10 @@ export class UI {
     if (event.key !== "Escape" || !this.activeModal) {
       return;
     }
+    // Event modals require a choice — Escape cannot dismiss them.
+    if (this.activeModal === this.eventModal) {
+      return;
+    }
     event.preventDefault();
     this.closeModal(this.activeModal);
   }
@@ -523,6 +547,76 @@ export class UI {
       return;
     }
     this.closeModal(this.resetModal);
+  }
+
+  /**
+   * Show a mandatory board-decision event. Backdrop / Escape cannot dismiss it.
+   * @param {GameEventDef} event
+   */
+  showEventModal(event) {
+    if (!this.eventModal || !this.eventChoices || !this.eventTitle || !this.eventDescription) {
+      return;
+    }
+
+    this.eventTitle.textContent = event.title;
+    this.eventDescription.textContent = event.description;
+    this.eventChoices.replaceChildren();
+
+    for (const choice of event.choices) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "event__choice";
+      button.dataset.choiceId = choice.id;
+
+      const label = document.createElement("span");
+      label.className = "event__choice-label";
+      label.textContent = choice.label;
+      button.appendChild(label);
+
+      if (choice.hint) {
+        const hint = document.createElement("span");
+        hint.className = "event__choice-hint";
+        hint.textContent = choice.hint;
+        button.appendChild(hint);
+      }
+
+      button.addEventListener("click", () => {
+        const { resolved, unlocked } = this.game.resolveEventChoice(choice.id);
+        if (!resolved) {
+          return;
+        }
+        this.closeEventModal();
+        this.update();
+        this.handleNewAchievements(unlocked);
+      });
+
+      this.eventChoices.appendChild(button);
+    }
+
+    if (this.eventModal.hidden) {
+      this.openModal(this.eventModal, null);
+      const firstChoice = this.eventChoices.querySelector("button");
+      if (firstChoice instanceof HTMLElement) {
+        firstChoice.focus();
+      }
+    }
+  }
+
+  closeEventModal() {
+    if (!this.eventModal) {
+      return;
+    }
+    this.closeModal(this.eventModal);
+  }
+
+  /**
+   * Re-open a saved in-progress event after load / refresh.
+   */
+  syncActiveEventModal() {
+    const event = this.game.getActiveEvent();
+    if (event) {
+      this.showEventModal(event);
+    }
   }
 
   /**
@@ -798,6 +892,8 @@ export class UI {
           cache.goal.textContent = "Ready to present to the Board.";
         } else if (capstone.path === "purge") {
           cache.goal.textContent = this.formatPurgeCapstoneGoal(capstone);
+        } else if (capstone.path === "oops") {
+          cache.goal.textContent = this.formatOopsCapstoneGoal(capstone);
         } else {
           cache.goal.textContent = this.game.isCapstoneGateMet(capstone)
             ? this.formatUpgradeGoal(capstone.cost, false)
@@ -811,6 +907,25 @@ export class UI {
     }
 
     this.capstoneSection.hidden = !anyVisible;
+  }
+
+  /**
+   * @param {CapstoneDef} capstone
+   * @returns {string}
+   */
+  formatOopsCapstoneGoal(capstone) {
+    const { state } = this.game;
+    if (!this.game.isCapstoneGateMet(capstone)) {
+      const parts = [];
+      if (state.alignmentRecklessness < CAPSTONE_RECKLESSNESS_MIN) {
+        parts.push(`Chaos ${state.alignmentRecklessness} / ${CAPSTONE_RECKLESSNESS_MIN}`);
+      }
+      if (parts.length > 0) {
+        return parts.join(" · ");
+      }
+      return capstone.gateHint;
+    }
+    return this.formatUpgradeGoal(capstone.cost, false);
   }
 
   /**

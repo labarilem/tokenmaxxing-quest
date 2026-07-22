@@ -301,7 +301,8 @@ test("formatCatalogBenefit drops avg and uses short alignment names", () => {
   const openSource = BENEVOLENCE_UPGRADES.find((entry) => entry.id === "open-source");
   const publicApi = BENEVOLENCE_UPGRADES.find((entry) => entry.id === "public-api");
   const ethics = BENEVOLENCE_UPGRADES.find((entry) => entry.id === "ethics-summit");
-  assert.ok(openSource && publicApi && ethics);
+  const swarm = POWER_UPGRADES.find((entry) => entry.id === "swarm");
+  assert.ok(openSource && publicApi && ethics && swarm);
 
   const empty = new GameState({ lastTickAt: 0 });
   const randomLabel = formatCatalogBenefit(openSource, empty);
@@ -316,6 +317,10 @@ test("formatCatalogBenefit drops avg and uses short alignment names", () => {
   const alignmentOnly = formatCatalogBenefit(ethics, empty);
   assert.equal(alignmentOnly.includes("token"), false);
   assert.match(alignmentOnly, /\+\d+ good/);
+
+  const chaosIncome = formatCatalogBenefit(swarm, empty);
+  assert.match(chaosIncome, /token\/s/);
+  assert.match(chaosIncome, /\+\d+ chaos/);
 });
 
 test("each ending has a unique cutscene", () => {
