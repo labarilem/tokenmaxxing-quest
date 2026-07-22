@@ -525,18 +525,23 @@ export function getTokensPerClickForState(state) {
 }
 
 /**
- * Passive income base (before the global income multiplier).
+ * Passive income parts before combining into a net rate.
  *
- * `resolveRandom` decides how "random" benevolence upgrades
- * (`randomPassivePerOwned`) contribute: use the mean for deterministic values
- * (display/rate/sim) or sample per tick for the live game.
+ * Positive production is later scaled by {@link getIncomeMultiplier}.
+ * Purge drains stay absolute so listed −N token/s matches the ledger and
+ * "% all income" / model multipliers do not amplify vaulting.
+ *
+ * Scheduler click-share is folded into the pre-multiplier positive bucket
+ * using the fully multiplied click rate (legacy pacing; "+% of click rate"
+ * then receives the same global multiplier as other positives).
  *
  * @param {GameState} state
  * @param {(entry: import("./upgrades.js").CatalogEntry, owned: number, milestoneMult: number) => number} resolveRandom
- * @returns {number}
+ * @returns {{ positive: number, drain: number }}
  */
-function computePassiveBase(state, resolveRandom) {
-  let passive = getTokensPerSecond(state.agents);
+function computePassiveParts(state, resolveRandom) {
+  let positive = getTokensPerSecond(state.agents);
+  let drain = 0;
 
   for (const entry of ALL_CATALOG) {
     const owned = state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
@@ -545,34 +550,49 @@ function computePassiveBase(state, resolveRandom) {
     }
     const milestoneMult = getCatalogMultiplier(entry, owned);
     if (entry.passivePerOwned) {
-      // May be negative for purge upgrades (tokens hoarded away → net drain).
-      passive += owned * entry.passivePerOwned * milestoneMult;
+      const contribution = owned * entry.passivePerOwned * milestoneMult;
+      if (contribution >= 0) {
+        positive += contribution;
+      } else {
+        // Absolute vault drain — not scaled by income multipliers.
+        drain += contribution;
+      }
     }
     if (entry.randomPassivePerOwned) {
-      passive += resolveRandom(entry, owned, milestoneMult);
+      positive += resolveRandom(entry, owned, milestoneMult);
     }
     if (entry.passivePerAgentPerOwned && state.agents > 0) {
-      passive += owned * entry.passivePerAgentPerOwned * state.agents;
+      positive += owned * entry.passivePerAgentPerOwned * state.agents;
     }
     if (entry.passivePerSwarmPerOwned && state.swarms > 0) {
-      passive += owned * entry.passivePerSwarmPerOwned * state.swarms;
+      positive += owned * entry.passivePerSwarmPerOwned * state.swarms;
     }
   }
 
-  const clickBeforeMultiplier =
-    getBaseClickIncome(state) *
-    getModelMultiplier(state.modelTier) *
-    (1 + getPercentIncomeBonus(state) + getRecklessnessSurplusBonus(state)) *
-    getStackingIncomeMultiplier(state);
-
+  // Scheduler: % of fully multiplied click rate, then scaled with positives
+  // (preserves existing ending-pace balance).
+  const clickRate = getTokensPerClickForState(state);
   for (const entry of ALL_CATALOG) {
     const owned = state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
     if (entry.passiveClickPercentPerOwned && owned > 0) {
-      passive += clickBeforeMultiplier * entry.passiveClickPercentPerOwned * owned;
+      positive += clickRate * entry.passiveClickPercentPerOwned * owned;
     }
   }
 
-  return passive;
+  return { positive, drain };
+}
+
+/**
+ * Net passive tokens/s: (positive production × income multipliers) + drains.
+ * This is the algebraic sum of scaled generators and absolute purge drains.
+ *
+ * @param {GameState} state
+ * @param {(entry: import("./upgrades.js").CatalogEntry, owned: number, milestoneMult: number) => number} resolveRandom
+ * @returns {number}
+ */
+function computeNetPassiveRate(state, resolveRandom) {
+  const { positive, drain } = computePassiveParts(state, resolveRandom);
+  return positive * getIncomeMultiplier(state) + drain;
 }
 
 /** Expected contribution of a random benevolence upgrade (its mean). */
@@ -611,12 +631,13 @@ export function hasRandomBenevolenceIncome(state) {
 /**
  * Expected passive income per second (mean of random benevolence upgrades).
  * Used for the rate display, achievements, and the deterministic balance sim.
- * May be negative once purge (token-hoarding) upgrades outweigh production.
+ * Algebraic sum of scaled positive production and absolute purge drains —
+ * may be negative once drains outweigh production.
  * @param {GameState} state
  * @returns {number}
  */
 export function getTokensPerSecondForState(state) {
-  return computePassiveBase(state, meanRandomPassive) * getIncomeMultiplier(state);
+  return computeNetPassiveRate(state, meanRandomPassive);
 }
 
 /**
@@ -647,6 +668,7 @@ export function sampleChaosSkewedUnit(chaos, random = Math.random) {
  * {@link getTokensPerSecondForState}, but spikes up to
  * {@link BENEVOLENCE_RANDOM_SPAN}× mean (mixture: often quiet, sometimes loud).
  * Higher chaos skews loud samples toward the range edges (min or max).
+ * Net rate is still the algebraic sum of scaled positives and absolute drains.
  * @param {GameState} state
  * @param {() => number} [random] injectable RNG in `[0, 1)` (defaults to Math.random)
  * @returns {number}
@@ -667,5 +689,5 @@ export function sampleTokensPerSecondForState(state, random = Math.random) {
     const unit = sampleChaosSkewedUnit(chaos, random);
     return unit * BENEVOLENCE_RANDOM_SPAN * mean;
   };
-  return computePassiveBase(state, sampleRandom) * getIncomeMultiplier(state);
+  return computeNetPassiveRate(state, sampleRandom);
 }
