@@ -39,7 +39,7 @@ These are non-negotiable constraints for all versions:
 - No backend or server-side logic
 - No WebGL / canvas rendering loop
 - No npm build step (keep deploy simple)
-- No sound, prestige, narrative events, or multiple resources
+- No sound, prestige, or multiple primary resources
 
 ## Architecture
 
