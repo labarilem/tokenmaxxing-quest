@@ -41,7 +41,7 @@ function anyUnlockedIn(state, entries) {
 
 /**
  * @param {GameState} state
- * @returns {0 | 1 | 2 | 3}
+ * @returns {number} theme progression tier (may be half-steps such as 1.5 / 2.5)
  */
 function getThemeTier(state) {
   const orbitalOwned = countOwnedIn(state, ORBITAL_UPGRADES);

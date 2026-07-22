@@ -30,6 +30,8 @@ function tick() {
   ui.handleNewAchievements(unlocked);
   if (event) {
     ui.showEventModal(event);
+    // Persist immediately so a crash/tab kill cannot drop a mandatory event.
+    game.save();
   }
 
   if (game.shouldAutosave()) {

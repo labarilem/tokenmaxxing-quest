@@ -147,6 +147,58 @@ test("resolving an event applies outcomes and clears the active slot", () => {
   assert.ok(game.state.recentEventIds.includes(event.id));
 });
 
+test("resolving an event unlocks token milestone achievements", () => {
+  const event = getEventDef("corp-war-declaration");
+  assert.ok(event);
+  const game = new Game({
+    state: new GameState({
+      lastTickAt: 0,
+      tokens: 9_500,
+      lifetimeTokens: 50_000,
+      activeEventId: event.id,
+      playTimeMs: 60_000,
+      nextEventAtPlayTimeMs: 60_000,
+    }),
+  });
+
+  const { resolved, unlocked } = game.resolveEventChoice("peace-treaty");
+  assert.equal(resolved, true);
+  assert.ok(game.state.tokens >= 10_000);
+  assert.ok(
+    unlocked.some((def) => def.id === "tokens-10k"),
+    "crossing 10k via event reward should unlock the milestone",
+  );
+  assert.equal(game.state.hasAchievement("tokens-10k"), true);
+});
+
+test("resolving an event unlocks catalog achievements for granted upgrades", () => {
+  const event = getEventDef("open-source-ambush");
+  assert.ok(event);
+  const game = new Game({
+    state: new GameState({
+      lastTickAt: 0,
+      tokens: 50_000,
+      lifetimeTokens: 50_000,
+      openSource: 0,
+      activeEventId: event.id,
+      playTimeMs: 60_000,
+      nextEventAtPlayTimeMs: 60_000,
+    }),
+  });
+
+  // Choice that gains openSource (see events catalog).
+  const gainChoice = event.choices.find((choice) => choice.outcome.gainUpgrade?.stateKey === "openSource");
+  assert.ok(gainChoice);
+
+  const { resolved, unlocked } = game.resolveEventChoice(gainChoice.id);
+  assert.equal(resolved, true);
+  assert.ok(game.state.openSource >= 1);
+  assert.ok(
+    unlocked.some((def) => def.id === "catalog-open-source" || def.catalogId === "open-source"),
+    "first open-source grant via event should unlock its catalog achievement",
+  );
+});
+
 test("event token losses may go negative; alignment clamps at zero", () => {
   const event = getEventDef("vendor-lockin-summit");
   assert.ok(event);

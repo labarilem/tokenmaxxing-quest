@@ -477,6 +477,13 @@ export class UI {
       return;
     }
 
+    // Only one modal can own activeModal / modal-open / Escape handling.
+    // Closing any prior dialog avoids stacked dialogs with corrupted state
+    // (e.g. an event firing while Achievements is open).
+    if (this.activeModal && this.activeModal !== modal) {
+      this.closeModal(this.activeModal);
+    }
+
     this.updateAchievementsList();
     modal.hidden = false;
     this.activeModal = modal;
@@ -722,6 +729,7 @@ export class UI {
     button.className = "btn btn--secondary btn--buy";
 
     const costWrap = document.createElement("span");
+    costWrap.className = "btn__cost";
     const cost = document.createElement("span");
     costWrap.append("Buy", document.createTextNode(" · "), cost, document.createTextNode(" tokens"));
     button.append(costWrap);
@@ -744,7 +752,7 @@ export class UI {
     });
 
     this.catalogPanels.set(entry.id, panel);
-    this.catalogCache.set(entry.id, { benefit, goal, milestone, cost, count, button });
+    this.catalogCache.set(entry.id, { benefit, goal, milestone, cost, costWrap, count, button });
     return panel;
   }
 
@@ -845,7 +853,19 @@ export class UI {
       if (cache.milestone) {
         cache.milestone.textContent = formatCatalogMilestone(entry, owned);
       }
-      if (cache.cost) {
+      if (cache.costWrap) {
+        if (Number.isFinite(cost)) {
+          cache.cost.textContent = formatNumber(cost);
+          cache.costWrap.replaceChildren(
+            "Buy",
+            document.createTextNode(" · "),
+            cache.cost,
+            document.createTextNode(" tokens"),
+          );
+        } else {
+          cache.costWrap.replaceChildren("Max owned");
+        }
+      } else if (cache.cost) {
         cache.cost.textContent = Number.isFinite(cost) ? formatNumber(cost) : "Max";
       }
       if (cache.count) {
@@ -1266,7 +1286,9 @@ export class UI {
     const modelGoalText = modelCostValue !== undefined
       ? this.formatModelGoal(modelCostValue, canBuyModel)
       : "Maximum model tier.";
-    const modelGateText = formatModelGateHint(game.modelTier, game.agents);
+    const modelGateText = formatModelGateHint(game.modelTier, game.agents, {
+      ignoreGate: game.testMode,
+    });
     const modelRunningText = formatModelName(currentModel);
     const earnedCount = ACHIEVEMENT_DEFS.filter((def) => game.state.hasAchievement(def.id)).length;
     const achievementsCountText = `${earnedCount}/${ACHIEVEMENT_DEFS.length}`;

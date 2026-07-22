@@ -178,6 +178,30 @@ test("run actions stop after ending is committed", () => {
   assert.equal(game.buyRule().purchased, false);
 });
 
+test("ticks freeze after ending is committed", () => {
+  const clock = new ManualClock(0);
+  const game = new Game({
+    clock,
+    state: new GameState({
+      tokens: 1_000,
+      agents: 50,
+      strategyPath: "oops",
+      lastTickAt: 0,
+      playTimeMs: 10_000,
+    }),
+  });
+
+  const tokensBefore = game.state.tokens;
+  const playBefore = game.state.playTimeMs;
+  clock.advance(200);
+  const result = game.tick();
+  assert.equal(result.event, null);
+  assert.deepEqual(result.unlocked, []);
+  assert.equal(game.state.tokens, tokensBefore);
+  assert.equal(game.state.playTimeMs, playBefore);
+  assert.equal(game.state.lastTickAt, 200);
+});
+
 test("buyModel works after new-game reset following an ending", () => {
   const next = getNextModel(0);
   assert.ok(next);
@@ -321,6 +345,24 @@ test("formatCatalogBenefit drops avg and uses short alignment names", () => {
   const chaosIncome = formatCatalogBenefit(swarm, empty);
   assert.match(chaosIncome, /token\/s/);
   assert.match(chaosIncome, /\+\d+ chaos/);
+});
+
+test("formatCatalogBenefit shows true marginal gain at milestone thresholds", () => {
+  const context = POWER_UPGRADES.find((entry) => entry.id === "context");
+  const swarm = POWER_UPGRADES.find((entry) => entry.id === "swarm");
+  assert.ok(context && swarm);
+
+  // Context milestone at 15: buying the 15th revalues all owned (14×8 → 15×16).
+  const nearContext = new GameState({ contexts: 14, lastTickAt: 0 });
+  assert.match(formatCatalogBenefit(context, nearContext), /\+128 token\/click/);
+
+  // Swarm milestone at 20: 19×7 → 20×14 = +147 token/s marginal.
+  const nearSwarm = new GameState({ swarms: 19, lastTickAt: 0 });
+  assert.match(formatCatalogBenefit(swarm, nearSwarm), /\+147 token\/s/);
+
+  // Away from milestones, per-owned equals marginal.
+  const early = new GameState({ contexts: 2, lastTickAt: 0 });
+  assert.match(formatCatalogBenefit(context, early), /\+8 token\/click/);
 });
 
 test("each ending has a unique cutscene", () => {
