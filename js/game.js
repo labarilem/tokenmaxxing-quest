@@ -174,10 +174,8 @@ export class Game {
     if (!next || cost === undefined || next.agentGate === undefined) {
       return false;
     }
-    return (
-      this.state.agents >= next.agentGate &&
-      this.state.tokens >= cost
-    );
+    const gateMet = this.testMode || this.state.agents >= next.agentGate;
+    return gateMet && this.state.tokens >= cost;
   }
 
   /**
@@ -452,6 +450,13 @@ export class Game {
    */
   tick() {
     const now = this.clock.now();
+    // Ending committed: freeze the run (no income, play time, events, or
+    // achievement checks) but keep lastTickAt fresh so a later reset does not
+    // see a huge resume gap.
+    if (this.isRunComplete) {
+      this.state.lastTickAt = now;
+      return { unlocked: [], event: null };
+    }
     // Accrue focused play time. Ticks only run while the tab is visible and
     // focused, and `syncLastTickAt` resets the reference on resume, so the gap
     // between ticks is ~one interval. Cap the delta to ignore any anomalous

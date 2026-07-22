@@ -1249,9 +1249,19 @@ export function applyAlignmentDelta(delta, state) {
 }
 
 /**
- * Passive alignment from existing reckless purchases (for save migration / display).
- * @param {GameState} state
+ * Marginal flat contribution from owning `owned` copies (milestone revalues all).
+ * @param {number} perOwned
+ * @param {CatalogEntry} entry
+ * @param {number} owned
+ * @returns {number}
  */
+function catalogFlatContribution(perOwned, entry, owned) {
+  if (owned <= 0 || !perOwned) {
+    return 0;
+  }
+  return owned * perOwned * getCatalogMultiplier(entry, owned);
+}
+
 /**
  * @param {CatalogEntry} entry
  * @param {GameState} state
@@ -1262,19 +1272,28 @@ export function formatCatalogBenefit(entry, state) {
   const parts = [];
 
   if (entry.clickPerOwned) {
-    const mult = getCatalogMultiplier(entry, owned + 1);
-    parts.push(`+${Math.floor(entry.clickPerOwned * mult)} token/click`);
+    const gain =
+      catalogFlatContribution(entry.clickPerOwned, entry, owned + 1) -
+      catalogFlatContribution(entry.clickPerOwned, entry, owned);
+    parts.push(`+${Math.floor(gain)} token/click`);
   }
   if (entry.passivePerOwned) {
-    const mult = getCatalogMultiplier(entry, owned + 1);
-    const value = Math.floor(entry.passivePerOwned * mult);
+    const gain =
+      catalogFlatContribution(entry.passivePerOwned, entry, owned + 1) -
+      catalogFlatContribution(entry.passivePerOwned, entry, owned);
+    const value = Math.floor(gain);
     const sign = value >= 0 ? "+" : "\u2212";
     parts.push(`${sign}${Math.abs(value)} token/s`);
   }
   if (entry.randomPassivePerOwned) {
-    const mult = getCatalogMultiplier(entry, owned + 1);
-    const mean = entry.randomPassivePerOwned * mult * BENEVOLENCE_RANDOM_SCALE;
-    const max = Math.max(1, Math.round(mean * BENEVOLENCE_RANDOM_SPAN));
+    const meanAfter =
+      catalogFlatContribution(entry.randomPassivePerOwned, entry, owned + 1) *
+      BENEVOLENCE_RANDOM_SCALE;
+    const meanBefore =
+      catalogFlatContribution(entry.randomPassivePerOwned, entry, owned) *
+      BENEVOLENCE_RANDOM_SCALE;
+    const meanGain = meanAfter - meanBefore;
+    const max = Math.max(1, Math.round(meanGain * BENEVOLENCE_RANDOM_SPAN));
     parts.push(`~0\u2013${max} token/s (random)`);
   }
   if (entry.passivePerAgentPerOwned) {

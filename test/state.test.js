@@ -73,6 +73,27 @@ test("fromSaveData restores negative token balances for purge debt", () => {
   assert.equal(state.lastTickAt, 555); // non-number -> fallback
 });
 
+test("fromSaveData rejects non-finite numeric fields", () => {
+  const infinite = GameState.fromSaveData(
+    { tokens: 1e309, rules: Number.POSITIVE_INFINITY, agents: Number.NaN, lastTickAt: 1 },
+    { tokens: 3, rules: 1, agents: 2, lastTickAt: 1 },
+  );
+  assert.equal(infinite.tokens, 3);
+  assert.equal(infinite.rules, 1);
+  assert.equal(infinite.agents, 2);
+  assert.equal(Number.isFinite(infinite.lifetimeTokens), true);
+
+  const debtWithoutLifetime = GameState.fromSaveData({ tokens: -100, lastTickAt: 1 });
+  assert.equal(debtWithoutLifetime.tokens, -100);
+  assert.equal(debtWithoutLifetime.lifetimeTokens, 0);
+});
+
+test("fromSaveData caps recentEventIds to history limit", () => {
+  const ids = ["a", "b", "c", "d", "e", "f", "g"];
+  const state = GameState.fromSaveData({ recentEventIds: ids, lastTickAt: 1 });
+  assert.deepEqual(state.recentEventIds, ["c", "d", "e", "f", "g"]);
+});
+
 test("fromSaveData tolerates non-object payloads", () => {
   for (const bad of [null, undefined, 42, "x", []]) {
     const state = GameState.fromSaveData(bad, { tokens: 1, agents: 1, lastTickAt: 1 });

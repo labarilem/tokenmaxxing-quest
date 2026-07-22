@@ -454,6 +454,9 @@ test("test mode unlocks every catalog upgrade and capstone gate", () => {
     assert.equal(game.isCapstoneGateMet(capstone), true, `${capstone.id} gate should pass`);
     assert.equal(game.canBuyCapstone(capstone), true, `${capstone.id} should be buyable`);
   }
+
+  assert.equal(game.state.agents, 0);
+  assert.equal(game.canBuyModel(), true, "test mode should bypass model agent gates");
 });
 
 test("test mode does not persist progress to storage", () => {

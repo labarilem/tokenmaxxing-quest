@@ -421,14 +421,15 @@ export function formatModelBenefit(modelTier) {
 /**
  * @param {number} modelTier
  * @param {number} agents
+ * @param {{ ignoreGate?: boolean }} [options]
  * @returns {string}
  */
-export function formatModelGateHint(modelTier, agents) {
+export function formatModelGateHint(modelTier, agents, { ignoreGate = false } = {}) {
   const next = getNextModel(modelTier);
   if (!next?.agentGate) {
     return "Maximum model tier.";
   }
-  if (agents >= next.agentGate) {
+  if (ignoreGate || agents >= next.agentGate) {
     return "Agents reset; rules kept.";
   }
   const short = next.agentGate - agents;

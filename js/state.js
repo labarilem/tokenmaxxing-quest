@@ -1,4 +1,5 @@
 import { MODELS } from "./resources.js";
+import { EVENT_HISTORY_LIMIT } from "./events.js";
 
 /**
  * Plain data model for the game — no rules, time, or persistence behavior.
@@ -510,7 +511,7 @@ export class GameState {
    * @returns {number}
    */
   static readCount(value, fallback = 0) {
-    if (typeof value !== "number" || value < 0) {
+    if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
       return fallback;
     }
     return Math.floor(value);
@@ -530,19 +531,27 @@ export class GameState {
       return state;
     }
     const record = /** @type {Record<string, unknown>} */ (data);
-    if (typeof record.tokens === "number") {
+    if (typeof record.tokens === "number" && Number.isFinite(record.tokens)) {
       state.tokens = record.tokens;
     }
-    if (typeof record.rules === "number" && record.rules >= 0) {
+    if (typeof record.rules === "number" && Number.isFinite(record.rules) && record.rules >= 0) {
       state.rules = Math.floor(record.rules);
     }
-    if (typeof record.agents === "number" && record.agents >= 0) {
+    if (typeof record.agents === "number" && Number.isFinite(record.agents) && record.agents >= 0) {
       state.agents = Math.floor(record.agents);
     }
-    if (typeof record.modelTier === "number" && record.modelTier >= 0) {
+    if (
+      typeof record.modelTier === "number" &&
+      Number.isFinite(record.modelTier) &&
+      record.modelTier >= 0
+    ) {
       state.modelTier = Math.min(Math.floor(record.modelTier), MODELS.length - 1);
     }
-    if (typeof record.lastTickAt === "number" && record.lastTickAt > 0) {
+    if (
+      typeof record.lastTickAt === "number" &&
+      Number.isFinite(record.lastTickAt) &&
+      record.lastTickAt > 0
+    ) {
       state.lastTickAt = record.lastTickAt;
     }
     if (Array.isArray(record.achievements)) {
@@ -553,7 +562,12 @@ export class GameState {
       }
     }
 
-    state.lifetimeTokens = GameState.readCount(record.lifetimeTokens, state.tokens);
+    // Lifetime is cumulative tokens earned — never negative even if the
+    // spendable balance is in purge debt and lifetime was omitted from the save.
+    state.lifetimeTokens = GameState.readCount(
+      record.lifetimeTokens,
+      Math.max(0, state.tokens),
+    );
     state.totalClicks = GameState.readCount(record.totalClicks);
     state.playTimeMs = GameState.readCount(record.playTimeMs);
     state.swarms = GameState.readCount(record.swarms);
@@ -637,9 +651,9 @@ export class GameState {
     }
     state.nextEventAtPlayTimeMs = GameState.readCount(record.nextEventAtPlayTimeMs);
     if (Array.isArray(record.recentEventIds)) {
-      state.recentEventIds = record.recentEventIds.filter(
-        (id) => typeof id === "string" && id.length > 0,
-      );
+      state.recentEventIds = record.recentEventIds
+        .filter((id) => typeof id === "string" && id.length > 0)
+        .slice(-EVENT_HISTORY_LIMIT);
     }
 
     return state;

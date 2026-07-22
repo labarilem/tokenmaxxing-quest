@@ -14,7 +14,7 @@ import { getCompanyName } from "./company.js";
  *   catalogId?: string,
  * }} AchievementDef */
 
-/** @typedef {'sendPrompt' | 'buyRule' | 'buyAgent' | 'buyModel' | 'buyCatalog' | 'buyCapstone' | 'tick'} AchievementTrigger */
+/** @typedef {'sendPrompt' | 'buyRule' | 'buyAgent' | 'buyModel' | 'buyCatalog' | 'buyCapstone' | 'tick' | 'resolveEvent'} AchievementTrigger */
 
 /** @typedef {{ catalogId?: string }} AchievementContext */
 
@@ -302,7 +302,8 @@ export function evaluateAchievements(state, trigger, context = {}) {
     trigger === "buyModel" ||
     trigger === "buyCatalog" ||
     trigger === "buyCapstone" ||
-    trigger === "tick"
+    trigger === "tick" ||
+    trigger === "resolveEvent"
   ) {
     checkTokenMilestones(state, newlyUnlocked);
   }
@@ -317,6 +318,24 @@ export function evaluateAchievements(state, trigger, context = {}) {
     const achievementId = CATALOG_ACHIEVEMENT_ID_BY_CATALOG.get(context.catalogId);
     if (achievementId) {
       tryUnlock(state, achievementId, newlyUnlocked);
+    }
+  }
+
+  // Board events can grant tokens and upgrades; unlock matching first-purchase
+  // milestones without requiring a separate buy action.
+  if (trigger === "resolveEvent") {
+    if (state.rules >= 1) {
+      tryUnlock(state, "first-rule", newlyUnlocked);
+    }
+    for (const entry of ALL_CATALOG) {
+      const owned = state[/** @type {keyof GameState} */ (entry.stateKey)] ?? 0;
+      if (owned < 1) {
+        continue;
+      }
+      const achievementId = CATALOG_ACHIEVEMENT_ID_BY_CATALOG.get(entry.id);
+      if (achievementId) {
+        tryUnlock(state, achievementId, newlyUnlocked);
+      }
     }
   }
 

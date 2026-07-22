@@ -199,16 +199,16 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Active-only ticks** | Passive income and tick loop run only while the tab is visible and the window is focused |
 | **Reset progress** | New game (keep achievements + model tier) or full reset (clear achievements + model tier); modal confirmation required |
 | **Test mode (`?test`)** | Manual-testing flag in the URL query string: resets to the starting state, grants **100B tokens**, and unlocks every upgrade/capstone gate. Progress is **not persisted** in this mode, so the real save is preserved. Parsed in `main.js`; engine gate bypass lives in `Game.testMode` |
-| **Parallel Agent Swarm** | +5 tokens/s each; base 500, ×1.16; gate 30 agents; milestones 20/50 |
+| **Parallel Agent Swarm** | +7 tokens/s each; base 500, ×1.16; gate 30 agents; milestones 20/50 |
 | **Speculative Decoding Rig** | +3% all income per owned; base 2k; gate 10 swarms |
 | **Context Window Expander** | +8 tokens/click per owned; base 3.5k; gate 50 rules; milestones 15/40 |
 | **Prompt Bloat Engine** | +5% all income per owned; base 5k; gate 25 swarms |
-| **Inference Cluster** | +50 tokens/s each; base 12k; gate Sage 4.2; milestones 10/25 |
+| **Inference Cluster** | +70 tokens/s each; base 12k; gate Sage 4.2; milestones 10/25 |
 | **MCP Server Pod** | +1 token/s per agent per pod; base 20k; gate 50 agents + 5 clusters |
 | **Auto-Prompt Scheduler** | +2.5% of click rate as passive per owned; base 60k, ×1.22; gate Grand 4.5 (nerfed from +4%/base 40k/×1.20) |
-| **Executive Token Dashboard** | +10% all income per owned; base 80k; gate Noir 4.8 |
-| **Allow-All Permissions Profile** | +30% all income per owned; +8 chaos; base 200k; gate Fort 5.0 + 1M lifetime |
-| **AGI Roadmap Deck** | ×2 all income per deck (max 3); base 1M; gate 100M lifetime |
+| **Executive Token Dashboard** | +14% all income per owned; base 80k; gate Noir 4.8 |
+| **Allow-All Permissions Profile** | +35% all income per owned; +8 chaos; base 200k; gate Fort 5.0 + 1M lifetime |
+| **AGI Roadmap Deck** | ×1.5 all income per deck (max 3); base 1M; gate 500M lifetime |
 | **Open Source Maintainer Grant** | +15 good, random token/s (community usage bursts) |
 | **Nonprofit Compute Credit** | +25 good, random token/s |
 | **Public Benefit API** | +40 good, fixed % income |
@@ -221,8 +221,8 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **Benevolence random income** | Flat token/s grants sample a **wide** mixture each tick (spikes up to **BENEVOLENCE_RANDOM_SPAN 4×** mean; E = mean scaled by **BENEVOLENCE_RANDOM_SCALE 0.55×**); **% grants are fixed** (not random); rate label uses `~` when random sources are owned; benefit labels show `~0–max token/s (random)` with no avg; chaos skews loud samples toward range edges |
 | **Enterprise ops** | 8 corporate mid-game upgrades (Perf Review Automator through Antitrust Distraction Taskforce); gates ~3M–280M lifetime; costs scaled by **ENTERPRISE_COST_SCALE (2×)** |
 | **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime; costs scaled by **MID_GAME_COST_SCALE (1.38×)** |
-| **Orbital infrastructure** | 8 endgame prep upgrades (Orbital Manifest Ledger through Capstone Briefing Suite); gates ~340M–560M lifetime; costs scaled by **ORBITAL_COST_SCALE (3.5×)**; required before capstones |
-| **White magic spend** | 12 supernatural good-path upgrades (Sanctuary Ward through Stewardship Covenant); flat grants are random token/s, % grants are fixed, and alignment-only prep (Celestial Goodwill Council, Dawn Conscience Observatory, Ethics Summit, Stewardship Covenant) grant **higher good** with no token bonus; gates from 500K–420M lifetime; **ALIGNMENT_COST_SCALE (1.05×)** |
+| **Orbital infrastructure** | 8 endgame prep upgrades (Orbital Manifest Ledger through Capstone Briefing Suite); gates ~340M–560M lifetime; costs scaled by **ORBITAL_COST_SCALE (3.8×)**; required before capstones |
+| **White magic spend** | 12 supernatural good-path upgrades (Sanctuary Ward through Stewardship Covenant); flat grants are random token/s, % grants are fixed, and alignment-only prep (Celestial Goodwill Council, Dawn Conscience Observatory, Ethics Summit, Stewardship Covenant) grant **higher good** with no token bonus; gates from 500K–420M lifetime; **BENEVOLENCE_COST_SCALE (1.72×)** |
 | **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Harvest Cascade); each grants token/s or % income plus purge; gates from 250K–300M lifetime |
 | **Token-positive upgrades** | Every purchasable upgrade is framed as something that makes LLMs generate/consume **more** tokens; no upgrade name or description describes destroying, disposing, deprecating, wiping, or blocking tokens, models, prompts, or their data (enforced by `test/upgrades.test.js`). Endings/capstones are exempt (the purge ending is deliberately destructive) |
 | **Catalog upgrade list** | All catalog upgrades render as individual panels (no section grouping headers) |
@@ -299,6 +299,16 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-22 — Bugfix audit (freeze, events, save, test mode, labels)
+
+- **Ending freeze:** `Game.tick()` is a no-op after a capstone commits (`strategyPath` set) — no passive income, play time, events, or achievement checks; `lastTickAt` still advances.
+- **Event achievements:** `resolveEvent` is a real achievement trigger — token milestones and first-purchase catalog/rule unlocks fire when board events grant tokens or upgrades.
+- **Save hardening:** `fromSaveData` rejects non-finite numbers (`Infinity`/`NaN`); lifetime fallback never goes negative from purge debt; `recentEventIds` capped to history limit.
+- **Test mode:** model certification agent gates respect `Game.testMode` (same as catalog/capstone gates); gate hint shows ready state in `?test`.
+- **UI:** capstone hint says **15B** (purge uses debt); max-owned catalog buttons show **Max owned**; opening a modal closes any prior modal so event/about/achievements cannot corrupt `modal-open` state; new events autosave immediately.
+- **Benefit labels:** catalog flat click/passive labels use true marginal gain at milestone thresholds (milestone revalues all owned).
+- **DESIGN.md:** mechanics table synced to live power-line rates, orbital/benevolence cost scales, and roadmap gate.
 
 ### 2026-07-22 — Net tokens/s algebraic sum (drains not amplified)
 
