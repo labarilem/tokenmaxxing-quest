@@ -68,7 +68,7 @@ tickets about. Every upgrade still burned tokens — you
 just made the burn heat something worth heating.
 
 By the time the Board noticed, the alignment meter
-had quietly tipped all the way to Benevolence.
+had quietly tipped all the way to Good.
 
 [BOARD REVIEW — Q4]
 
@@ -101,7 +101,7 @@ data center nobody would sign for. The tokens never
 stopped — but somewhere in there you stopped trusting
 the thing you were feeding.
 
-The Purge meter filled one grim purchase at a time.
+The Resist meter filled one grim purchase at a time.
 When the Board finally asked for a plan, you already
 had the slide deck. It had one button on it.
 

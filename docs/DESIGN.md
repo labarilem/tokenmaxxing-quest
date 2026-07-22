@@ -202,21 +202,21 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
 | **MCP Server Pod** | +1 token/s per agent per pod; base 20k; gate 50 agents + 5 clusters |
 | **Auto-Prompt Scheduler** | +2.5% of click rate as passive per owned; base 60k, ×1.22; gate Grand 4.5 (nerfed from +4%/base 40k/×1.20) |
 | **Executive Token Dashboard** | +10% all income per owned; base 80k; gate Noir 4.8 |
-| **Allow-All Permissions Profile** | +30% all income per owned; +8 recklessness; base 200k; gate Fort 5.0 + 1M lifetime |
+| **Allow-All Permissions Profile** | +30% all income per owned; +8 chaos; base 200k; gate Fort 5.0 + 1M lifetime |
 | **AGI Roadmap Deck** | ×2 all income per deck (max 3); base 1M; gate 100M lifetime |
-| **Open Source Maintainer Grant** | +15 benevolence, random token/s (community usage bursts) |
-| **Nonprofit Compute Credit** | +25 benevolence, random token/s |
-| **Public Benefit API** | +40 benevolence, random % income |
-| **Zombie Model Farm** | +12 purge; hoards tokens (−passive + purchase vault) |
-| **Total Recall Mandate** | +20 purge; hoards tokens (−passive + purchase vault) |
-| **Org alignment meters** | Recklessness / Benevolence / Purge in a compact single-line row inside **Tokens Consumed** (reveals at **25M** lifetime or first alignment shift). Benevolence / Purge show `value / 400` and `value / 255` |
-| **Board strategy capstones** | Mutually exclusive commits at **500M** lifetime + Capstone Briefing Suite + focused playtime floors (oops **1h**, utopia **1h30m**, purge **2h**). Utopia: Ethics Summit + Stewardship Covenant + **400+** benevolence + **15B** tokens. Purge: **255+** purge + **40M token debt** (no token purchase). Recklessness specialists get a surplus R−B−P all-income bonus |
-| **Benevolence random income** | Benevolence token/s and % grants sample uniform `[0, 2×mean]` per tick (mean scaled by **BENEVOLENCE_RANDOM_SCALE 0.55×**); rate label uses `~` when random sources are owned |
-| **Purge token hoarding** | Purge upgrades apply negative `passivePerOwned` and on purchase vault `baseHoard + (endgame ? balance×0.55 : 0)` tokens (endgame = purge alignment met + briefing owned); no positive `%` income on the purge line |
+| **Open Source Maintainer Grant** | +15 good, random token/s (community usage bursts) |
+| **Nonprofit Compute Credit** | +25 good, random token/s |
+| **Public Benefit API** | +40 good, fixed % income |
+| **Zombie Model Farm** | +12 resist; hoards tokens (−passive + purchase vault) |
+| **Total Recall Mandate** | +20 resist; hoards tokens (−passive + purchase vault) |
+| **Org alignment meters** | **Chaos / Good / Resist** (was Recklessness / Benevolence / Purge) in a compact single-line row inside **Tokens Consumed** (reveals at **25M** lifetime or first alignment shift). Good / Resist show `value / 400` and `value / 255`. Label and value stay on the same line |
+| **Board strategy capstones** | Mutually exclusive commits at **500M** lifetime + Capstone Briefing Suite + focused playtime floors (oops **1h**, utopia **1h30m**, purge **2h**). Utopia: Ethics Summit + Stewardship Covenant + **400+** good + **15B** tokens. Purge: **255+** resist + **40M token debt** (no token purchase). Chaos specialists get a surplus C−G−R all-income bonus |
+| **Benevolence random income** | Flat token/s grants sample a **wide** mixture each tick (spikes up to **BENEVOLENCE_RANDOM_SPAN 4×** mean; E = mean scaled by **BENEVOLENCE_RANDOM_SCALE 0.55×**); **% grants are fixed** (not random); rate label uses `~` when random sources are owned; benefit labels show `~0–max token/s (random)` with no avg |
+| **Purge token hoarding** | Purge upgrades apply negative `passivePerOwned` and on purchase vault `baseHoard + (endgame ? balance×0.55 : 0)` tokens (endgame = resist alignment met + briefing owned); no positive `%` income on the purge line |
 | **Enterprise ops** | 8 corporate mid-game upgrades (Perf Review Automator through Antitrust Distraction Taskforce); gates ~3M–280M lifetime; costs scaled by **ENTERPRISE_COST_SCALE (2×)** |
 | **Deep space compute** | 10 sci-fi upgrades (Alien Signal Decoder through Galactic Token Mesh); gates from 50M–350M lifetime; costs scaled by **MID_GAME_COST_SCALE (1.38×)** |
 | **Orbital infrastructure** | 8 endgame prep upgrades (Orbital Manifest Ledger through Capstone Briefing Suite); gates ~340M–560M lifetime; costs scaled by **ORBITAL_COST_SCALE (3.5×)**; required before capstones |
-| **White magic spend** | 12 supernatural benevolence upgrades (Sanctuary Ward through Stewardship Covenant); each grants token/s or % income plus benevolence; gates from 500K–420M lifetime; **ALIGNMENT_COST_SCALE (1.05×)** |
+| **White magic spend** | 12 supernatural good-path upgrades (Sanctuary Ward through Stewardship Covenant); flat grants are random token/s, % grants are fixed, and alignment-only prep (Celestial Goodwill Council, Dawn Conscience Observatory, Ethics Summit, Stewardship Covenant) grant **higher good** with no token bonus; gates from 500K–420M lifetime; **ALIGNMENT_COST_SCALE (1.05×)** |
 | **Black magic spend** | 10 supernatural purge upgrades (Cursed Prompt Cache through Entropy Harvest Cascade); each grants token/s or % income plus purge; gates from 250K–300M lifetime |
 | **Token-positive upgrades** | Every purchasable upgrade is framed as something that makes LLMs generate/consume **more** tokens; no upgrade name or description describes destroying, disposing, deprecating, wiping, or blocking tokens, models, prompts, or their data (enforced by `test/upgrades.test.js`). Endings/capstones are exempt (the purge ending is deliberately destructive) |
 | **Catalog upgrade list** | All catalog upgrades render as individual panels (no section grouping headers) |
@@ -293,6 +293,14 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-22 — Alignment rename, fixed %, wider random, good-only prep
+
+- **Meters renamed** (player-facing): Recklessness → **Chaos**, Benevolence → **Good**, Purge → **Resist**. Label and value stay on one line.
+- **Benevolence % grants are fixed** (`incomePercentPerOwned`); random percent income removed.
+- **Random flat grants** use a wider spike range (`BENEVOLENCE_RANDOM_SPAN = 4×` mean, mixture keeps the same expectation); benefit labels show `~0–max token/s (random)` with **no avg**.
+- **Alignment-only good prep** (Celestial Goodwill Council, Dawn Conscience Observatory, Ethics Summit, Stewardship Covenant): no token bonus, higher good grants, copy framed around the Good meter.
+- Simulated optimal play (5 prompts/s, tab focused): **oops ~1h 1m**, **utopia ~1h 32m**, **purge ~2h 0m**.
 
 ### 2026-07-22 — Spec review fixes (debt freeze, path power, full random benevolence)
 
