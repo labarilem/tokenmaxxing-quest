@@ -222,6 +222,24 @@ test("ticks accrue passive tokens using a mocked clock (no real waiting)", () =>
   assert.equal(game.state.lastTickAt, 3000);
 });
 
+test("ticks with net-negative rate drain the spendable balance", () => {
+  const clock = new ManualClock(0);
+  const game = new Game({
+    clock,
+    random: () => 0.99,
+    state: new GameState({
+      lastTickAt: 0,
+      tokens: 50,
+      lifetimeTokens: 1_000,
+      agents: 2, // +2/s
+      modelSunsets: 1, // −12/s → net −10/s
+    }),
+  });
+  assert.equal(game.tokensPerSecond, -10);
+  runSeconds(game, clock, 2);
+  assert.ok(Math.abs(game.tokens - 30) < 1e-9, `expected 30, got ${game.tokens}`);
+});
+
 test("idle game does not accrue tokens from ticks", () => {
   const clock = new ManualClock(0);
   const game = new Game({ clock, state: new GameState({ lastTickAt: 0 }) });

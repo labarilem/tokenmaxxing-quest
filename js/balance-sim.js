@@ -15,6 +15,7 @@ import {
   CAPSTONE_PURGE_MIN,
   CAPSTONE_PURGE_PLAYTIME_MS,
   CAPSTONE_PURGE_TOKEN_MAX,
+  CAPSTONE_RECKLESSNESS_MIN,
   CAPSTONE_REVEAL_TOKENS,
   CAPSTONE_UTOPIA_PLAYTIME_MS,
   CAPSTONES,
@@ -169,6 +170,9 @@ export function needsAlignmentForPath(path, state) {
   if (path === "purge") {
     return state.alignmentPurge < CAPSTONE_PURGE_MIN;
   }
+  if (path === "oops") {
+    return state.alignmentRecklessness < CAPSTONE_RECKLESSNESS_MIN;
+  }
   return false;
 }
 
@@ -281,7 +285,7 @@ export function isCapstoneReadyExceptPlaytime(game, path) {
       state.tokens <= CAPSTONE_PURGE_TOKEN_MAX
     );
   }
-  return true;
+  return state.alignmentRecklessness >= CAPSTONE_RECKLESSNESS_MIN;
 }
 
 /**

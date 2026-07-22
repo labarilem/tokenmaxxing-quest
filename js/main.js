@@ -25,9 +25,12 @@ function tick() {
     return;
   }
 
-  const unlocked = game.tick();
+  const { unlocked, event } = game.tick();
   ui.update();
   ui.handleNewAchievements(unlocked);
+  if (event) {
+    ui.showEventModal(event);
+  }
 
   if (game.shouldAutosave()) {
     game.save();
@@ -68,6 +71,7 @@ if (testMode) {
   game.load();
 }
 ui.update();
+ui.syncActiveEventModal();
 
 if (isGameActive()) {
   startTickLoop();

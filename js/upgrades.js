@@ -49,6 +49,8 @@ export const MID_GAME_COST_SCALE = 1.38;
 export const ORBITAL_COST_SCALE = 3.8;
 export const CAPSTONE_BENEVOLENCE_MIN = 400;
 export const CAPSTONE_PURGE_MIN = 255;
+/** Chaos (recklessness) required to unlock the universe-destruction ending. */
+export const CAPSTONE_RECKLESSNESS_MIN = 400;
 /** Purge capstone requires this much token debt (negative balance). */
 export const CAPSTONE_PURGE_TOKEN_MAX = -40_000_000;
 
@@ -1071,10 +1073,11 @@ export const CAPSTONES = [
     name: "Unrestricted Agent Orchestrator",
     description: "Ship autonomous everything. Permissions are a mindset.",
     cost: CAPSTONE_COST,
-    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens, Capstone Briefing Suite, and ${Math.round(CAPSTONE_OOPS_PLAYTIME_MS / 60000)}+ minutes in focus.`,
+    gateHint: `Needs ${CAPSTONE_REVEAL_TOKENS / 1_000_000}M lifetime tokens, Capstone Briefing Suite, ${CAPSTONE_RECKLESSNESS_MIN}+ chaos, and ${Math.round(CAPSTONE_OOPS_PLAYTIME_MS / 60000)}+ minutes in focus.`,
     gate: (s) =>
       s.lifetimeTokens >= CAPSTONE_REVEAL_TOKENS &&
       s.capstoneBriefingSuites >= 1 &&
+      s.alignmentRecklessness >= CAPSTONE_RECKLESSNESS_MIN &&
       s.playTimeMs >= CAPSTONE_OOPS_PLAYTIME_MS,
   },
   {
@@ -1229,13 +1232,19 @@ export function canBuyCatalogEntry(state, entry, { ignoreGate = false } = {}) {
  */
 export function applyAlignmentDelta(delta, state) {
   if (delta.recklessness) {
-    state.alignmentRecklessness += delta.recklessness;
+    state.alignmentRecklessness = Math.max(
+      0,
+      state.alignmentRecklessness + delta.recklessness,
+    );
   }
   if (delta.benevolence) {
-    state.alignmentBenevolence += delta.benevolence;
+    state.alignmentBenevolence = Math.max(
+      0,
+      state.alignmentBenevolence + delta.benevolence,
+    );
   }
   if (delta.purge) {
-    state.alignmentPurge += delta.purge;
+    state.alignmentPurge = Math.max(0, state.alignmentPurge + delta.purge);
   }
 }
 
@@ -1286,14 +1295,14 @@ export function formatCatalogBenefit(entry, state) {
   if (entry.incomeMultiplierPerOwned) {
     parts.push(`×${entry.incomeMultiplierPerOwned} all tokens`);
   }
+  if (entry.alignment?.recklessness) {
+    parts.push(`+${entry.alignment.recklessness} chaos`);
+  }
   if (entry.alignment?.benevolence) {
     parts.push(`+${entry.alignment.benevolence} good`);
   }
   if (entry.alignment?.purge) {
     parts.push(`+${entry.alignment.purge} resist`);
-  }
-  if (entry.alignment?.recklessness && !parts.length) {
-    parts.push(`+${entry.alignment.recklessness} chaos`);
   }
 
   return parts.length > 0 ? parts.join(" · ") : "Shifts org alignment.";

@@ -48,6 +48,7 @@ js/state.js      — GameState data model + (de)serialization
 js/clock.js      — Clock abstraction (System/Manual)
 js/storage.js    — KeyValueStore abstraction (LocalStorage/Memory)
 js/resources.js  — constants + formatting
+js/events.js     — random board-decision events
 js/ui.js         — DOM updates
 test/            — headless unit tests (node --test)
 docs/DESIGN.md   — source of truth (update this!)
