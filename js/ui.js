@@ -477,6 +477,12 @@ export class UI {
       return;
     }
 
+    // Mandatory board events cannot be dismissed by opening another dialog
+    // (keyboard users can otherwise tab to toolbar chips under the overlay).
+    if (this.activeModal === this.eventModal && modal !== this.eventModal) {
+      return;
+    }
+
     // Only one modal can own activeModal / modal-open / Escape handling.
     // Closing any prior dialog avoids stacked dialogs with corrupted state
     // (e.g. an event firing while Achievements is open).
@@ -790,7 +796,10 @@ export class UI {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "btn btn--secondary btn--buy";
-    button.textContent = `Buy · ${formatNumber(capstone.cost)} tokens`;
+    button.textContent =
+      capstone.path === "purge"
+        ? `Buy · ${formatNumber(Math.abs(CAPSTONE_PURGE_TOKEN_MAX))} debt`
+        : `Buy · ${formatNumber(capstone.cost)} tokens`;
 
     row.append(button);
     panel.append(label, desc, goal, row);
@@ -844,11 +853,17 @@ export class UI {
         cache.benefit.textContent = formatCatalogBenefit(entry, this.game.state);
       }
       if (cache.goal) {
-        cache.goal.textContent = canBuy
-          ? "Ready to buy."
-          : this.game.isCatalogUnlocked(entry)
-            ? this.formatUpgradeGoal(cost, false)
-            : entry.gateHint;
+        if (this.game.isRunComplete) {
+          cache.goal.textContent = "Run complete.";
+        } else if (!Number.isFinite(cost)) {
+          cache.goal.textContent = "Max owned.";
+        } else if (canBuy) {
+          cache.goal.textContent = "Ready to buy.";
+        } else if (this.game.isCatalogUnlocked(entry)) {
+          cache.goal.textContent = this.formatUpgradeGoal(cost, false);
+        } else {
+          cache.goal.textContent = entry.gateHint;
+        }
       }
       if (cache.milestone) {
         cache.milestone.textContent = formatCatalogMilestone(entry, owned);
@@ -960,9 +975,11 @@ export class UI {
         parts.push(`Resist ${state.alignmentPurge} / ${CAPSTONE_PURGE_MIN}`);
       }
       if (state.tokens > CAPSTONE_PURGE_TOKEN_MAX) {
-        parts.push(
-          `Debt ${formatNumber(Math.floor(state.tokens))} / ${formatNumber(CAPSTONE_PURGE_TOKEN_MAX)}`,
-        );
+        const balanceLabel =
+          state.tokens < 0
+            ? `Debt ${formatNumber(state.tokens)} / ${formatNumber(CAPSTONE_PURGE_TOKEN_MAX)}`
+            : `Balance ${formatNumber(state.tokens)} · need ≤ ${formatNumber(CAPSTONE_PURGE_TOKEN_MAX)}`;
+        parts.push(balanceLabel);
       }
       if (parts.length > 0) {
         return parts.join(" · ");
@@ -970,7 +987,11 @@ export class UI {
       return capstone.gateHint;
     }
     if (state.tokens > CAPSTONE_PURGE_TOKEN_MAX) {
-      return `Debt ${formatNumber(Math.floor(state.tokens))} / ${formatNumber(CAPSTONE_PURGE_TOKEN_MAX)}`;
+      const balanceLabel =
+        state.tokens < 0
+          ? `Debt ${formatNumber(state.tokens)} / ${formatNumber(CAPSTONE_PURGE_TOKEN_MAX)}`
+          : `Balance ${formatNumber(state.tokens)} · need ≤ ${formatNumber(CAPSTONE_PURGE_TOKEN_MAX)}`;
+      return balanceLabel;
     }
     return "Ready to present to the Board.";
   }
@@ -1202,8 +1223,14 @@ export class UI {
    */
   formatUpgradeGoal(cost, canBuy) {
     const { game } = this;
+    if (game.isRunComplete) {
+      return "Run complete.";
+    }
     if (canBuy) {
       return "Ready to buy.";
+    }
+    if (!Number.isFinite(cost)) {
+      return "Max owned.";
     }
     const shortfall = cost - game.tokens;
     return formatAffordHint(shortfall, game.tokensPerSecond, game.tokensPerClick);
@@ -1216,6 +1243,9 @@ export class UI {
    */
   formatModelGoal(cost, canBuy) {
     const { game } = this;
+    if (game.isRunComplete) {
+      return "Run complete.";
+    }
     if (canBuy) {
       return "Ready to buy.";
     }
