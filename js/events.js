@@ -1,5 +1,10 @@
+import { applyAlignmentDelta } from "./upgrades.js";
+
 /** @typedef {import("./state.js").GameState} GameState */
 /** @typedef {import("./upgrades.js").AlignmentDelta} AlignmentDelta */
+
+/** @deprecated Prefer {@link applyAlignmentDelta} from upgrades.js. */
+export const applyEventAlignment = applyAlignmentDelta;
 
 /**
  * Outcome applied when the player picks an event choice.
@@ -520,29 +525,6 @@ export function ensureEventSchedule(state) {
 }
 
 /**
- * Clamp alignment meters so losses never go below zero.
- * @param {AlignmentDelta} delta
- * @param {GameState} state
- */
-export function applyEventAlignment(delta, state) {
-  if (delta.recklessness) {
-    state.alignmentRecklessness = Math.max(
-      0,
-      state.alignmentRecklessness + delta.recklessness,
-    );
-  }
-  if (delta.benevolence) {
-    state.alignmentBenevolence = Math.max(
-      0,
-      state.alignmentBenevolence + delta.benevolence,
-    );
-  }
-  if (delta.purge) {
-    state.alignmentPurge = Math.max(0, state.alignmentPurge + delta.purge);
-  }
-}
-
-/**
  * @param {GameState} state
  * @param {{ stateKey: string, count?: number }} change
  * @param {"gain" | "lose"} mode
@@ -577,7 +559,7 @@ export function applyEventOutcomeBase(state, outcome) {
     state.applyTokenDelta(Math.abs(state.tokens) * outcome.tokensPercent);
   }
   if (outcome.alignment) {
-    applyEventAlignment(outcome.alignment, state);
+    applyAlignmentDelta(outcome.alignment, state);
   }
   if (outcome.gainUpgrade) {
     applyUpgradeCountChange(state, outcome.gainUpgrade, "gain");

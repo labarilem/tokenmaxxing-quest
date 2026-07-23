@@ -6,11 +6,14 @@ An incremental browser game about maximizing LLM token spending to advance your 
 
 **Play:** [https://labarilem.github.io/tokenmaxxing-quest/](https://labarilem.github.io/tokenmaxxing-quest/) *(after enabling GitHub Pages)*
 
-## V0.1 — Current gameplay
+## Current gameplay
 
-- Click **Send Prompt** to consume tokens (+1 each)
-- Buy **Background Agents** (25 tokens) for passive +1 token/sec each
-- Progress autosaves to your browser
+- Click **Send Prompt** to consume tokens (base +1, boosted by Agent Rules and model tier)
+- Buy **Agent Rules**, **Background Agents**, and catalog upgrades for click/passive income
+- Certify higher **LLM models**, chase alignment meters (Chaos / Good / Resist), and pick a Board strategy ending
+- Progress autosaves to your browser (while the tab is visible and focused)
+
+See [`docs/DESIGN.md`](docs/DESIGN.md) for the full mechanics table.
 
 ## Local development
 
@@ -35,6 +38,12 @@ npm test
 ```
 
 Tests set up a `GameState`, apply actions, advance a `ManualClock` to simulate ticks instantly, and assert on the result.
+
+Ending-pace check after economy changes:
+
+```bash
+npm run balance:endings
+```
 
 ## Deploy to GitHub Pages
 

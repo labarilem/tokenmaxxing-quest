@@ -47,6 +47,10 @@ const TOAST_VISIBLE_MS = 4000;
 const TOAST_EXIT_MS = 300;
 const TOAST_SWIPE_THRESHOLD_PX = 40;
 
+/** Focusable controls inside a modal dialog (for Tab trapping). */
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 /** localStorage key for the Send Prompt pin preference (UI-only, survives resets). */
 const PIN_PREF_KEY = "tokenmaxxing-quest.pinPrompt";
 
@@ -446,7 +450,16 @@ export class UI {
   }
 
   handleKeydown(event) {
-    if (event.key !== "Escape" || !this.activeModal) {
+    if (!this.activeModal) {
+      return;
+    }
+
+    if (event.key === "Tab") {
+      this.trapFocus(event, this.activeModal);
+      return;
+    }
+
+    if (event.key !== "Escape") {
       return;
     }
     // Event modals require a choice — Escape cannot dismiss them.
@@ -458,6 +471,40 @@ export class UI {
   }
 
   /**
+   * Keep Tab / Shift+Tab cycling inside the open dialog.
+   * @param {KeyboardEvent} event
+   * @param {HTMLElement} modal
+   */
+  trapFocus(event, modal) {
+    const dialog = modal.querySelector(".modal__dialog") ?? modal;
+    const focusable = [...dialog.querySelectorAll(FOCUSABLE_SELECTOR)].filter((el) => {
+      if (!(el instanceof HTMLElement) || el.hasAttribute("disabled")) {
+        return false;
+      }
+      // Prefer getClientRects over offsetParent — fixed-position controls report null parents.
+      return el.getClientRects().length > 0;
+    });
+    if (focusable.length === 0) {
+      event.preventDefault();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+
+    if (event.shiftKey && active === first) {
+      event.preventDefault();
+      last.focus();
+      return;
+    }
+    if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  /**
    * Clear cached affordance state after a reset so buy buttons resync.
    */
   onProgressReset() {
@@ -465,6 +512,7 @@ export class UI {
     this.cachedCanBuyAgent = null;
     this.cachedCanBuyModel = null;
     this.cachedRunComplete = null;
+    this.cachedAchievementKey = "";
     this.update();
   }
 
@@ -490,7 +538,9 @@ export class UI {
       this.closeModal(this.activeModal);
     }
 
-    this.updateAchievementsList();
+    if (modal === this.achievementsModal) {
+      this.updateAchievementsList();
+    }
     modal.hidden = false;
     this.activeModal = modal;
     this.modalTrigger = trigger;
@@ -1211,6 +1261,10 @@ export class UI {
       description.className = "achievement__desc";
       description.textContent = display.description;
 
+      item.setAttribute(
+        "aria-label",
+        `${display.title}. ${earned ? "Unlocked" : "Locked"}. ${display.description}`,
+      );
       item.append(status, title, description);
       this.achievementsList.appendChild(item);
     }
@@ -1504,6 +1558,6 @@ export class UI {
     this.updateCapstoneSection();
     this.updateRunCompleteState();
 
-    this.updateAchievementsList();
+    // Achievement list rebuilds on unlock / when the modal opens — not every tick.
   }
 }

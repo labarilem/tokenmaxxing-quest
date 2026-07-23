@@ -62,8 +62,6 @@ export const CAPSTONE_OOPS_PLAYTIME_MS = 60 * 60 * 1000;
 export const CAPSTONE_UTOPIA_PLAYTIME_MS = 90 * 60 * 1000;
 export const CAPSTONE_PURGE_PLAYTIME_MS = 2 * 60 * 60 * 1000;
 
-/** @deprecated Prefer BENEVOLENCE_COST_SCALE / PURGE_COST_SCALE. */
-export const ALIGNMENT_COST_SCALE = 1.05;
 /** Benevolence line costs — keep utopia behind recklessness. */
 export const BENEVOLENCE_COST_SCALE = 1.72;
 /** Purge hoarding upgrades — deeper debt grind toward ~2h. */

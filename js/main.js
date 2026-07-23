@@ -1,14 +1,19 @@
 import { Game } from "./game.js";
 import { SystemClock } from "./clock.js";
-import { LocalStorageAdapter } from "./storage.js";
+import { LocalStorageAdapter, MemoryStorage, getLocalStorage } from "./storage.js";
 import { TICK_MS } from "./resources.js";
 import { UI } from "./ui.js";
 
 const testMode = new URLSearchParams(window.location.search).has("test");
 
+const localStorageBackend = getLocalStorage();
+const storage = localStorageBackend
+  ? new LocalStorageAdapter(localStorageBackend)
+  : new MemoryStorage();
+
 const game = new Game({
   clock: new SystemClock(),
-  storage: new LocalStorageAdapter(),
+  storage,
   testMode,
 });
 const ui = new UI(game);

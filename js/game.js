@@ -15,6 +15,7 @@ import {
   TEST_MODE_TOKENS,
   TICK_MS,
   TOKENS_PER_TICK,
+  MAX_FOCUSED_TICK_GAP_MS,
   getAgentCost,
   getModelCertificationCost,
   getModelMultiplier,
@@ -464,7 +465,7 @@ export class Game {
     const delta = now - this.state.lastTickAt;
     // Cap the delta to ignore anomalous jumps (stale timestamps). Skip both
     // play time and income for oversized gaps so capstone clocks stay aligned.
-    const focusedTick = delta > 0 && delta <= TICK_MS * 5;
+    const focusedTick = delta > 0 && delta <= MAX_FOCUSED_TICK_GAP_MS;
     if (focusedTick) {
       this.state.playTimeMs += delta;
       const rate = sampleTokensPerSecondForState(this.state, this.random);

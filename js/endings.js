@@ -282,20 +282,6 @@ export function getEndingDef(path) {
 
 /**
  * @param {GameState} state
- * @returns {EndingPath}
- */
-export function getDominantAlignment(state) {
-  const scores = [
-    { path: /** @type {EndingPath} */ ("oops"), value: state.alignmentRecklessness },
-    { path: /** @type {EndingPath} */ ("utopia"), value: state.alignmentBenevolence },
-    { path: /** @type {EndingPath} */ ("purge"), value: state.alignmentPurge },
-  ];
-  scores.sort((a, b) => b.value - a.value);
-  return scores[0].path;
-}
-
-/**
- * @param {GameState} state
  * @returns {boolean}
  */
 export function hasReachedEnding(state) {

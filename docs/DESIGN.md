@@ -126,6 +126,25 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
   "dashboards": 0,
   "allowAlls": 0,
   "roadmaps": 0,
+  "perfReviewBots": 0,
+  "headcountBots": 0,
+  "okrInflators": 0,
+  "vendorLockins": 0,
+  "procurementBlackHoles": 0,
+  "execOffsites": 0,
+  "seriesZRounds": 0,
+  "regulatoryKabukis": 0,
+  "ipoRoadshows": 0,
+  "tokenBuybacks": 0,
+  "antitrustDistractions": 0,
+  "ringStationRelays": 0,
+  "lagrangeCaches": 0,
+  "solarSailMirrors": 0,
+  "dysonAllocators": 0,
+  "boardWarRooms": 0,
+  "orbitalManifests": 0,
+  "orbitalAuditDesks": 0,
+  "capstoneBriefingSuites": 0,
   "alienDecoders": 0,
   "exoplanetFarms": 0,
   "galaxyCasts": 0,
@@ -139,6 +158,7 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
   "openSource": 0,
   "nonprofits": 0,
   "publicApis": 0,
+  "communityCoops": 0,
   "wardSanctuaries": 0,
   "faeLabors": 0,
   "moonwells": 0,
@@ -149,8 +169,11 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
   "dragonTreaties": 0,
   "celestialArbiters": 0,
   "dawnObservatories": 0,
+  "ethicsSummits": 0,
+  "stewardshipCovenants": 0,
   "modelSunsets": 0,
   "memoryRedactions": 0,
+  "soulboundEulas": 0,
   "curseCaches": 0,
   "shadowBinds": 0,
   "wraithScrapers": 0,
@@ -170,6 +193,8 @@ state. Run with `node --test` (Node's built-in runner — no dependencies, no bu
   "recentEventIds": []
 }
 ```
+
+> Count fields are listed once in code as `STATE_COUNT_KEYS` in `js/state.js` — keep that export and this example in sync when adding ownership meters.
 
 ## Mechanics
 
@@ -299,6 +324,14 @@ npx serve .
 Open `http://localhost:8080`.
 
 ## Changelog
+
+### 2026-07-23 — Code quality (no mechanic changes)
+
+- Centralized persisted count fields as `STATE_COUNT_KEYS` in `js/state.js` (constructor / save / load share one list)
+- Synced README and DESIGN save-format example with live upgrade ownership fields
+- Hardened `localStorage` access (`getLocalStorage` probe; in-memory fallback when unavailable)
+- Unified event alignment updates onto `applyAlignmentDelta`; removed unused `ALIGNMENT_COST_SCALE` / `getDominantAlignment`
+- Named `MAX_FOCUSED_TICK_GAP_MS`; modal Tab focus trap; achievement list rebuilds on unlock/open only; quieter token live region; CSP meta; dead CSS cleanup
 
 ### 2026-07-22 — Remaining bugfixes (events, modals, labels)
 
