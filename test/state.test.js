@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { GameState } from "../js/state.js";
+import { GameState, STATE_COUNT_KEYS } from "../js/state.js";
+import { ALL_CATALOG } from "../js/upgrades.js";
 
 test("toSaveData emits the save shape", () => {
   const state = new GameState({ tokens: 12, rules: 3, agents: 4, lastTickAt: 999, achievements: ["first-prompt"] });
@@ -100,5 +101,27 @@ test("fromSaveData tolerates non-object payloads", () => {
     assert.equal(state.tokens, 1);
     assert.equal(state.agents, 1);
     assert.equal(state.lastTickAt, 1);
+  }
+});
+
+test("STATE_COUNT_KEYS roundtrip through save/load", () => {
+  /** @type {Record<string, number>} */
+  const counts = {};
+  for (const [index, key] of STATE_COUNT_KEYS.entries()) {
+    counts[key] = index + 1;
+  }
+  const state = new GameState({ ...counts, tokens: 9, modelTier: 1, lastTickAt: 42 });
+  const restored = GameState.fromSaveData(state.toSaveData());
+  for (const key of STATE_COUNT_KEYS) {
+    assert.equal(restored[key], counts[key], key);
+  }
+  assert.equal(restored.tokens, 9);
+  assert.equal(restored.modelTier, 1);
+});
+
+test("every catalog stateKey is a persisted count field", () => {
+  const keys = new Set(STATE_COUNT_KEYS);
+  for (const entry of ALL_CATALOG) {
+    assert.ok(keys.has(entry.stateKey), `missing STATE_COUNT_KEYS entry for ${entry.id} (${entry.stateKey})`);
   }
 });

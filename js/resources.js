@@ -30,6 +30,12 @@ export const TICK_MS = 1000 / TICKS_PER_SECOND;
 export const TOKENS_PER_TICK = 1 / TICKS_PER_SECOND;
 export const AUTOSAVE_TICKS = 300;
 
+/**
+ * Max gap between focused ticks that still accrues play time and income.
+ * Larger jumps (stale timestamps) are ignored.
+ */
+export const MAX_FOCUSED_TICK_GAP_MS = TICK_MS * 5;
+
 /** Base tokens per manual prompt before rule upgrades. */
 export const BASE_PROMPT_TOKENS = 1;
 

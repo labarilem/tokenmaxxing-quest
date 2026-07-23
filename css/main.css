@@ -214,13 +214,6 @@ body {
   line-height: 1.35;
 }
 
-.upgrade__goal {
-  margin: 0 0 4px;
-  color: var(--accent);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
 .upgrade__hint {
   margin: 0 0 4px;
   color: var(--accent);
@@ -335,17 +328,6 @@ body {
 
 .btn--chip-fit {
   flex: 0 0 auto;
-}
-
-.btn--chip-icon {
-  flex: 0 0 auto;
-  min-width: var(--touch-min);
-  padding: 10px;
-}
-
-.btn__icon {
-  display: block;
-  flex-shrink: 0;
 }
 
 .btn__badge {
@@ -722,26 +704,6 @@ body.modal-open {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--accent);
-}
-
-.panel--space .panel__section-title {
-  color: #9ad1ff;
-}
-
-.panel--enterprise .panel__section-title {
-  color: #c9b8ff;
-}
-
-.panel--orbital .panel__section-title {
-  color: #ffd59a;
-}
-
-.panel--benevolence .panel__section-title {
-  color: var(--success);
-}
-
-.panel--purge .panel__section-title {
-  color: #e8a87c;
 }
 
 .panel--capstone .panel__section-title {

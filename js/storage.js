@@ -9,12 +9,37 @@
  */
 
 /**
+ * Resolve `localStorage` when available. Some privacy modes throw on access.
+ * @returns {Storage | null}
+ */
+export function getLocalStorage() {
+  try {
+    const storage = globalThis.localStorage;
+    if (!storage) {
+      return null;
+    }
+    // Probe write access — Safari private mode can expose a Storage that throws.
+    const probeKey = "__tmq_storage_probe__";
+    storage.setItem(probeKey, "1");
+    storage.removeItem(probeKey);
+    return storage;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Adapter over the browser's `localStorage`.
  * @implements {KeyValueStore}
  */
 export class LocalStorageAdapter {
-  /** @param {Storage} [storage=globalThis.localStorage] */
-  constructor(storage = globalThis.localStorage) {
+  /**
+   * @param {Storage} [storage] defaults to a probed `localStorage` when omitted
+   */
+  constructor(storage = getLocalStorage() ?? undefined) {
+    if (!storage) {
+      throw new Error("localStorage is not available");
+    }
     this.storage = storage;
   }
 
